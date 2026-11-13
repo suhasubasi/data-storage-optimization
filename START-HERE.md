@@ -11,6 +11,10 @@ Nothing is deleted: originals stay on disk, and offboarding only recommends.
 
 The first video you process downloads a local faster-whisper model. After that it works offline.
 
+Optional: with an NVIDIA GPU, Whisper runs about 3.5× faster. It is off by default, because the
+GPU text differs a little from the CPU text (about 97–98% the same words). See
+[pipeline/README.md → NVIDIA GPU](pipeline/README.md#nvidia-gpu-opt-in) for the setup.
+
 ## 1. First-time setup (once)
 
 ```powershell
