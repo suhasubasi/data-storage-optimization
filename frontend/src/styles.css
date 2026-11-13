@@ -245,3 +245,10 @@ details.card summary { cursor: pointer; font-weight: 600; }
 .chat-list .seg:disabled { cursor: default; opacity: 0.85; }
 .chat-attach { display: flex; flex-wrap: wrap; gap: 12px; align-items: flex-end; margin-top: 12px; }
 .chat-attach label { display: flex; flex-direction: column; gap: 4px; font-size: 0.85rem; }
+
+/* Settings page (v1.4) */
+.choice-list { display: grid; gap: 8px; margin: 8px 0 16px; }
+.choice { display: flex; gap: 10px; align-items: flex-start; border: 1px solid var(--line); border-radius: 8px; padding: 10px 12px; cursor: pointer; }
+.choice.on { border-color: var(--blue); background: #f3f8ff; }
+.choice.off { opacity: .55; cursor: not-allowed; }
+.choice input { margin-top: 3px; }

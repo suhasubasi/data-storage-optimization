@@ -10,6 +10,7 @@ import Duplicates from "./pages/Duplicates";
 import Storage from "./pages/Storage";
 import Offboarding from "./pages/Offboarding";
 import Export from "./pages/Export";
+import SettingsPage from "./pages/Settings";
 
 const SCREENS = [
   { path: "library", label: "Library & ingest", icon: "⬆", el: <Library /> },
@@ -20,6 +21,7 @@ const SCREENS = [
   { path: "storage", label: "Storage report", icon: "◔", el: <Storage /> },
   { path: "offboarding", label: "Offboarding review", icon: "⇥", el: <Offboarding /> },
   { path: "export", label: "AI-ready export", icon: "{ }", el: <Export /> },
+  { path: "settings", label: "Settings", icon: "⚙", el: <SettingsPage /> },
 ];
 
 function BackendStatus() {
