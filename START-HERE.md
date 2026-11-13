@@ -56,7 +56,8 @@ If a command says the port is already in use, that server is already running.
 
 1. **Library** – upload a real MP4, PDF or PowerPoint `.pptx`. A 52-minute talk takes about 10 minutes on a laptop CPU.
    Slide images for `.pptx` are made with Microsoft PowerPoint (or LibreOffice if PowerPoint is missing).
-2. **Recording** – click a sentence and the slide on screen at that time follows.
+2. **Recording** – click a sentence and the slide on screen at that time follows. Under it you can attach the
+   meeting chat (`.msg` or `.txt`). Chat times are estimates (chat clock minus the start time in the file name, ±1 minute).
 3. **Search** – searches spoken text, slide text, titles and file names.
 4. **Duplicates** – exact copies (SHA-256), shared slides and similar slides.
 5. **Storage report** – measured bytes, four scenarios. Scenario 0 is negative on purpose (processing adds files).

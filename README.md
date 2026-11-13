@@ -8,7 +8,8 @@ duplicates across (simulated) SharePoint / OneDrive / Ericsson Play — **withou
 - MP4 → timed local transcript (faster-whisper) + compressed key frames linked by time
 - PDF and PowerPoint `.pptx` → per-page/slide text, page image, three hashes (file SHA-256, normalised-text SHA-256, pHash)
 - Duplicates: exact file · shared slide · similar (needs review)
-- Search → text + frame/slide + timestamp
+- Search → text + frame/slide + timestamp (spoken text, slide text, titles, and an attached meeting chat)
+- Meeting chat (Outlook `.msg` or `.txt`) attached to a recording, shown on the Recording page with estimated times
 - Offboarding review → recommends, never deletes
 - Exports: transcript `.txt`, unique slides as `.pptx` / `.pdf`, AI-ready JSON / JSONL with source links
 - Unique-slide pass: near-duplicate frames are merged, the transcript is not re-run
