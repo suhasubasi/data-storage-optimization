@@ -1,8 +1,12 @@
-"""Local speech-to-text with faster-whisper (CTranslate2, CPU, int8). No cloud / external APIs.
+"""Local speech-to-text with faster-whisper (CTranslate2). No cloud / external APIs.
 
 Model: contracts/thresholds.json video.whisper_model (default "small") + whisper_compute_type ("int8").
+Device: video.whisper_device = cpu (default) | cuda | auto. auto = NVIDIA GPU if CTranslate2 sees one,
+        else CPU. On the GPU the compute type is video.whisper_compute_type_cuda ("int8_float16").
+        The CPU path (cpu + int8) is exactly what it was before; GPU text is close but NOT identical.
 Overrides (env):  DSO_WHISPER_MODEL=base|small|medium|large-v3|/path/to/ct2-model
-                  DSO_WHISPER_COMPUTE=int8|int8_float32|float32
+                  DSO_WHISPER_DEVICE=cpu|cuda|auto
+                  DSO_WHISPER_COMPUTE=int8|int8_float32|float32 (CPU) or int8_float16|float16 (GPU)
                   DSO_WHISPER_LANGUAGE=en|sv|...   (default: auto-detect)
                   DSO_WHISPER_BEAM=5               (1 = fastest)
                   DSO_WHISPER_MODEL_DIR=<dir>      (where weights are cached; default HF cache ~/.cache/huggingface)
@@ -15,6 +19,7 @@ unit tests can check the wiring quickly; the manifest then says model "stub (tes
 from __future__ import annotations
 
 import os
+import sys
 import wave
 from dataclasses import dataclass
 from pathlib import Path
@@ -26,6 +31,60 @@ class TranscriptResult:
     segments: list[tuple[float, float, str]]
     language: str | None
     model_label: str
+    device: str = "cpu"
+    compute_type: str = "int8"
+
+
+DEVICES = ("cpu", "cuda", "auto")
+
+
+def cuda_device_count() -> int:
+    """Number of NVIDIA GPUs CTranslate2 can use (0 if none, or if CTranslate2 has no CUDA support)."""
+    try:
+        import ctranslate2
+
+        return int(ctranslate2.get_cuda_device_count())
+    except Exception:
+        return 0
+
+
+def select_device(thresholds: dict[str, Any], cuda_count: Callable[[], int] | None = None) -> tuple[str, str]:
+    """Pick (device, compute_type). Default is cpu + int8, the same as before GPU support existed."""
+    cuda_count = cuda_count or cuda_device_count
+    vcfg = thresholds.get("video", {})
+    want = (os.environ.get("DSO_WHISPER_DEVICE") or vcfg.get("whisper_device") or "cpu").strip().lower()
+    if want not in DEVICES:
+        raise ValueError(f"whisper device must be one of {DEVICES}, got {want!r}")
+    if want == "auto":
+        device = "cuda" if cuda_count() > 0 else "cpu"
+    elif want == "cuda":
+        if cuda_count() <= 0:
+            raise RuntimeError("whisper device 'cuda' was asked for, but no NVIDIA GPU is usable "
+                               "(see pipeline/README.md, GPU setup)")
+        device = "cuda"
+    else:
+        device = "cpu"
+    if device == "cuda":
+        default = vcfg.get("whisper_compute_type_cuda", "int8_float16")
+    else:
+        default = vcfg.get("whisper_compute_type", "int8")
+    return device, os.environ.get("DSO_WHISPER_COMPUTE") or default
+
+
+def add_nvidia_dll_dirs() -> None:
+    """Windows only: make the cuBLAS/cuDNN DLLs from pip packages (nvidia-cublas-cu12, ...) findable."""
+    if sys.platform != "win32":
+        return
+    for base in map(Path, sys.path):
+        nv = base / "nvidia"
+        if not nv.is_dir():
+            continue
+        for bin_dir in nv.glob("*/bin"):
+            try:
+                os.add_dll_directory(str(bin_dir))
+            except OSError:
+                continue
+            os.environ["PATH"] = str(bin_dir) + os.pathsep + os.environ.get("PATH", "")
 
 
 def load_wav_16k_mono(wav: Path):
@@ -60,12 +119,14 @@ def transcribe(wav: Path, duration: float, thresholds: dict[str, Any], on_progre
 
     vcfg = thresholds.get("video", {})
     model_name = os.environ.get("DSO_WHISPER_MODEL") or vcfg.get("whisper_model", "small")
-    compute = os.environ.get("DSO_WHISPER_COMPUTE") or vcfg.get("whisper_compute_type", "int8")
+    device, compute = select_device(thresholds)
+    if device == "cuda":
+        add_nvidia_dll_dirs()
     language = os.environ.get("DSO_WHISPER_LANGUAGE") or None
     beam = int(os.environ.get("DSO_WHISPER_BEAM", "5"))
     model = WhisperModel(
         model_name,
-        device="cpu",
+        device=device,
         compute_type=compute,
         download_root=os.environ.get("DSO_WHISPER_MODEL_DIR") or None,
     )
@@ -84,4 +145,6 @@ def transcribe(wav: Path, duration: float, thresholds: dict[str, Any], on_progre
         if duration > 0:
             on_progress(min(float(s.end) / duration, 1.0))
     on_progress(1.0)
-    return TranscriptResult(segs, info.language, f"faster-whisper {Path(model_name).name} {compute}")
+    # The label goes into transcript.json and the manifest, so every result says how it was made.
+    label = f"faster-whisper {Path(model_name).name} {compute}" + (" cuda" if device == "cuda" else "")
+    return TranscriptResult(segs, info.language, label, device, compute)
