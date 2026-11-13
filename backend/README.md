@@ -31,6 +31,7 @@ Env: `DSO_DATA_DIR`, `DSO_DB_PATH`, `DSO_PIPELINE_PYTHON` (default `pipeline/.ve
 | `app/main.py` | routes (exactly the contract) + file serving (Range for video) |
 | `app/uploads.py` | save original untouched, SHA-256 while streaming, chmod read-only |
 | `app/jobs.py` | background thread → `python -m dso_pipeline process …`; real progress from `progress.json`, errors from `error.json`/stderr |
+| `app/progress.py` | `elapsed_s` and `eta_s` for `GET /api/jobs/{id}`. `eta_s` is an ESTIMATE from the measured rate so far (elapsed / progress), hidden until ≥ 3 % and ≥ 10 s |
 | `app/ingest.py` | validate `manifest.json` (Manifest model), **measure its size** (counted in D), write tables + FTS |
 | `app/duplicates.py` | cross-file matching over SQLite → `matches` |
 | `app/services.py` | search, timeline, slides, duplicates, storage report, offboarding, export |
