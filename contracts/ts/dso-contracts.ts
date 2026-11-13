@@ -524,7 +524,7 @@ export interface AssetDetail {
   latest_job: Job | null;
 }
 /**
- * Progress and errors are real, never faked.
+ * Progress and errors are real, never faked. progress is stage-weighted: each step reports its own real fraction, and fixed step weights map it to 0..1 (see pipeline/dso_pipeline/video.py).
  *
  * This interface was referenced by `DsoContracts`'s JSON-Schema
  * via the `definition` "Job".
@@ -541,9 +541,21 @@ export interface Job {
    * OUR RECOMMENDATION: optional current step, e.g. 'transcribing'.
    */
   stage?: string | null;
+  /**
+   * REC v1.3: real progress of the current step only (0.0 to 1.0), e.g. transcribing = last finished Whisper segment end / media duration. null if the step does not report it.
+   */
+  stage_progress?: number | null;
   error: string | null;
   started_at: string | null;
   finished_at: string | null;
+  /**
+   * REC v1.3: seconds since the job started running (measured by the server clock). null before it starts.
+   */
+  elapsed_s?: number | null;
+  /**
+   * REC v1.3: ESTIMATE of seconds left = elapsed_s * (1 - progress) / progress, from the measured rate so far. null until progress >= 0.03 and elapsed_s >= 10, and when the job is not running.
+   */
+  eta_s?: number | null;
 }
 /**
  * This interface was referenced by `DsoContracts`'s JSON-Schema

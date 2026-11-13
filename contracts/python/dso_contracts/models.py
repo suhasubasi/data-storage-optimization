@@ -343,9 +343,25 @@ class Job(BaseModel):
         None,
         description="OUR RECOMMENDATION: optional current step, e.g. 'transcribing'.",
     )
+    stage_progress: float | None = Field(
+        None,
+        description="REC v1.3: real progress of the current step only (0.0 to 1.0), e.g. transcribing = last finished Whisper segment end / media duration. null if the step does not report it.",
+        ge=0.0,
+        le=1.0,
+    )
     error: str | None
     started_at: AwareDatetime | None
     finished_at: AwareDatetime | None
+    elapsed_s: float | None = Field(
+        None,
+        description="REC v1.3: seconds since the job started running (measured by the server clock). null before it starts.",
+        ge=0.0,
+    )
+    eta_s: float | None = Field(
+        None,
+        description="REC v1.3: ESTIMATE of seconds left = elapsed_s * (1 - progress) / progress, from the measured rate so far. null until progress >= 0.03 and elapsed_s >= 10, and when the job is not running.",
+        ge=0.0,
+    )
 
 
 class FrameView(BaseModel):
