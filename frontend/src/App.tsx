@@ -1,37 +1,74 @@
-// Blank shell only: layout + nav for the 8 screens on the design Page. Stream 1 owns everything here.
+// Stream 1 owns everything in frontend/. Eight screens from the design Page.
 import { NavLink, Navigate, Route, Routes } from "react-router-dom";
 import { USE_MOCKS } from "./api/config";
-import Placeholder from "./pages/Placeholder";
+import { api } from "./api/client";
+import { useAsync } from "./lib/useAsync";
+import Library from "./pages/Library";
+import Search from "./pages/Search";
+import Recording from "./pages/Recording";
+import DocumentView from "./pages/Document";
+import Duplicates from "./pages/Duplicates";
+import Storage from "./pages/Storage";
+import Offboarding from "./pages/Offboarding";
+import Export from "./pages/Export";
 
 const SCREENS = [
-  { path: "library", label: "Library", note: "Upload with source label and owner, status per file, original vs derived size" },
-  { path: "recording", label: "Recording view", note: "Video player (original kept), frame strip, transcript; click to jump" },
-  { path: "document", label: "Document view", note: "Slide grid with hashes; badges for 'also in X' and 'similar to X'" },
-  { path: "search", label: "Search", note: "One box; each hit shows text, frame or slide image, file, timestamp" },
-  { path: "duplicates", label: "Duplicates", note: "Exact / shared slide / similar groups with evidence and source systems" },
-  { path: "storage", label: "Storage report", note: "Original vs derived bars, the four scenarios, formula and exclusions" },
-  { path: "offboarding", label: "Offboarding review", note: "Pick an owner; each file: 'eligible for deletion after approval' or 'keep'" },
-  { path: "export", label: "Export", note: "Pretty-printed JSON preview and download" },
+  { path: "library", label: "Library & ingest", icon: "⬆", el: <Library /> },
+  { path: "search", label: "Search", icon: "⌕", el: <Search /> },
+  { path: "recording", label: "Recording timeline", icon: "▶", el: <Recording />, param: true },
+  { path: "document", label: "Document / slides", icon: "▤", el: <DocumentView />, param: true },
+  { path: "duplicates", label: "Duplicates", icon: "⧉", el: <Duplicates /> },
+  { path: "storage", label: "Storage report", icon: "◔", el: <Storage /> },
+  { path: "offboarding", label: "Offboarding review", icon: "⇥", el: <Offboarding /> },
+  { path: "export", label: "AI-ready export", icon: "{ }", el: <Export /> },
 ];
+
+function BackendStatus() {
+  const h = useAsync(() => api.health(), []);
+  if (USE_MOCKS) return <p className="mode mock">MOCK DATA · fixtures</p>;
+  if (h.loading) return <p className="mode">LIVE API · checking…</p>;
+  return h.error ? (
+    <p className="mode down" title={h.error.message}>
+      LIVE API · backend offline
+    </p>
+  ) : (
+    <p className="mode live">LIVE API · v{h.data?.version}</p>
+  );
+}
 
 export default function App() {
   return (
     <div className="shell">
       <aside className="nav">
         <h1>Data Storage Optimization</h1>
-        <p className="badge">{USE_MOCKS ? "MOCK DATA" : "LIVE API"} · sources simulated</p>
-        <nav>
+        <p className="sub">Hackathon MVP · local only</p>
+        <BackendStatus />
+        <nav aria-label="Screens">
           {SCREENS.map((s) => (
-            <NavLink key={s.path} to={`/${s.path}`}>{s.label}</NavLink>
+            <NavLink key={s.path} to={`/${s.path}`}>
+              <span className="icon" aria-hidden>
+                {s.icon}
+              </span>
+              {s.label}
+            </NavLink>
           ))}
         </nav>
+        <div className="nav-foot">
+          <p>Sources (SharePoint, OneDrive, Ericsson Play) are simulated labels.</p>
+          <p>Nothing is ever deleted.</p>
+          <p className="disclaimer">Team prototype for the Ericsson Data Storage Optimization challenge. Not an official Ericsson product.</p>
+        </div>
       </aside>
       <main className="content">
         <Routes>
           <Route path="/" element={<Navigate to="/library" replace />} />
           {SCREENS.map((s) => (
-            <Route key={s.path} path={`/${s.path}/*`} element={<Placeholder title={s.label} note={s.note} />} />
+            <Route key={s.path} path={`/${s.path}`} element={s.el} />
           ))}
+          {SCREENS.filter((s) => s.param).map((s) => (
+            <Route key={`${s.path}-id`} path={`/${s.path}/:assetId`} element={s.el} />
+          ))}
+          <Route path="*" element={<Navigate to="/library" replace />} />
         </Routes>
       </main>
     </div>
