@@ -65,7 +65,10 @@ def test_reingest_is_idempotent(demo):
     before = demo.get("/api/assets/a_02/slides").json()
     ingest.ingest_manifest("a_02", settings.FIXTURES_DIR / "manifests" / "a_02.manifest.json")
     assert demo.get("/api/assets/a_02/slides").json() == before
-    assert demo.get("/api/search", params={"q": "roadmap"}).json()["total"] == 2  # a_02 + a_03, not doubled
+    hits = demo.get("/api/search", params={"q": "roadmap"}).json()["hits"]
+    # page 1 of a_02 + a_03 (exact copies), plus each file's title row (v1.1) -- nothing doubled
+    assert sorted((h["hit_type"], h["asset_id"]) for h in hits) == [
+        ("asset", "a_02"), ("asset", "a_03"), ("slide", "a_02"), ("slide", "a_03")]
 
 
 def test_errors_use_contract_shape(demo):

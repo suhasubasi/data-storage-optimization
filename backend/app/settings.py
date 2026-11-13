@@ -15,7 +15,13 @@ SCHEMA_SQL = CONTRACTS_DIR / "schema.sql"
 THRESHOLDS = CONTRACTS_DIR / "thresholds.json"
 FIXTURES_DIR = CONTRACTS_DIR / "fixtures"
 # The job runner calls the pipeline as a subprocess using the pipeline's own venv (keeps heavy deps separate).
-PIPELINE_PYTHON = os.environ.get("DSO_PIPELINE_PYTHON", str(REPO_ROOT / "pipeline" / ".venv" / "bin" / "python"))
+def _default_pipeline_python() -> str:
+    win = REPO_ROOT / "pipeline" / ".venv" / "Scripts" / "python.exe"
+    unix = REPO_ROOT / "pipeline" / ".venv" / "bin" / "python"
+    return str(win if win.exists() else unix)
+
+
+PIPELINE_PYTHON = os.environ.get("DSO_PIPELINE_PYTHON", _default_pipeline_python())
 # REC: working directory for `python -m dso_pipeline` (so the module is importable even if not pip-installed).
 PIPELINE_CWD = Path(os.environ.get("DSO_PIPELINE_CWD", REPO_ROOT / "pipeline"))
 # REC: hard stop for one pipeline run (seconds). Long videos on CPU can be slow.
