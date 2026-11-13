@@ -24,15 +24,42 @@ def build_parser() -> argparse.ArgumentParser:
     proc.add_argument("--kind", required=True, choices=["video", "document"])
     proc.add_argument("--input", required=True, help="Path to the original (read-only)")
     proc.add_argument("--out", required=True, help="data/derived/<asset_id>/")
+    us = sub.add_parser("unique-slides", help="Unique-slide pass on an already processed recording "
+                        "(uses the existing key frames; never re-runs speech-to-text; deletes nothing)")
+    us.add_argument("--asset-id", required=True)
+    us.add_argument("--out", required=True, help="data/derived/<asset_id>/ (must hold manifest.json)")
+    us.add_argument("--audit-dir", default=None, help="where to save the old manifest + decision list")
+    us.add_argument("--dry-run", action="store_true")
+    pr = sub.add_parser("prune-frames", help="After ingest: remove frame images the current manifest no "
+                        "longer references (only inside <out>/frames/)")
+    pr.add_argument("--asset-id", required=True)
+    pr.add_argument("--out", required=True)
+    pr.add_argument("--dry-run", action="store_true")
     return p
 
 
 def main(argv: list[str] | None = None) -> int:
     args = build_parser().parse_args(argv)
-    if args.command != "process":
-        return 2
     if not re.fullmatch(r"a_[A-Za-z0-9]+", args.asset_id):
         print(f"dso_pipeline: invalid asset id {args.asset_id!r} (expected a_<alnum>)", file=sys.stderr)
+        return 2
+    if args.command in ("unique-slides", "prune-frames"):
+        import json
+
+        from . import postpass
+
+        try:
+            if args.command == "unique-slides":
+                res = postpass.run_unique_slides(args.asset_id, Path(args.out),
+                                                 Path(args.audit_dir) if args.audit_dir else None, args.dry_run)
+            else:
+                res = postpass.prune_frames(args.asset_id, Path(args.out), args.dry_run)
+        except Exception as e:  # noqa: BLE001
+            print(f"dso_pipeline: {args.command} failed: {e}", file=sys.stderr)
+            return 1
+        print(json.dumps(res))
+        return 0
+    if args.command != "process":
         return 2
     from .process import run  # deferred: keeps --help fast
 

@@ -19,6 +19,7 @@ from typing import Any, Iterator
 import numpy as np
 from PIL import Image
 
+from . import unique_slides
 from .common import Status, phash_distance, phash_file, phash_hex, write_json_atomic
 from .transcribe import transcribe
 
@@ -117,14 +118,7 @@ def _key_frames(input_path: Path, size: tuple[int, int], fps: float, min_dist: i
         raise RuntimeError("ffmpeg frame sampling failed: " + " | ".join(err.strip().splitlines()[-5:]))
 
 
-def frame_for(t: float, frames: list[dict[str, Any]]) -> str | None:
-    """Frame on screen at time t: t_start <= t < t_end (last frame if t is at/after the end)."""
-    if not frames:
-        return None
-    for fr in frames:
-        if fr["t_start"] <= t < fr["t_end"]:
-            return fr["id"]
-    return frames[-1]["id"] if t >= frames[-1]["t_start"] else frames[0]["id"]
+frame_for = unique_slides.frame_for  # frame on screen at time t: t_start <= t < t_end (last frame at/after end)
 
 
 def process_video(input_path: Path, out_dir: Path, thresholds: dict[str, Any], status: Status) -> dict[str, Any]:
@@ -183,6 +177,20 @@ def process_video(input_path: Path, out_dir: Path, thresholds: dict[str, Any], s
     else:
         warnings.append("no video stream found; no key frames")
 
+    # Unique-slide pass: one image per unique slide (webcam-only / cursor-only repeats merged). It works on
+    # the frames just written, never on the transcript, and only removes this run's own redundant frame files.
+    us_info = None
+    ucfg = unique_slides.config(thresholds)
+    if frames and ucfg.get("enabled", True):
+        status.progress("finding unique slides", 0.3)
+        r = unique_slides.apply(frames, out_dir, ucfg, hash_size)
+        for rel in r["drop_paths"]:
+            (out_dir / rel).unlink()
+        keep = set(r["keep_paths"])
+        frames = r["frames"]
+        derived = [d for d in derived if d["kind"] != "frame" or d["path"] in keep]
+        us_info = {**r["info"], "applied_as": "pipeline", "applied_at": None}
+
     result = None
     if has_audio:
         # Temp WAV lives in a temp dir inside out_dir (same disk); always deleted, never listed.
@@ -238,4 +246,5 @@ def process_video(input_path: Path, out_dir: Path, thresholds: dict[str, Any], s
         "model": model_label,
         "frame_threshold": min_dist,
         "warnings": warnings,
+        "unique_slides": us_info,
     }
