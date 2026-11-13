@@ -72,13 +72,43 @@ Weights download once from Hugging Face into `~/.cache/huggingface` (outside git
 | Env | Default | Example |
 |---|---|---|
 | `DSO_WHISPER_MODEL` | `small` | `base` (≈2× faster), `medium`, `large-v3`, or a local CT2 model dir |
-| `DSO_WHISPER_COMPUTE` | `int8` | `float32` |
+| `DSO_WHISPER_DEVICE` | `cpu` | `cuda` (NVIDIA GPU, fails if none), `auto` (GPU if found, else CPU) |
+| `DSO_WHISPER_COMPUTE` | `int8` on CPU, `int8_float16` on GPU | `float32`, `float16` |
 | `DSO_WHISPER_LANGUAGE` | auto-detect | `en`, `sv` |
 | `DSO_WHISPER_BEAM` | `5` | `1` (fastest) |
 | `DSO_WHISPER_MODEL_DIR` | HF cache | `/models` |
 | `DSO_TRANSCRIBER` | `whisper` | `stub` = **fake transcript for tests only** |
 | `DSO_THRESHOLDS` | `../contracts/thresholds.json` | path to another thresholds file |
 | `DSO_DATA_DIR` | auto (parent of `originals/`) | used only for `original.path` |
+
+### NVIDIA GPU (opt-in)
+
+Whisper can run on an NVIDIA GPU. It is **off by default**, because GPU text is close to the CPU text
+but not identical. Measured on an RTX 5070 Laptop (8 GB), model `small`, same settings (beam 5, VAD on):
+
+| Video | CPU int8 | GPU int8_float16 | Word match vs CPU (case and punctuation ignored) |
+|---|---|---|---|
+| Jury and prizes (6 min) | 35.3 s | 9.7 s | 97.98% (13 of 568 words differ) |
+| GraalVM talk (16 min) | 94.3 s | 26.0 s | 96.99% (67 of 1677 words differ) |
+
+`float16` was about as fast but a little further from the CPU text (95.96% / 97.05%).
+Typical differences: "Okay. Are we ready?" vs "Okay, are we ready?", "you're all doing great" vs
+"you all are doing great", and a name heard differently ("Tommy, what's on this?" vs "Tommy Watson").
+
+Setup (Windows, once):
+
+```powershell
+nvidia-smi                                   # must list the GPU
+cd pipeline
+.\.venv\Scripts\python.exe -m pip install "nvidia-cublas-cu12>=12.8,<13"
+.\.venv\Scripts\python.exe -c "import ctranslate2; print(ctranslate2.get_cuda_device_count())"   # 1 = OK
+```
+
+ctranslate2 4.9 already ships cuDNN 9 (`cudnn64_9.dll`); the pipeline finds the cuBLAS DLLs from
+the pip package by itself. Then turn it on with `"whisper_device": "cuda"` (or `"auto"`) in
+`contracts/thresholds.json`, or set `DSO_WHISPER_DEVICE=cuda` before you start the backend.
+A GPU transcript says `faster-whisper small int8_float16 cuda` in `transcript.json` and the
+manifest; a CPU transcript still says `faster-whisper small int8`.
 
 Note: we pass the WAV as a numpy array, because faster-whisper 1.2.1's own decoder breaks with PyAV ≥ 15.
 
