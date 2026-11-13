@@ -727,7 +727,7 @@
           ]
         },
         "item_id": {
-          "description": "Local segment id ('s12'), slide id ('p4'), or 'meta' for a hit on the file's title / file name / metadata (REC v1.1).",
+          "description": "Local segment id ('s12'), slide id ('p4'), chat message id ('c3', REC v1.2), or 'meta' for a hit on the file's title / file name / metadata (REC v1.1).",
           "type": "string"
         },
         "frame_id": {
@@ -1621,7 +1621,8 @@
       "enum": [
         "segment",
         "slide",
-        "asset"
+        "asset",
+        "chat"
       ]
     },
     "RemovalReason": {
@@ -1637,6 +1638,164 @@
         "transcript_segment",
         "slide_text"
       ]
+    },
+    "ChatMessage": {
+      "description": "REC v1.2: one message from a meeting chat attached to a recording.",
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "id",
+        "clock",
+        "t",
+        "author",
+        "text",
+        "has_image"
+      ],
+      "properties": {
+        "id": {
+          "description": "'c<n>', 1-based, in chat order.",
+          "type": "string",
+          "pattern": "^c[0-9]+$"
+        },
+        "clock": {
+          "description": "Wall-clock time exactly as written in the chat, e.g. '16:44'.",
+          "type": "string"
+        },
+        "t": {
+          "description": "Estimated seconds from the recording start (start of the written minute minus the recording start). null if the recording start is unknown or the message is outside the recording.",
+          "type": [
+            "number",
+            "null"
+          ]
+        },
+        "author": {
+          "type": "string"
+        },
+        "text": {
+          "type": "string"
+        },
+        "has_image": {
+          "description": "The message contained a picture (not stored; only noted).",
+          "type": "boolean"
+        }
+      }
+    },
+    "ChatSource": {
+      "description": "REC v1.2: the chat file that was attached (the file itself is not stored by the app).",
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "filename",
+        "bytes",
+        "sha256",
+        "attached_at"
+      ],
+      "properties": {
+        "filename": {
+          "type": "string"
+        },
+        "bytes": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "sha256": {
+          "$ref": "manifest.schema.json#/$defs/Sha256"
+        },
+        "attached_at": {
+          "type": "string",
+          "format": "date-time"
+        }
+      }
+    },
+    "ChatAlignment": {
+      "description": "REC v1.2: how chat clock times were turned into recording times, and how sure we are.",
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "recording_start",
+        "basis",
+        "uncertainty_seconds",
+        "status",
+        "note"
+      ],
+      "properties": {
+        "recording_start": {
+          "description": "Local wall-clock start of the recording, 'YYYY-MM-DDTHH:MM:SS' (no time zone), or null if unknown.",
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "basis": {
+          "description": "Where recording_start came from: 'filename', 'manual', or 'unknown'.",
+          "type": "string",
+          "enum": [
+            "filename",
+            "manual",
+            "unknown"
+          ]
+        },
+        "uncertainty_seconds": {
+          "description": "Chat times are written to the minute, so t can be up to this many seconds early.",
+          "type": [
+            "number",
+            "null"
+          ]
+        },
+        "status": {
+          "description": "'estimated' (times computed, not checked against speech), 'unknown' (no recording start).",
+          "type": "string",
+          "enum": [
+            "estimated",
+            "unknown"
+          ]
+        },
+        "note": {
+          "type": "string"
+        }
+      }
+    },
+    "ChatLog": {
+      "description": "REC v1.2: GET/POST /api/assets/{id}/chat. The meeting chat of a recording with estimated recording times.",
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "asset_id",
+        "source",
+        "alignment",
+        "messages"
+      ],
+      "properties": {
+        "asset_id": {
+          "$ref": "#/$defs/AssetId"
+        },
+        "source": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/ChatSource"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "alignment": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/ChatAlignment"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "messages": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/ChatMessage"
+          }
+        }
+      }
     }
   }
 }

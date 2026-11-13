@@ -28,7 +28,7 @@ def app_routes() -> set[tuple[str, str]]:
 
 
 def test_routes_match_openapi_contract():
-    assert len(contract_routes()) == 19  # v1.1: + transcript.txt, slides.pptx, slides.pdf
+    assert len(contract_routes()) == 21  # v1.1: + transcript.txt, slides.pptx, slides.pdf; v1.2: + GET/POST chat
     assert app_routes() == contract_routes()
 
 

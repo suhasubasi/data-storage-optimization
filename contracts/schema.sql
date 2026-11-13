@@ -105,7 +105,7 @@ CREATE TABLE IF NOT EXISTS matches (
 CREATE VIRTUAL TABLE IF NOT EXISTS search_fts USING fts5 (
     text,
     asset_id  UNINDEXED,
-    item_type UNINDEXED,                                   -- 'segment' | 'slide' | 'asset' (REC v1.1: title + file name + metadata)
+    item_type UNINDEXED,                                   -- 'segment' | 'slide' | 'asset' (REC v1.1: title + file name + metadata) | 'chat' (REC v1.2)
     item_id   UNINDEXED,                                   -- local id 's12' / 'p4' / 'meta'
     tokenize = 'unicode61 remove_diacritics 2'             -- REC: handles Swedish/English mix
 );
@@ -117,4 +117,25 @@ CREATE TABLE IF NOT EXISTS asset_labels (
     asset_id  TEXT PRIMARY KEY REFERENCES assets (id),
     test_data INTEGER NOT NULL DEFAULT 0 CHECK (test_data IN (0, 1)),
     note      TEXT
+);
+
+-- REC v1.2: meeting chat attached to a recording (parsed from the uploaded .msg/.txt; the file itself is not kept).
+CREATE TABLE IF NOT EXISTS chat_sources (
+    asset_id         TEXT PRIMARY KEY REFERENCES assets (id),
+    filename         TEXT NOT NULL,
+    bytes            INTEGER NOT NULL,
+    sha256           TEXT NOT NULL,
+    recording_start  TEXT,                                  -- local 'YYYY-MM-DDTHH:MM:SS' or NULL
+    basis            TEXT NOT NULL CHECK (basis IN ('filename', 'manual', 'unknown')),
+    attached_at      TEXT NOT NULL
+);
+CREATE TABLE IF NOT EXISTS chat_messages (
+    asset_id  TEXT NOT NULL REFERENCES assets (id),
+    id        TEXT NOT NULL,                                -- 'c<n>'
+    clock     TEXT NOT NULL,                                -- as written in the chat, 'HH:MM'
+    t         REAL,                                         -- estimated seconds from recording start, or NULL
+    author    TEXT NOT NULL,
+    text      TEXT NOT NULL,
+    has_image INTEGER NOT NULL DEFAULT 0 CHECK (has_image IN (0, 1)),
+    PRIMARY KEY (asset_id, id)
 );

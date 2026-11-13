@@ -1,6 +1,6 @@
 import type {
   AssetList, AssetDetail, Asset, Job, Timeline, SlideList, SearchResponse, DuplicateReport,
-  DuplicateType, StorageReport, OffboardingReview, ExportAsset, Health, SourceSystem,
+  DuplicateType, StorageReport, OffboardingReview, ExportAsset, Health, SourceSystem, ChatLog,
 } from "@contracts/ts/dso-contracts";
 
 /** One method per endpoint in contracts/openapi.yaml. */
@@ -20,4 +20,7 @@ export interface Api {
   getOffboarding(owner: string): Promise<OffboardingReview>;
   exportAsset(assetId: string): Promise<ExportAsset>;
   exportJsonl(): Promise<string>;
+  /** REC v1.2: meeting chat of a recording (empty messages if none attached). */
+  getChat(assetId: string): Promise<ChatLog>;
+  attachChat(assetId: string, file: File, recordingStart?: string): Promise<ChatLog>;
 }

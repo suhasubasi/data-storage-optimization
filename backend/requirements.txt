@@ -8,3 +8,4 @@ httpx>=0.27
 # REC v1.1: slide-deck exports (GET /api/assets/{id}/slides.pptx|.pdf) convert the WebP frames to JPEG
 Pillow>=10.3
 python-pptx>=1.0
+extract-msg>=0.48

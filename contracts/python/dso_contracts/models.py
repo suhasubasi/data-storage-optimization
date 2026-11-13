@@ -640,6 +640,7 @@ class HitType(StrEnum):
     segment = "segment"
     slide = "slide"
     asset = "asset"
+    chat = "chat"
 
 
 class RemovalReason(StrEnum):
@@ -650,6 +651,85 @@ class RemovalReason(StrEnum):
 class ChunkKind(StrEnum):
     transcript_segment = "transcript_segment"
     slide_text = "slide_text"
+
+
+class ChatMessage(BaseModel):
+    model_config = ConfigDict(
+        extra="forbid",
+    )
+    id: str = Field(
+        ..., description="'c<n>', 1-based, in chat order.", pattern="^c[0-9]+$"
+    )
+    clock: str = Field(
+        ..., description="Wall-clock time exactly as written in the chat, e.g. '16:44'."
+    )
+    t: float | None = Field(
+        ...,
+        description="Estimated seconds from the recording start (start of the written minute minus the recording start). null if the recording start is unknown or the message is outside the recording.",
+    )
+    author: str
+    text: str
+    has_image: bool = Field(
+        ..., description="The message contained a picture (not stored; only noted)."
+    )
+
+
+class ChatSource(BaseModel):
+    model_config = ConfigDict(
+        extra="forbid",
+    )
+    filename: str
+    bytes: int = Field(..., ge=0)
+    sha256: str = Field(..., pattern="^[0-9a-f]{64}$")
+    attached_at: AwareDatetime
+
+
+class Basis(StrEnum):
+    filename = "filename"
+    manual = "manual"
+    unknown = "unknown"
+
+
+class Status(StrEnum):
+    estimated = "estimated"
+    unknown = "unknown"
+
+
+class ChatAlignment(BaseModel):
+    model_config = ConfigDict(
+        extra="forbid",
+    )
+    recording_start: str | None = Field(
+        ...,
+        description="Local wall-clock start of the recording, 'YYYY-MM-DDTHH:MM:SS' (no time zone), or null if unknown.",
+    )
+    basis: Basis = Field(
+        ...,
+        description="Where recording_start came from: 'filename', 'manual', or 'unknown'.",
+    )
+    uncertainty_seconds: float | None = Field(
+        ...,
+        description="Chat times are written to the minute, so t can be up to this many seconds early.",
+    )
+    status: Status = Field(
+        ...,
+        description="'estimated' (times computed, not checked against speech), 'unknown' (no recording start).",
+    )
+    note: str
+
+
+class ChatLog(BaseModel):
+    model_config = ConfigDict(
+        extra="forbid",
+    )
+    asset_id: str = Field(
+        ...,
+        description="Backend-generated asset id, e.g. 'a_01' or 'a_7f3c9e21'.",
+        pattern="^a_[A-Za-z0-9]+$",
+    )
+    source: ChatSource | None
+    alignment: ChatAlignment | None
+    messages: list[ChatMessage]
 
 
 class PipelineInfo(BaseModel):
@@ -808,7 +888,7 @@ class SearchHit(BaseModel):
     page: int | None = Field(..., description="Page number (slides only).")
     item_id: str = Field(
         ...,
-        description="Local segment id ('s12'), slide id ('p4'), or 'meta' for a hit on the file's title / file name / metadata (REC v1.1).",
+        description="Local segment id ('s12'), slide id ('p4'), chat message id ('c3', REC v1.2), or 'meta' for a hit on the file's title / file name / metadata (REC v1.1).",
     )
     frame_id: str | None = Field(
         ..., description="Frame on screen for a segment hit; null for slides."
@@ -1024,3 +1104,7 @@ class DsoContracts(BaseModel):
     HitType_1: HitType | None = Field(None, alias="HitType")
     RemovalReason_1: RemovalReason | None = Field(None, alias="RemovalReason")
     ChunkKind_1: ChunkKind | None = Field(None, alias="ChunkKind")
+    ChatMessage_1: ChatMessage | None = Field(None, alias="ChatMessage")
+    ChatSource_1: ChatSource | None = Field(None, alias="ChatSource")
+    ChatAlignment_1: ChatAlignment | None = Field(None, alias="ChatAlignment")
+    ChatLog_1: ChatLog | None = Field(None, alias="ChatLog")

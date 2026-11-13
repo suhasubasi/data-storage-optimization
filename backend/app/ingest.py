@@ -35,7 +35,8 @@ def _write_manifest(conn: sqlite3.Connection, m: Manifest, manifest_bytes: int) 
     aid = m.asset_id
     for table in ("segments", "frames", "slides", "derived_files"):
         conn.execute(f"DELETE FROM {table} WHERE asset_id = ?", (aid,))
-    conn.execute("DELETE FROM search_fts WHERE asset_id = ?", (aid,))
+    # Chat rows (REC v1.2) belong to the attached meeting chat, not to the manifest: keep them on re-processing.
+    conn.execute("DELETE FROM search_fts WHERE asset_id = ? AND item_type != 'chat'", (aid,))
 
     conn.execute(
         "UPDATE assets SET metadata_json = ?, manifest_bytes = ?, pipeline_json = ?, status = 'ready' WHERE id = ?",

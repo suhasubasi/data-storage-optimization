@@ -233,3 +233,11 @@ details.card summary { cursor: pointer; font-weight: 600; }
 .scope-bar { display: flex; flex-wrap: wrap; gap: 6px 16px; align-items: center; }
 .scope-bar .toggle { font-weight: 600; white-space: nowrap; }
 .downloads { display: flex; flex-wrap: wrap; gap: 6px 8px; align-items: center; margin: 8px 0; }
+
+/* REC v1.2: meeting chat */
+.chat-card { margin-top: 16px; }
+.chat-list { list-style: none; margin: 8px 0; padding: 0; max-height: 420px; overflow: auto; }
+.chat-list li.on .seg { outline: 2px solid var(--amber); }
+.chat-list .seg:disabled { cursor: default; opacity: 0.85; }
+.chat-attach { display: flex; flex-wrap: wrap; gap: 12px; align-items: flex-end; margin-top: 12px; }
+.chat-attach label { display: flex; flex-direction: column; gap: 4px; font-size: 0.85rem; }

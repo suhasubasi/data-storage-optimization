@@ -56,4 +56,11 @@ export const liveApi: Api = {
   getOffboarding: (owner) => json(`/api/offboarding?owner=${enc(owner)}`),
   exportAsset: (id) => json(`/api/assets/${enc(id)}/export`),
   exportJsonl: async () => (await request("/api/export.jsonl")).text(),
+  getChat: (id) => json(`/api/assets/${enc(id)}/chat`),
+  attachChat: (id, file, recordingStart) => {
+    const form = new FormData();
+    form.append("file", file);
+    if (recordingStart) form.append("recording_start", recordingStart);
+    return json(`/api/assets/${enc(id)}/chat`, { method: "POST", body: form });
+  },
 };
