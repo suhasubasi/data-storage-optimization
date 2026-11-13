@@ -11,7 +11,6 @@ backend storage report (CONTRACTS.md §6). Everything runs locally; no cloud AI 
 cd pipeline
 uv venv .venv && uv pip install --python .venv/bin/python -r requirements.txt -e ../contracts/python -e .
 ffmpeg -version            # system dependency (needs libwebp + libx264 + flite for the sample generator)
-.venv/bin/python scripts/make_samples.py   # synthetic samples into ../data/samples/
 .venv/bin/pytest -q
 ```
 

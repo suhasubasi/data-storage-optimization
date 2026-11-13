@@ -1,5 +1,4 @@
 import hashlib
-import importlib.util
 import shutil
 import sys
 from pathlib import Path
@@ -10,17 +9,10 @@ PIPELINE_DIR = Path(__file__).resolve().parents[1]
 REPO = PIPELINE_DIR.parent
 
 
-def _load_make_samples():
-    spec = importlib.util.spec_from_file_location("make_samples", PIPELINE_DIR / "scripts" / "make_samples.py")
-    mod = importlib.util.module_from_spec(spec)
-    spec.loader.exec_module(mod)
-    return mod
-
-
 @pytest.fixture(scope="session")
 def samples(tmp_path_factory):
     """Synthetic samples generated fresh into a temp dir (never touches data/)."""
-    ms = _load_make_samples()
+    import synthetic_samples as ms
     d = tmp_path_factory.mktemp("samples")
     ms.make_deck(d / "deck.pdf", ms.SLIDES_A, "Rev A")
     shutil.copyfile(d / "deck.pdf", d / "deck (1).pdf")
