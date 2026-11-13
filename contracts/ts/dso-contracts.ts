@@ -92,7 +92,7 @@ export type SlideMatchType = "shared" | "similar";
  * This interface was referenced by `DsoContracts`'s JSON-Schema
  * via the `definition` "HitType".
  */
-export type HitType = "segment" | "slide" | "asset";
+export type HitType = "segment" | "slide" | "asset" | "chat";
 /**
  * This interface was referenced by `DsoContracts`'s JSON-Schema
  * via the `definition` "DuplicateType".
@@ -186,6 +186,10 @@ export interface DsoContracts {
   HitType?: HitType;
   RemovalReason?: RemovalReason;
   ChunkKind?: ChunkKind;
+  ChatMessage?: ChatMessage;
+  ChatSource?: ChatSource;
+  ChatAlignment?: ChatAlignment;
+  ChatLog?: ChatLog;
 }
 /**
  * This interface was referenced by `DsoContracts`'s JSON-Schema
@@ -664,7 +668,7 @@ export interface SearchHit {
    */
   page: number | null;
   /**
-   * Local segment id ('s12'), slide id ('p4'), or 'meta' for a hit on the file's title / file name / metadata (REC v1.1).
+   * Local segment id ('s12'), slide id ('p4'), chat message id ('c3', REC v1.2), or 'meta' for a hit on the file's title / file name / metadata (REC v1.1).
    */
   item_id: string;
   /**
@@ -999,4 +1003,79 @@ export interface ExportAsset {
 export interface Health {
   status: "ok";
   version: string;
+}
+/**
+ * REC v1.2: one message from a meeting chat attached to a recording.
+ *
+ * This interface was referenced by `DsoContracts`'s JSON-Schema
+ * via the `definition` "ChatMessage".
+ */
+export interface ChatMessage {
+  /**
+   * 'c<n>', 1-based, in chat order.
+   */
+  id: string;
+  /**
+   * Wall-clock time exactly as written in the chat, e.g. '16:44'.
+   */
+  clock: string;
+  /**
+   * Estimated seconds from the recording start (start of the written minute minus the recording start). null if the recording start is unknown or the message is outside the recording.
+   */
+  t: number | null;
+  author: string;
+  text: string;
+  /**
+   * The message contained a picture (not stored; only noted).
+   */
+  has_image: boolean;
+}
+/**
+ * REC v1.2: the chat file that was attached (the file itself is not stored by the app).
+ *
+ * This interface was referenced by `DsoContracts`'s JSON-Schema
+ * via the `definition` "ChatSource".
+ */
+export interface ChatSource {
+  filename: string;
+  bytes: number;
+  sha256: Sha256;
+  attached_at: string;
+}
+/**
+ * REC v1.2: how chat clock times were turned into recording times, and how sure we are.
+ *
+ * This interface was referenced by `DsoContracts`'s JSON-Schema
+ * via the `definition` "ChatAlignment".
+ */
+export interface ChatAlignment {
+  /**
+   * Local wall-clock start of the recording, 'YYYY-MM-DDTHH:MM:SS' (no time zone), or null if unknown.
+   */
+  recording_start: string | null;
+  /**
+   * Where recording_start came from: 'filename', 'manual', or 'unknown'.
+   */
+  basis: "filename" | "manual" | "unknown";
+  /**
+   * Chat times are written to the minute, so t can be up to this many seconds early.
+   */
+  uncertainty_seconds: number | null;
+  /**
+   * 'estimated' (times computed, not checked against speech), 'unknown' (no recording start).
+   */
+  status: "estimated" | "unknown";
+  note: string;
+}
+/**
+ * REC v1.2: GET/POST /api/assets/{id}/chat. The meeting chat of a recording with estimated recording times.
+ *
+ * This interface was referenced by `DsoContracts`'s JSON-Schema
+ * via the `definition` "ChatLog".
+ */
+export interface ChatLog {
+  asset_id: AssetId;
+  source: ChatSource | null;
+  alignment: ChatAlignment | null;
+  messages: ChatMessage[];
 }

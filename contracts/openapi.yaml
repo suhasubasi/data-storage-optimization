@@ -100,6 +100,39 @@ paths:
         "200": { description: OK, content: { application/json: { schema: { $ref: "./schemas/api.schema.json#/$defs/SlideList" } } } }
         "404": { $ref: "#/components/responses/Error" }
 
+  /api/assets/{asset_id}/chat:
+    get:
+      summary: "REC v1.2: the meeting chat attached to a recording, with estimated recording times (empty list if none)."
+      operationId: getChat
+      parameters: [ { $ref: "#/components/parameters/AssetId" } ]
+      responses:
+        "200": { description: OK, content: { application/json: { schema: { $ref: "./schemas/api.schema.json#/$defs/ChatLog" } } } }
+        "404": { $ref: "#/components/responses/Error" }
+    post:
+      summary: >
+        REC v1.2: attach a meeting chat (Outlook .msg or plain .txt export with "[HH:MM] Name" lines) to a VIDEO.
+        The chat is parsed and stored in the database (counted in I); the uploaded file is hashed but not kept.
+        Attaching again replaces the earlier chat. Messages become searchable (hit_type 'chat').
+      operationId: attachChat
+      parameters: [ { $ref: "#/components/parameters/AssetId" } ]
+      requestBody:
+        required: true
+        content:
+          multipart/form-data:
+            schema:
+              type: object
+              required: [file]
+              properties:
+                file: { type: string, format: binary }
+                recording_start:
+                  type: string
+                  description: "Optional local start time 'YYYY-MM-DDTHH:MM:SS'. Default: read from the recording file name (e.g. ...-20240105_091503-...)."
+      responses:
+        "201": { description: Attached, content: { application/json: { schema: { $ref: "./schemas/api.schema.json#/$defs/ChatLog" } } } }
+        "404": { $ref: "#/components/responses/Error" }
+        "415": { $ref: "#/components/responses/Error" }
+        "422": { $ref: "#/components/responses/Error" }
+
   /api/search:
     get:
       summary: FTS5 keyword search over transcript segments and slide text
