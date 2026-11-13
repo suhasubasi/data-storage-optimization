@@ -1,0 +1,195 @@
+# FROZEN v1.0 API contract (approved design Page, section 5 "Backend / API").
+# Owner: Stream 2 implements it; Stream 1 consumes it. Schemas live in schemas/api.schema.json
+# (single source for the generated TS + Pydantic types). Change only with all 3 streams agreeing.
+# Items marked "REC" are OUR RECOMMENDATION, not on the Page.
+openapi: 3.1.0
+info:
+  title: Ericsson Data Storage Optimization MVP API
+  version: "1.0.0"
+  description: >
+    Local-only API. There is deliberately NO delete endpoint for originals: deletion is outside the MVP,
+    offboarding only produces a reviewable recommendation. All URLs returned in bodies are relative to the
+    server root (e.g. /files/derived/a_01/frames/f3.webp). Every non-2xx body is an ErrorResponse.
+servers:
+  - url: http://localhost:8000
+paths:
+  /health:
+    get:
+      summary: Liveness check (roadmap Thu 23:00)
+      operationId: health
+      responses:
+        "200": { description: OK, content: { application/json: { schema: { $ref: "./schemas/api.schema.json#/$defs/Health" } } } }
+
+  /api/assets:
+    post:
+      summary: Upload a file with source label + owner. Saves the original untouched and hashes it (SHA-256).
+      description: >
+        Does NOT start processing (call POST /api/assets/{id}/process). Uploading identical bytes twice creates
+        two assets on purpose (needed to simulate copies across systems). Kind is decided by extension:
+        .mp4 -> video, .pdf -> document; anything else -> 415 unsupported_file_type.
+      operationId: uploadAsset
+      requestBody:
+        required: true
+        content:
+          multipart/form-data:
+            schema:
+              type: object
+              required: [file, source_system, owner]
+              properties:
+                file: { type: string, format: binary }
+                source_system: { $ref: "./schemas/api.schema.json#/$defs/SourceSystem" }
+                owner: { type: string, minLength: 1 }
+      responses:
+        "201": { description: Created, content: { application/json: { schema: { $ref: "./schemas/api.schema.json#/$defs/Asset" } } } }
+        "415": { $ref: "#/components/responses/Error" }
+        "422": { $ref: "#/components/responses/Error" }
+    get:
+      summary: Library list with status and sizes
+      operationId: listAssets
+      parameters:
+        - { name: owner, in: query, required: false, schema: { type: string }, description: "REC: optional filter" }
+      responses:
+        "200": { description: OK, content: { application/json: { schema: { $ref: "./schemas/api.schema.json#/$defs/AssetList" } } } }
+
+  /api/assets/{asset_id}:
+    get:
+      summary: One asset with metadata and derived summary
+      operationId: getAsset
+      parameters: [ { $ref: "#/components/parameters/AssetId" } ]
+      responses:
+        "200": { description: OK, content: { application/json: { schema: { $ref: "./schemas/api.schema.json#/$defs/AssetDetail" } } } }
+        "404": { $ref: "#/components/responses/Error" }
+
+  /api/assets/{asset_id}/process:
+    post:
+      summary: Start the pipeline job for this asset
+      description: 409 conflict if a job for this asset is already queued/running. Re-processing a ready asset is allowed (REC).
+      operationId: processAsset
+      parameters: [ { $ref: "#/components/parameters/AssetId" } ]
+      responses:
+        "202": { description: Accepted, content: { application/json: { schema: { $ref: "./schemas/api.schema.json#/$defs/Job" } } } }
+        "404": { $ref: "#/components/responses/Error" }
+        "409": { $ref: "#/components/responses/Error" }
+
+  /api/jobs/{job_id}:
+    get:
+      summary: Job progress and errors (never faked)
+      operationId: getJob
+      parameters:
+        - { name: job_id, in: path, required: true, schema: { type: string } }
+      responses:
+        "200": { description: OK, content: { application/json: { schema: { $ref: "./schemas/api.schema.json#/$defs/Job" } } } }
+        "404": { $ref: "#/components/responses/Error" }
+
+  /api/assets/{asset_id}/timeline:
+    get:
+      summary: Transcript segments joined to frames (videos)
+      description: For a document returns empty segments/frames (REC) rather than an error.
+      operationId: getTimeline
+      parameters: [ { $ref: "#/components/parameters/AssetId" } ]
+      responses:
+        "200": { description: OK, content: { application/json: { schema: { $ref: "./schemas/api.schema.json#/$defs/Timeline" } } } }
+        "404": { $ref: "#/components/responses/Error" }
+
+  /api/assets/{asset_id}/slides:
+    get:
+      summary: Pages with hashes and matches (documents)
+      operationId: getSlides
+      parameters: [ { $ref: "#/components/parameters/AssetId" } ]
+      responses:
+        "200": { description: OK, content: { application/json: { schema: { $ref: "./schemas/api.schema.json#/$defs/SlideList" } } } }
+        "404": { $ref: "#/components/responses/Error" }
+
+  /api/search:
+    get:
+      summary: FTS5 keyword search over transcript segments and slide text
+      operationId: search
+      parameters:
+        - { name: q, in: query, required: true, schema: { type: string, minLength: 1 } }
+        - { name: limit, in: query, required: false, schema: { type: integer, minimum: 1, maximum: 100, default: 20 }, description: REC }
+      responses:
+        "200": { description: OK, content: { application/json: { schema: { $ref: "./schemas/api.schema.json#/$defs/SearchResponse" } } } }
+        "422": { $ref: "#/components/responses/Error" }
+
+  /api/duplicates:
+    get:
+      summary: Duplicate groups by type (exact_file, shared_slide, similar_slide) with evidence
+      operationId: getDuplicates
+      parameters:
+        - { name: type, in: query, required: false, schema: { $ref: "./schemas/api.schema.json#/$defs/DuplicateType" }, description: "REC: optional filter" }
+      responses:
+        "200": { description: OK, content: { application/json: { schema: { $ref: "./schemas/api.schema.json#/$defs/DuplicateReport" } } } }
+
+  /api/storage/report:
+    get:
+      summary: Measured bytes and the four savings scenarios (0 today/real, 1 replace videos, 2 remove exact duplicates, 3 both)
+      operationId: getStorageReport
+      responses:
+        "200": { description: OK, content: { application/json: { schema: { $ref: "./schemas/api.schema.json#/$defs/StorageReport" } } } }
+
+  /api/offboarding:
+    get:
+      summary: Leaver review. Each file is 'eligible_after_approval' (exact copy exists elsewhere) or 'keep'. Never deletes.
+      operationId: getOffboarding
+      parameters:
+        - { name: owner, in: query, required: true, schema: { type: string, minLength: 1 } }
+      responses:
+        "200": { description: OK, content: { application/json: { schema: { $ref: "./schemas/api.schema.json#/$defs/OffboardingReview" } } } }
+        "422": { $ref: "#/components/responses/Error" }
+
+  /api/assets/{asset_id}/export:
+    get:
+      summary: AI-ready JSON for one asset, with provenance
+      operationId: exportAsset
+      parameters: [ { $ref: "#/components/parameters/AssetId" } ]
+      responses:
+        "200": { description: OK, content: { application/json: { schema: { $ref: "./schemas/api.schema.json#/$defs/ExportAsset" } } } }
+        "404": { $ref: "#/components/responses/Error" }
+
+  /api/export.jsonl:
+    get:
+      summary: All text chunks (segments + slide text) of all ready assets, one ExportChunk JSON per line
+      operationId: exportJsonl
+      responses:
+        "200":
+          description: JSON Lines; each line validates as ExportChunk
+          content:
+            application/x-ndjson:
+              schema: { type: string }
+
+  /files/originals/{asset_id}/{filename}:
+    get:
+      summary: Serve an original (read-only) for playback/download. Supports HTTP Range for video seeking.
+      operationId: getOriginalFile
+      parameters:
+        - { $ref: "#/components/parameters/AssetId" }
+        - { name: filename, in: path, required: true, schema: { type: string } }
+      responses:
+        "200": { description: File, content: { application/octet-stream: { schema: { type: string, format: binary } } } }
+        "206": { description: Partial content (Range) }
+        "404": { $ref: "#/components/responses/Error" }
+
+  /files/derived/{asset_id}/{path}:
+    get:
+      summary: Serve a derived file (frame, page image, transcript, manifest.json). path may contain '/'.
+      operationId: getDerivedFile
+      parameters:
+        - { $ref: "#/components/parameters/AssetId" }
+        - { name: path, in: path, required: true, schema: { type: string } }
+      responses:
+        "200": { description: File, content: { application/octet-stream: { schema: { type: string, format: binary } } } }
+        "404": { $ref: "#/components/responses/Error" }
+
+components:
+  parameters:
+    AssetId:
+      name: asset_id
+      in: path
+      required: true
+      schema: { $ref: "./schemas/api.schema.json#/$defs/AssetId" }
+  responses:
+    Error:
+      description: Error (see ErrorResponse; codes in ErrorCode)
+      content:
+        application/json:
+          schema: { $ref: "./schemas/api.schema.json#/$defs/ErrorResponse" }

@@ -1,0 +1,70 @@
+# Ericsson Data Storage Optimization — MVP (Campor × BUILD Hackathon 2026)
+
+Local tool that turns long recordings and documents into compact, searchable, AI-ready data and finds
+duplicates across (simulated) SharePoint / OneDrive / Ericsson Play — **without deleting anything**.
+
+- MP4 → timed local transcript (faster-whisper) + compressed key frames linked by time
+- PDF → per-page text, page image, three hashes (file SHA-256, normalised-text SHA-256, pHash)
+- Duplicates: exact file · shared slide · similar (needs review)
+- Search → text + frame/slide + timestamp
+- Offboarding review → recommends, never deletes
+- AI-ready JSON / JSONL export with source links
+- Storage report from **measured bytes** with four scenarios (0 today/real, 1 replace videos, 2 remove exact copies, 3 both)
+
+Out of scope: speaker ID, slide/video recreation, live SharePoint/OneDrive/Ericsson Play, chatbot, real deletion, cloud AI.
+
+**Window:** tonight (Thu 12 Nov) + Friday 13 Nov. Checkpoints Fri 12:00 and 16:00, feature freeze Fri 19:00 (Stockholm).
+Design source of truth: the approved design Page "Data Storage Optimization — System Design & MVP Plan".
+
+## Layout and ownership
+
+```
+contracts/   SHARED, FROZEN. API (openapi.yaml), manifest + API JSON Schemas, schema.sql, generated TS + Python types, fixtures
+frontend/    Stream 1 · React + Vite + TS           (starts on contracts/fixtures)
+backend/     Stream 2 · FastAPI + SQLite FTS5       (implements contracts/openapi.yaml)
+pipeline/    Stream 3 · ffmpeg, faster-whisper, PyMuPDF, imagehash (writes derived files + manifest.json)
+data/        originals/ (read-only, never deleted) · derived/<asset_id>/ · samples/  — git-ignored
+```
+
+**Rule:** streams share ONLY `contracts/` and hand off via **one `manifest.json` per file**
+(`data/derived/<asset_id>/manifest.json`). No stream imports another stream's code. Read
+[`contracts/CONTRACTS.md`](contracts/CONTRACTS.md) before writing code. One branch per stream
+(`stream1-frontend`, `stream2-backend`, `stream3-pipeline`), merged to `main` at checkpoints.
+
+## Run (skeletons today)
+
+```bash
+# Stream 1
+cd frontend && npm install && npm run dev                      # http://localhost:5173 (mock data)
+
+# Stream 2
+cd backend && python3 -m venv .venv && . .venv/bin/activate \
+  && pip install -r requirements.txt -e ../contracts/python \
+  && uvicorn app.main:app --reload --port 8000                 # http://localhost:8000/health
+
+# Stream 3 (needs system ffmpeg)
+cd pipeline && python3 -m venv .venv && . .venv/bin/activate \
+  && pip install -r requirements.txt -e ../contracts/python -e . \
+  && python -m dso_pipeline --help
+
+# Contracts (only when all 3 agree to change them)
+python3 -m venv .venv-tools && .venv-tools/bin/pip install jsonschema referencing datamodel-code-generator pyyaml openapi-spec-validator pydantic
+contracts/scripts/generate.sh && python3 contracts/scripts/make_fixtures.py && .venv-tools/bin/python contracts/scripts/check_contracts.py
+```
+
+## Safety rules
+
+- Nothing deletes or modifies originals. No DELETE endpoint. Offboarding = recommendation only.
+- Processing alone saves no storage; scenario 0 (negative) is always shown. Formula in CONTRACTS.md §6.
+- All processing is local; sample files never leave the laptop.
+
+## Ambiguities resolved at freeze (see CONTRACTS.md)
+
+1. Page says "3 scenarios" in the MVP table but defines **4** (0–3) in the savings section → we ship 4.
+2. Page's scenario formulas are shorthand (S1 lists only video derived; S2 omits derived/index), while its
+   general definition says A = kept originals + **all** derived + index → we use the general definition in all
+   scenarios (conservative, slightly lower %). Flag for team if you prefer the shorthand.
+3. Page ids like `p4`/`f3` are only unique per asset → DB keys are `(asset_id, id)`, global refs `<asset_id>:<id>`.
+4. Duplicate engine needs all files, the pipeline sees one → hashes come from the pipeline, matching runs in the backend over SQLite.
+5. Offboarding "duplicate elsewhere" = exact SHA-256 copy owned by someone else (open question to organizers whether near-duplicates count).
+6. `manifest.json` can't list its own size → backend measures it at ingest and adds it to D.

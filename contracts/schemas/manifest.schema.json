@@ -1,0 +1,153 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://ericsson-dso.local/contracts/manifest.schema.json",
+  "title": "Manifest",
+  "description": "FROZEN v1.0. One manifest.json per processed original, written by Stream 3 (pipeline) to data/derived/<asset_id>/manifest.json and ingested by Stream 2 (backend). Shape follows the approved design Page, section 5. All paths inside 'segments/frames/slides/derived_files' are relative to data/derived/<asset_id>/. The pipeline NEVER deletes or modifies the original.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["asset_id", "kind", "original", "metadata", "segments", "frames", "slides", "derived_files", "pipeline"],
+  "properties": {
+    "schema_version": {
+      "description": "OUR RECOMMENDATION (not on the Page): lets the backend reject old manifests. Optional; default '1.0'.",
+      "type": "string",
+      "const": "1.0",
+      "default": "1.0"
+    },
+    "asset_id": { "$ref": "#/$defs/AssetId" },
+    "kind": { "$ref": "#/$defs/AssetKind" },
+    "original": { "$ref": "#/$defs/OriginalRef" },
+    "metadata": { "$ref": "#/$defs/AssetMetadata" },
+    "segments": {
+      "description": "Timed transcript segments. Empty for documents.",
+      "type": "array",
+      "items": { "$ref": "#/$defs/Segment" }
+    },
+    "frames": {
+      "description": "Kept key frames. Empty for documents.",
+      "type": "array",
+      "items": { "$ref": "#/$defs/Frame" }
+    },
+    "slides": {
+      "description": "One entry per PDF page. Empty for videos.",
+      "type": "array",
+      "items": { "$ref": "#/$defs/Slide" }
+    },
+    "derived_files": {
+      "description": "EVERY derived file kept on disk for this asset (transcript, each frame, each page image, optional audio), with its real measured size. manifest.json itself is NOT listed (it cannot contain its own size); the backend measures it at ingest. Temporary files (e.g. extracted WAV) are deleted by the pipeline and never listed. The storage report sums ONLY this list + manifest bytes, so frames[].bytes / slides[].bytes are informational and must not be added again.",
+      "type": "array",
+      "items": { "$ref": "#/$defs/DerivedFile" }
+    },
+    "pipeline": { "$ref": "#/$defs/PipelineInfo" }
+  },
+  "$defs": {
+    "AssetId": {
+      "description": "Backend-generated asset id, e.g. 'a_01' or 'a_7f3c9e21'.",
+      "type": "string",
+      "pattern": "^a_[A-Za-z0-9]+$"
+    },
+    "AssetKind": { "type": "string", "enum": ["video", "document"] },
+    "Sha256": { "type": "string", "pattern": "^[0-9a-f]{64}$" },
+    "PHash": {
+      "description": "Perceptual hash as lowercase hex. imagehash.phash(hash_size=8) => 16 hex chars (64 bits). See contracts/thresholds.json.",
+      "type": "string",
+      "pattern": "^[0-9a-f]{16}$"
+    },
+    "LocalId": {
+      "description": "Id unique only inside one asset: segments 's<n>', frames 'f<n>', slides 'p<page>'. Globally an item is '<asset_id>:<local_id>' (see ItemRef in api.schema.json).",
+      "type": "string",
+      "pattern": "^[sfp][0-9]+$"
+    },
+    "OriginalRef": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["path", "bytes", "sha256"],
+      "properties": {
+        "path": { "description": "Relative to the data/ directory, e.g. 'originals/a_01/deck.pdf'. Read-only.", "type": "string" },
+        "bytes": { "type": "integer", "minimum": 0 },
+        "sha256": { "$ref": "#/$defs/Sha256" }
+      }
+    },
+    "AssetMetadata": {
+      "description": "Only fill what is really present in the file / file name. Never invent doc numbers or revisions (PDF p.3: metadata not guaranteed).",
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["title", "author", "doc_number", "revision", "date", "language"],
+      "properties": {
+        "title": { "type": ["string", "null"] },
+        "author": { "type": ["string", "null"] },
+        "doc_number": { "type": ["string", "null"] },
+        "revision": { "type": ["string", "null"] },
+        "date": { "description": "As found in the source (PDF metadata or text). ISO 8601 if parseable, else raw string.", "type": ["string", "null"] },
+        "language": { "description": "Detected language code for videos (faster-whisper), e.g. 'en', 'sv'. null for documents unless detected.", "type": ["string", "null"] },
+        "duration_seconds": { "description": "OUR RECOMMENDATION (not on the Page): video length. Optional.", "type": ["number", "null"], "minimum": 0 }
+      }
+    },
+    "Segment": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["id", "start", "end", "text", "frame_id", "speaker"],
+      "properties": {
+        "id": { "$ref": "#/$defs/LocalId" },
+        "start": { "description": "Seconds from video start.", "type": "number", "minimum": 0 },
+        "end": { "type": "number", "minimum": 0 },
+        "text": { "type": "string" },
+        "frame_id": { "description": "The kept frame on screen when this segment STARTS (frame.t_start <= start < frame.t_end).", "type": ["string", "null"] },
+        "speaker": { "description": "Always null in the MVP (speaker ID is out of scope).", "type": ["string", "null"] }
+      }
+    },
+    "Frame": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["id", "t_start", "t_end", "path", "bytes", "phash", "matched_slide"],
+      "properties": {
+        "id": { "$ref": "#/$defs/LocalId" },
+        "t_start": { "type": "number", "minimum": 0 },
+        "t_end": { "description": "Time of the next kept frame, or video end. Covers [t_start, t_end).", "type": "number", "minimum": 0 },
+        "path": { "description": "e.g. 'frames/f3.webp'. WebP, max 1280 px wide.", "type": "string" },
+        "bytes": { "type": "integer", "minimum": 0 },
+        "phash": { "$ref": "#/$defs/PHash" },
+        "matched_slide": { "description": "STRETCH (levels 3-4). Global slide ref '<asset_id>:p<page>' or null. Always null in P0.", "type": ["string", "null"] }
+      }
+    },
+    "Slide": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["id", "page", "text", "text_sha256", "phash", "path", "bytes"],
+      "properties": {
+        "id": { "$ref": "#/$defs/LocalId" },
+        "page": { "description": "1-based page number.", "type": "integer", "minimum": 1 },
+        "text": { "type": "string" },
+        "text_sha256": { "description": "SHA-256 of the NORMALISED page text (rule in CONTRACTS.md: NFKC, lowercase, collapse whitespace, strip). The file SHA-256 is original.sha256; together with phash these are the three hashes.", "$ref": "#/$defs/Sha256" },
+        "phash": { "$ref": "#/$defs/PHash" },
+        "path": { "description": "e.g. 'pages/p4.webp'.", "type": "string" },
+        "bytes": { "type": "integer", "minimum": 0 }
+      }
+    },
+    "DerivedFileKind": {
+      "type": "string",
+      "enum": ["transcript", "frame", "page_image", "page_text", "audio", "other"]
+    },
+    "DerivedFile": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["path", "bytes", "kind"],
+      "properties": {
+        "path": { "type": "string" },
+        "bytes": { "type": "integer", "minimum": 0 },
+        "kind": { "$ref": "#/$defs/DerivedFileKind" }
+      }
+    },
+    "PipelineInfo": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["version", "model", "frame_threshold", "seconds"],
+      "properties": {
+        "version": { "type": "string" },
+        "model": { "description": "e.g. 'faster-whisper small int8'; null for documents.", "type": ["string", "null"] },
+        "frame_threshold": { "description": "pHash distance used to keep a new frame; null for documents.", "type": ["integer", "null"] },
+        "seconds": { "description": "Wall-clock processing time.", "type": "number", "minimum": 0 },
+        "warnings": { "description": "OUR RECOMMENDATION (not on the Page): non-fatal issues, e.g. 'no text layer on page 3'. Optional.", "type": "array", "items": { "type": "string" } }
+      }
+    }
+  }
+}

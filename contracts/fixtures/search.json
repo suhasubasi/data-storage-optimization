@@ -1,0 +1,58 @@
+{
+  "query": "handover",
+  "total": 2,
+  "hits": [
+    {
+      "hit_type": "segment",
+      "asset_id": "a_01",
+      "filename": "event-recording.mp4",
+      "kind": "video",
+      "source_system": "ericsson_play",
+      "owner": "anna",
+      "text": "As you see here, handover optimisation reduces dropped calls in dense cells.",
+      "snippet": "As you see here, <mark>handover</mark> optimisation reduces dropped calls…",
+      "start": 96.2,
+      "end": 104.8,
+      "page": null,
+      "item_id": "s2",
+      "frame_id": "f2",
+      "media": {
+        "type": "frame",
+        "asset_id": "a_01",
+        "item_id": "f2",
+        "url": "/files/derived/a_01/frames/f2.webp",
+        "bytes": 48211,
+        "t_start": 95.0,
+        "t_end": 410.0,
+        "page": null
+      },
+      "score": 7.1
+    },
+    {
+      "hit_type": "slide",
+      "asset_id": "a_02",
+      "filename": "ran-deck.pdf",
+      "kind": "document",
+      "source_system": "sharepoint",
+      "owner": "bjorn",
+      "text": "Handover optimisation: fewer dropped calls in dense cells",
+      "snippet": "<mark>Handover</mark> optimisation: fewer dropped calls in dense cells",
+      "start": null,
+      "end": null,
+      "page": 2,
+      "item_id": "p2",
+      "frame_id": null,
+      "media": {
+        "type": "slide",
+        "asset_id": "a_02",
+        "item_id": "p2",
+        "url": "/files/derived/a_02/pages/p2.webp",
+        "bytes": 60000,
+        "t_start": null,
+        "t_end": null,
+        "page": 2
+      },
+      "score": 6.4
+    }
+  ]
+}

@@ -1,0 +1,86 @@
+{
+  "asset_id": "a_01",
+  "language": "en",
+  "duration_seconds": 1800.0,
+  "original_url": "/files/originals/a_01/event-recording.mp4",
+  "segments": [
+    {
+      "id": "s1",
+      "start": 0.0,
+      "end": 6.5,
+      "text": "Welcome everyone to the RAN evolution session.",
+      "frame_id": "f1",
+      "speaker": null
+    },
+    {
+      "id": "s2",
+      "start": 96.2,
+      "end": 104.8,
+      "text": "As you see here, handover optimisation reduces dropped calls in dense cells.",
+      "frame_id": "f2",
+      "speaker": null
+    },
+    {
+      "id": "s3",
+      "start": 104.8,
+      "end": 112.0,
+      "text": "We tested this in three cities last spring.",
+      "frame_id": "f2",
+      "speaker": null
+    },
+    {
+      "id": "s4",
+      "start": 412.3,
+      "end": 420.1,
+      "text": "The next topic is energy saving with sleep modes for idle radio units.",
+      "frame_id": "f3",
+      "speaker": null
+    },
+    {
+      "id": "s5",
+      "start": 1221.0,
+      "end": 1230.4,
+      "text": "In the field trial we measured twelve percent lower power per site.",
+      "frame_id": "f4",
+      "speaker": null
+    }
+  ],
+  "frames": [
+    {
+      "id": "f1",
+      "t_start": 0.0,
+      "t_end": 95.0,
+      "image_url": "/files/derived/a_01/frames/f1.webp",
+      "bytes": 41200,
+      "phash": "0aee4545785164b3",
+      "matched_slide": null
+    },
+    {
+      "id": "f2",
+      "t_start": 95.0,
+      "t_end": 410.0,
+      "image_url": "/files/derived/a_01/frames/f2.webp",
+      "bytes": 48211,
+      "phash": "1675d97329b01380",
+      "matched_slide": null
+    },
+    {
+      "id": "f3",
+      "t_start": 410.0,
+      "t_end": 1220.0,
+      "image_url": "/files/derived/a_01/frames/f3.webp",
+      "bytes": 52900,
+      "phash": "bc5bea201b5e2001",
+      "matched_slide": null
+    },
+    {
+      "id": "f4",
+      "t_start": 1220.0,
+      "t_end": 1800.0,
+      "image_url": "/files/derived/a_01/frames/f4.webp",
+      "bytes": 47050,
+      "phash": "b67b772b94fc6752",
+      "matched_slide": null
+    }
+  ]
+}

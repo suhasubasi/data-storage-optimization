@@ -1,0 +1,10 @@
+{
+  "id": "j_02",
+  "asset_id": "a_05",
+  "status": "running",
+  "progress": 0.4,
+  "stage": "rendering pages",
+  "error": null,
+  "started_at": "2026-11-13T10:00:00Z",
+  "finished_at": null
+}

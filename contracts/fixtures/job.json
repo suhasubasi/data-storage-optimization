@@ -1,0 +1,10 @@
+{
+  "id": "j_01",
+  "asset_id": "a_01",
+  "status": "done",
+  "progress": 1.0,
+  "stage": "done",
+  "error": null,
+  "started_at": "2026-11-13T08:05:00Z",
+  "finished_at": "2026-11-13T08:15:40Z"
+}

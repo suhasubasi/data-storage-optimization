@@ -1,0 +1,62 @@
+# --- Node / frontend
+node_modules/
+frontend/dist/
+*.tsbuildinfo
+.vite/
+npm-debug.log*
+
+# --- Python
+__pycache__/
+*.py[cod]
+.venv/
+.venv-tools/
+*.egg-info/
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
+
+# --- Env / secrets
+.env
+.env.local
+.env.*.local
+
+# --- SQLite
+*.sqlite
+*.sqlite3
+*.db
+*.sqlite-wal
+*.sqlite-shm
+*.db-wal
+*.db-shm
+
+# --- Models (faster-whisper / HF caches)
+models/
+*.bin
+*.ct2
+.cache/
+huggingface/
+
+# --- Media + data (originals, derived outputs, samples are never committed)
+data/originals/*
+data/derived/*
+data/samples/*
+!data/**/.gitkeep
+!data/**/README.md
+*.mp4
+*.mov
+*.mkv
+*.wav
+*.opus
+*.mp3
+*.webp
+*.pptx
+# PDFs only allowed under contracts/ (none today)
+*.pdf
+
+# --- Generated build artefacts
+contracts/build/
+
+# --- OS / editor
+.DS_Store
+.idea/
+.vscode/

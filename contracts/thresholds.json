@@ -1,0 +1,20 @@
+{
+  "_comment": "OUR RECOMMENDATION. NOT frozen: Stream 3 tunes these on the samples and announces changes. Backend duplicate engine and pipeline both read this file. Starting values only.",
+  "phash": { "algorithm": "imagehash.phash", "hash_size": 8, "hex_length": 16 },
+  "video": {
+    "sample_fps": 1,
+    "frame_change_min_phash_distance": 12,
+    "frame_max_width_px": 1280,
+    "frame_format": "webp",
+    "whisper_model": "small",
+    "whisper_compute_type": "int8"
+  },
+  "document": { "page_image_format": "webp", "page_image_max_width_px": 1280 },
+  "duplicates": {
+    "shared_slide_max_phash_distance": 4,
+    "similar_slide_max_phash_distance": 12,
+    "similar_slide_min_text_ratio": 0.85,
+    "min_normalised_text_chars_for_text_match": 20
+  },
+  "text_normalisation": "unicodedata NFKC -> lowercase -> collapse all whitespace runs to one space -> strip; then SHA-256 of the UTF-8 bytes"
+}

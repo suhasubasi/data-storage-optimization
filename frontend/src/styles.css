@@ -1,0 +1,11 @@
+* { box-sizing: border-box; }
+body { margin: 0; font-family: system-ui, sans-serif; color: #1b1b1b; background: #fafafa; }
+.shell { display: grid; grid-template-columns: 240px 1fr; min-height: 100vh; }
+.nav { background: #0c0c0c; color: #fff; padding: 20px 16px; }
+.nav h1 { font-size: 16px; margin: 0 0 8px; }
+.nav nav { display: flex; flex-direction: column; gap: 4px; margin-top: 16px; }
+.nav a { color: #ccc; text-decoration: none; padding: 6px 8px; border-radius: 6px; }
+.nav a.active { background: #1174e6; color: #fff; }
+.badge { font-size: 11px; color: #f0b400; margin: 0; }
+.content { padding: 24px 32px; }
+.todo { color: #888; font-style: italic; }

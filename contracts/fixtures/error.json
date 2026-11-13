@@ -1,0 +1,7 @@
+{
+  "error": {
+    "code": "not_found",
+    "message": "Asset a_99 was not found.",
+    "details": null
+  }
+}

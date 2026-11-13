@@ -1,0 +1,55 @@
+{
+  "asset": {
+    "id": "a_01",
+    "filename": "event-recording.mp4",
+    "kind": "video",
+    "bytes": 734003200,
+    "sha256": "79fd615a866fe7f9eb4da8d9c41ab57e3bd48056df42fd2c13e4d461a87afbe3",
+    "source_system": "ericsson_play",
+    "source_simulated": true,
+    "owner": "anna",
+    "status": "ready",
+    "created_at": "2026-11-13T08:00:00Z",
+    "derived_bytes": 243446,
+    "original_url": "/files/originals/a_01/event-recording.mp4"
+  },
+  "metadata": {
+    "title": "RAN evolution session",
+    "author": null,
+    "doc_number": null,
+    "revision": null,
+    "date": null,
+    "language": "en",
+    "duration_seconds": 1800.0
+  },
+  "derived": {
+    "derived_bytes": 243446,
+    "manifest_bytes": 2885,
+    "file_count": 6,
+    "segment_count": 5,
+    "frame_count": 4,
+    "slide_count": 0,
+    "bytes_by_kind": {
+      "transcript": 51200,
+      "frame": 189361,
+      "manifest": 2885
+    }
+  },
+  "pipeline": {
+    "version": "0.1",
+    "model": "faster-whisper small int8",
+    "frame_threshold": 12,
+    "seconds": 640.0,
+    "warnings": []
+  },
+  "latest_job": {
+    "id": "j_01",
+    "asset_id": "a_01",
+    "status": "done",
+    "progress": 1.0,
+    "stage": "done",
+    "error": null,
+    "started_at": "2026-11-13T08:05:00Z",
+    "finished_at": "2026-11-13T08:15:40Z"
+  }
+}

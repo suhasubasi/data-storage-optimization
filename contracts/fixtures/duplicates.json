@@ -1,0 +1,149 @@
+{
+  "groups": [
+    {
+      "id": "g_exact_1",
+      "type": "exact_file",
+      "needs_review": false,
+      "score": 1.0,
+      "evidence": {
+        "method": "sha256",
+        "sha256": "fca409f250f718e36217354cad3867a161d78b48cf02b68cd0110c87bea3a58a",
+        "text_sha256": null,
+        "phash_distance": null,
+        "text_similarity": null
+      },
+      "members": [
+        {
+          "asset_id": "a_02",
+          "filename": "ran-deck.pdf",
+          "source_system": "sharepoint",
+          "owner": "bjorn",
+          "bytes": 2400000,
+          "slide_id": null,
+          "page": null,
+          "image_url": null
+        },
+        {
+          "asset_id": "a_03",
+          "filename": "ran-deck (1).pdf",
+          "source_system": "onedrive",
+          "owner": "carl",
+          "bytes": 2400000,
+          "slide_id": null,
+          "page": null,
+          "image_url": null
+        }
+      ]
+    },
+    {
+      "id": "g_slide_1",
+      "type": "shared_slide",
+      "needs_review": false,
+      "score": 1.0,
+      "evidence": {
+        "method": "text_sha256+phash",
+        "sha256": null,
+        "text_sha256": "b2dfe29637d1f8e5b85195e364cf0cc3aa48bc3a9a08ec9c031f4f982cc2ee28",
+        "phash_distance": 0,
+        "text_similarity": null
+      },
+      "members": [
+        {
+          "asset_id": "a_02",
+          "filename": "ran-deck.pdf",
+          "source_system": "sharepoint",
+          "owner": "bjorn",
+          "bytes": 2400000,
+          "slide_id": "p2",
+          "page": 2,
+          "image_url": "/files/derived/a_02/pages/p2.webp"
+        },
+        {
+          "asset_id": "a_04",
+          "filename": "5g-overview.pdf",
+          "source_system": "onedrive",
+          "owner": "carl",
+          "bytes": 1850000,
+          "slide_id": "p1",
+          "page": 1,
+          "image_url": "/files/derived/a_04/pages/p1.webp"
+        }
+      ]
+    },
+    {
+      "id": "g_slide_2",
+      "type": "shared_slide",
+      "needs_review": false,
+      "score": 1.0,
+      "evidence": {
+        "method": "text_sha256+phash",
+        "sha256": null,
+        "text_sha256": "095276299ded1bfefe801b69a656337c1e293a6556eb688c384308fac6e14e81",
+        "phash_distance": 1,
+        "text_similarity": null
+      },
+      "members": [
+        {
+          "asset_id": "a_02",
+          "filename": "ran-deck.pdf",
+          "source_system": "sharepoint",
+          "owner": "bjorn",
+          "bytes": 2400000,
+          "slide_id": "p3",
+          "page": 3,
+          "image_url": "/files/derived/a_02/pages/p3.webp"
+        },
+        {
+          "asset_id": "a_04",
+          "filename": "5g-overview.pdf",
+          "source_system": "onedrive",
+          "owner": "carl",
+          "bytes": 1850000,
+          "slide_id": "p2",
+          "page": 2,
+          "image_url": "/files/derived/a_04/pages/p2.webp"
+        }
+      ]
+    },
+    {
+      "id": "g_slide_3",
+      "type": "similar_slide",
+      "needs_review": true,
+      "score": 0.96,
+      "evidence": {
+        "method": "text_ratio",
+        "sha256": null,
+        "text_sha256": null,
+        "phash_distance": 6,
+        "text_similarity": 0.96
+      },
+      "members": [
+        {
+          "asset_id": "a_02",
+          "filename": "ran-deck.pdf",
+          "source_system": "sharepoint",
+          "owner": "bjorn",
+          "bytes": 2400000,
+          "slide_id": "p4",
+          "page": 4,
+          "image_url": "/files/derived/a_02/pages/p4.webp"
+        },
+        {
+          "asset_id": "a_04",
+          "filename": "5g-overview.pdf",
+          "source_system": "onedrive",
+          "owner": "carl",
+          "bytes": 1850000,
+          "slide_id": "p3",
+          "page": 3,
+          "image_url": "/files/derived/a_04/pages/p3.webp"
+        }
+      ]
+    }
+  ],
+  "counts": {
+    "exact_file": 1,
+    "shared_slide": 2,
+    "similar_slide": 1
+  }
+}

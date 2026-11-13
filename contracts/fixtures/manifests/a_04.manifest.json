@@ -1,0 +1,73 @@
+{
+  "schema_version": "1.0",
+  "asset_id": "a_04",
+  "kind": "document",
+  "original": {
+    "path": "originals/a_04/5g-overview.pdf",
+    "bytes": 1850000,
+    "sha256": "4ee1d0686566bfb497e9a8b3deb41f73f5ca87d70e59259803204925d258e03b"
+  },
+  "metadata": {
+    "title": "5G overview",
+    "author": null,
+    "doc_number": null,
+    "revision": "B",
+    "date": null,
+    "language": null
+  },
+  "segments": [],
+  "frames": [],
+  "slides": [
+    {
+      "id": "p1",
+      "page": 1,
+      "text": "Handover optimisation: fewer dropped calls in dense cells",
+      "text_sha256": "b2dfe29637d1f8e5b85195e364cf0cc3aa48bc3a9a08ec9c031f4f982cc2ee28",
+      "phash": "5fae08e097eb1edd",
+      "path": "pages/p1.webp",
+      "bytes": 59000
+    },
+    {
+      "id": "p2",
+      "page": 2,
+      "text": "Energy saving: sleep modes for idle radio units",
+      "text_sha256": "095276299ded1bfefe801b69a656337c1e293a6556eb688c384308fac6e14e81",
+      "phash": "402da88413d83618",
+      "path": "pages/p2.webp",
+      "bytes": 60000
+    },
+    {
+      "id": "p3",
+      "page": 3,
+      "text": "Results: 14% lower power per site in field trial",
+      "text_sha256": "6a5ddd8cc94016ce4d0bbec85cdc42b49b6ac195e3cce0c8ab3f01597cab254e",
+      "phash": "5198d07ba0d55f2f",
+      "path": "pages/p3.webp",
+      "bytes": 61000
+    }
+  ],
+  "derived_files": [
+    {
+      "path": "pages/p1.webp",
+      "bytes": 59000,
+      "kind": "page_image"
+    },
+    {
+      "path": "pages/p2.webp",
+      "bytes": 60000,
+      "kind": "page_image"
+    },
+    {
+      "path": "pages/p3.webp",
+      "bytes": 61000,
+      "kind": "page_image"
+    }
+  ],
+  "pipeline": {
+    "version": "0.1",
+    "model": null,
+    "frame_threshold": null,
+    "seconds": 1.8,
+    "warnings": []
+  }
+}

@@ -1,0 +1,273 @@
+{
+  "schema_version": "1.0",
+  "exported_at": "2026-11-13T10:00:00Z",
+  "source": {
+    "filename": "ran-deck.pdf",
+    "sha256": "fca409f250f718e36217354cad3867a161d78b48cf02b68cd0110c87bea3a58a",
+    "source_system": "sharepoint",
+    "source_simulated": true,
+    "owner": "bjorn",
+    "original_url": "/files/originals/a_02/ran-deck.pdf",
+    "asset_id": "a_02"
+  },
+  "kind": "document",
+  "metadata": {
+    "title": "RAN Evolution Roadmap",
+    "author": "B. Berg",
+    "doc_number": "1/221 02-FGB 101",
+    "revision": "A",
+    "date": "2026-09-30",
+    "language": null
+  },
+  "pipeline": {
+    "version": "0.1",
+    "model": null,
+    "frame_threshold": null,
+    "seconds": 1.8,
+    "warnings": []
+  },
+  "chunks": [
+    {
+      "schema_version": "1.0",
+      "chunk_id": "a_02:p1",
+      "kind": "slide_text",
+      "text": "RAN Evolution Roadmap 2027",
+      "start": null,
+      "end": null,
+      "page": 1,
+      "frame_id": null,
+      "slide_id": "p1",
+      "image_url": "/files/derived/a_02/pages/p1.webp",
+      "language": null,
+      "metadata": {
+        "title": "RAN Evolution Roadmap",
+        "author": "B. Berg",
+        "doc_number": "1/221 02-FGB 101",
+        "revision": "A",
+        "date": "2026-09-30",
+        "language": null
+      },
+      "source": {
+        "filename": "ran-deck.pdf",
+        "sha256": "fca409f250f718e36217354cad3867a161d78b48cf02b68cd0110c87bea3a58a",
+        "source_system": "sharepoint",
+        "source_simulated": true,
+        "owner": "bjorn",
+        "original_url": "/files/originals/a_02/ran-deck.pdf",
+        "asset_id": "a_02"
+      }
+    },
+    {
+      "schema_version": "1.0",
+      "chunk_id": "a_02:p2",
+      "kind": "slide_text",
+      "text": "Handover optimisation: fewer dropped calls in dense cells",
+      "start": null,
+      "end": null,
+      "page": 2,
+      "frame_id": null,
+      "slide_id": "p2",
+      "image_url": "/files/derived/a_02/pages/p2.webp",
+      "language": null,
+      "metadata": {
+        "title": "RAN Evolution Roadmap",
+        "author": "B. Berg",
+        "doc_number": "1/221 02-FGB 101",
+        "revision": "A",
+        "date": "2026-09-30",
+        "language": null
+      },
+      "source": {
+        "filename": "ran-deck.pdf",
+        "sha256": "fca409f250f718e36217354cad3867a161d78b48cf02b68cd0110c87bea3a58a",
+        "source_system": "sharepoint",
+        "source_simulated": true,
+        "owner": "bjorn",
+        "original_url": "/files/originals/a_02/ran-deck.pdf",
+        "asset_id": "a_02"
+      }
+    },
+    {
+      "schema_version": "1.0",
+      "chunk_id": "a_02:p3",
+      "kind": "slide_text",
+      "text": "Energy saving: sleep modes for idle radio units",
+      "start": null,
+      "end": null,
+      "page": 3,
+      "frame_id": null,
+      "slide_id": "p3",
+      "image_url": "/files/derived/a_02/pages/p3.webp",
+      "language": null,
+      "metadata": {
+        "title": "RAN Evolution Roadmap",
+        "author": "B. Berg",
+        "doc_number": "1/221 02-FGB 101",
+        "revision": "A",
+        "date": "2026-09-30",
+        "language": null
+      },
+      "source": {
+        "filename": "ran-deck.pdf",
+        "sha256": "fca409f250f718e36217354cad3867a161d78b48cf02b68cd0110c87bea3a58a",
+        "source_system": "sharepoint",
+        "source_simulated": true,
+        "owner": "bjorn",
+        "original_url": "/files/originals/a_02/ran-deck.pdf",
+        "asset_id": "a_02"
+      }
+    },
+    {
+      "schema_version": "1.0",
+      "chunk_id": "a_02:p4",
+      "kind": "slide_text",
+      "text": "Results: 12% lower power per site in field trial",
+      "start": null,
+      "end": null,
+      "page": 4,
+      "frame_id": null,
+      "slide_id": "p4",
+      "image_url": "/files/derived/a_02/pages/p4.webp",
+      "language": null,
+      "metadata": {
+        "title": "RAN Evolution Roadmap",
+        "author": "B. Berg",
+        "doc_number": "1/221 02-FGB 101",
+        "revision": "A",
+        "date": "2026-09-30",
+        "language": null
+      },
+      "source": {
+        "filename": "ran-deck.pdf",
+        "sha256": "fca409f250f718e36217354cad3867a161d78b48cf02b68cd0110c87bea3a58a",
+        "source_system": "sharepoint",
+        "source_simulated": true,
+        "owner": "bjorn",
+        "original_url": "/files/originals/a_02/ran-deck.pdf",
+        "asset_id": "a_02"
+      }
+    }
+  ],
+  "frames": [],
+  "slides": [
+    {
+      "id": "p1",
+      "page": 1,
+      "text": "RAN Evolution Roadmap 2027",
+      "hashes": {
+        "file_sha256": "fca409f250f718e36217354cad3867a161d78b48cf02b68cd0110c87bea3a58a",
+        "text_sha256": "28cf14ca9cc16a65853e8ed518d0ed73f138864ac56c2b63838e56e6435dcdb5",
+        "phash": "d3d97afc3d79f0bd"
+      },
+      "image_url": "/files/derived/a_02/pages/p1.webp",
+      "bytes": 59000,
+      "matches": []
+    },
+    {
+      "id": "p2",
+      "page": 2,
+      "text": "Handover optimisation: fewer dropped calls in dense cells",
+      "hashes": {
+        "file_sha256": "fca409f250f718e36217354cad3867a161d78b48cf02b68cd0110c87bea3a58a",
+        "text_sha256": "b2dfe29637d1f8e5b85195e364cf0cc3aa48bc3a9a08ec9c031f4f982cc2ee28",
+        "phash": "5fae08e097eb1edd"
+      },
+      "image_url": "/files/derived/a_02/pages/p2.webp",
+      "bytes": 60000,
+      "matches": [
+        {
+          "type": "shared",
+          "other_asset_id": "a_04",
+          "other_slide_id": "p1",
+          "other_filename": "5g-overview.pdf",
+          "other_page": 1,
+          "other_source_system": "onedrive",
+          "score": 1.0,
+          "method": "text_sha256+phash"
+        }
+      ]
+    },
+    {
+      "id": "p3",
+      "page": 3,
+      "text": "Energy saving: sleep modes for idle radio units",
+      "hashes": {
+        "file_sha256": "fca409f250f718e36217354cad3867a161d78b48cf02b68cd0110c87bea3a58a",
+        "text_sha256": "095276299ded1bfefe801b69a656337c1e293a6556eb688c384308fac6e14e81",
+        "phash": "402da88413d83618"
+      },
+      "image_url": "/files/derived/a_02/pages/p3.webp",
+      "bytes": 61000,
+      "matches": [
+        {
+          "type": "shared",
+          "other_asset_id": "a_04",
+          "other_slide_id": "p2",
+          "other_filename": "5g-overview.pdf",
+          "other_page": 2,
+          "other_source_system": "onedrive",
+          "score": 1.0,
+          "method": "text_sha256+phash"
+        }
+      ]
+    },
+    {
+      "id": "p4",
+      "page": 4,
+      "text": "Results: 12% lower power per site in field trial",
+      "hashes": {
+        "file_sha256": "fca409f250f718e36217354cad3867a161d78b48cf02b68cd0110c87bea3a58a",
+        "text_sha256": "a9244295de8404866b09966b73b3cdb174202b0396ca4528d10d7c6be4c1ed33",
+        "phash": "d592588bf5aaa71c"
+      },
+      "image_url": "/files/derived/a_02/pages/p4.webp",
+      "bytes": 62000,
+      "matches": [
+        {
+          "type": "similar",
+          "other_asset_id": "a_04",
+          "other_slide_id": "p3",
+          "other_filename": "5g-overview.pdf",
+          "other_page": 3,
+          "other_source_system": "onedrive",
+          "score": 0.96,
+          "method": "text_ratio"
+        }
+      ]
+    }
+  ],
+  "matches": [
+    {
+      "level": "file",
+      "type": "exact",
+      "a": "a_02",
+      "b": "a_03",
+      "score": 1.0,
+      "method": "sha256"
+    },
+    {
+      "level": "slide",
+      "type": "shared",
+      "a": "a_02:p2",
+      "b": "a_04:p1",
+      "score": 1.0,
+      "method": "text_sha256+phash"
+    },
+    {
+      "level": "slide",
+      "type": "shared",
+      "a": "a_02:p3",
+      "b": "a_04:p2",
+      "score": 1.0,
+      "method": "text_sha256+phash"
+    },
+    {
+      "level": "slide",
+      "type": "similar",
+      "a": "a_02:p4",
+      "b": "a_04:p3",
+      "score": 0.96,
+      "method": "text_ratio"
+    }
+  ]
+}

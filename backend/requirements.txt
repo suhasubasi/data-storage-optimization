@@ -1,0 +1,7 @@
+# Stream 2 backend. Install the shared contracts separately:  pip install -e ../contracts/python
+fastapi>=0.115,<1
+uvicorn[standard]>=0.30
+python-multipart>=0.0.9
+pydantic>=2.6,<3
+pytest>=8
+httpx>=0.27

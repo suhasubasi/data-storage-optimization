@@ -1,0 +1,50 @@
+{
+  "owner": "carl",
+  "generated_at": "2026-11-13T10:00:00Z",
+  "deletes_performed": false,
+  "rows": [
+    {
+      "asset_id": "a_03",
+      "filename": "ran-deck (1).pdf",
+      "kind": "document",
+      "bytes": 2400000,
+      "source_system": "onedrive",
+      "recommendation": "eligible_after_approval",
+      "reason": "Confirmed exact duplicate (same SHA-256) at sharepoint: ran-deck.pdf (owner: bjorn)",
+      "duplicates_elsewhere": [
+        {
+          "asset_id": "a_02",
+          "filename": "ran-deck.pdf",
+          "source_system": "sharepoint",
+          "owner": "bjorn"
+        }
+      ]
+    },
+    {
+      "asset_id": "a_04",
+      "filename": "5g-overview.pdf",
+      "kind": "document",
+      "bytes": 1850000,
+      "source_system": "onedrive",
+      "recommendation": "keep",
+      "reason": "No exact copy owned by someone else. Shared or similar slides do not count.",
+      "duplicates_elsewhere": []
+    },
+    {
+      "asset_id": "a_05",
+      "filename": "carl-notes.pdf",
+      "kind": "document",
+      "bytes": 310000,
+      "source_system": "onedrive",
+      "recommendation": "keep",
+      "reason": "No exact copy owned by someone else. Shared or similar slides do not count.",
+      "duplicates_elsewhere": []
+    }
+  ],
+  "summary": {
+    "total": 3,
+    "eligible": 1,
+    "keep": 2,
+    "eligible_bytes": 2400000
+  }
+}

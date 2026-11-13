@@ -1,0 +1,130 @@
+{
+  "generated_at": "2026-11-13T10:00:00Z",
+  "formula": "Savings % = (O − A) / O × 100",
+  "totals": {
+    "asset_count": 5,
+    "original_bytes": 740963200,
+    "video_original_bytes": 734003200,
+    "document_original_bytes": 6960000,
+    "derived_bytes": 913523,
+    "index_bytes": 1228800,
+    "extra_exact_copy_bytes": 2400000
+  },
+  "scenarios": [
+    {
+      "id": 0,
+      "key": "today",
+      "label": "Scenario 0: today, real",
+      "description": "Nothing deleted. Derived data and the index are added on top of the originals, so the saving is negative.",
+      "hypothetical": false,
+      "formula": "A = O + D + I",
+      "before_bytes": 740963200,
+      "after_bytes": 743105523,
+      "saved_bytes": -2142323,
+      "savings_pct": -0.2891,
+      "kept_original_bytes": 740963200,
+      "derived_bytes": 913523,
+      "index_bytes": 1228800,
+      "removed": []
+    },
+    {
+      "id": 1,
+      "key": "replace_videos",
+      "label": "Scenario 1: replace videos",
+      "description": "If an approved process replaced each processed recording by its derived data.",
+      "hypothetical": true,
+      "formula": "A = (O − processed video originals) + D + I",
+      "before_bytes": 740963200,
+      "after_bytes": 9102323,
+      "saved_bytes": 731860877,
+      "savings_pct": 98.7716,
+      "kept_original_bytes": 6960000,
+      "derived_bytes": 913523,
+      "index_bytes": 1228800,
+      "removed": [
+        {
+          "asset_id": "a_01",
+          "filename": "event-recording.mp4",
+          "bytes": 734003200,
+          "reason": "replaced_by_derived",
+          "kept_copy_asset_id": null
+        }
+      ]
+    },
+    {
+      "id": 2,
+      "key": "remove_exact_duplicates",
+      "label": "Scenario 2: remove exact duplicates",
+      "description": "Keep one copy per SHA-256 group (the earliest upload). Shared or similar slides free nothing, because the files differ.",
+      "hypothetical": true,
+      "formula": "A = (O − extra exact copies) + D + I",
+      "before_bytes": 740963200,
+      "after_bytes": 740705523,
+      "saved_bytes": 257677,
+      "savings_pct": 0.0348,
+      "kept_original_bytes": 738563200,
+      "derived_bytes": 913523,
+      "index_bytes": 1228800,
+      "removed": [
+        {
+          "asset_id": "a_03",
+          "filename": "ran-deck (1).pdf",
+          "bytes": 2400000,
+          "reason": "exact_duplicate",
+          "kept_copy_asset_id": "a_02"
+        }
+      ]
+    },
+    {
+      "id": 3,
+      "key": "both",
+      "label": "Scenario 3: both",
+      "description": "Scenarios 1 and 2 together, each file counted once.",
+      "hypothetical": true,
+      "formula": "A = (O − processed video originals − extra exact copies, no double counting) + D + I",
+      "before_bytes": 740963200,
+      "after_bytes": 6702323,
+      "saved_bytes": 734260877,
+      "savings_pct": 99.0955,
+      "kept_original_bytes": 4560000,
+      "derived_bytes": 913523,
+      "index_bytes": 1228800,
+      "removed": [
+        {
+          "asset_id": "a_03",
+          "filename": "ran-deck (1).pdf",
+          "bytes": 2400000,
+          "reason": "exact_duplicate",
+          "kept_copy_asset_id": "a_02"
+        },
+        {
+          "asset_id": "a_01",
+          "filename": "event-recording.mp4",
+          "bytes": 734003200,
+          "reason": "replaced_by_derived",
+          "kept_copy_asset_id": null
+        }
+      ]
+    }
+  ],
+  "not_counted": [
+    "Backups",
+    "Platform replication",
+    "Archive tiers",
+    "Compute cost",
+    "Model weights",
+    "Money"
+  ],
+  "information_lost": [
+    "Motion and live demos in video",
+    "Gestures and body language",
+    "Tone of voice (unless the optional audio track is kept)",
+    "Speaker identity (not in MVP)"
+  ],
+  "notes": [
+    "O = all original bytes in scope, every copy on every simulated system. D = all derived files + manifests. I = measured SQLite/FTS index size.",
+    "D and I are counted in every scenario (conservative).",
+    "Scenarios 1-3 are hypothetical and require human approval. The tool never deletes anything.",
+    "Ericsson's own example (PDF p.2: ~1 GB → ~50 KB text + ~2 MB frames, 'roughly 99%') is their illustration, not our measurement."
+  ]
+}

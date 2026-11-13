@@ -1,0 +1,87 @@
+{
+  "schema_version": "1.0",
+  "asset_id": "a_03",
+  "kind": "document",
+  "original": {
+    "path": "originals/a_03/ran-deck (1).pdf",
+    "bytes": 2400000,
+    "sha256": "fca409f250f718e36217354cad3867a161d78b48cf02b68cd0110c87bea3a58a"
+  },
+  "metadata": {
+    "title": "RAN Evolution Roadmap",
+    "author": "B. Berg",
+    "doc_number": "1/221 02-FGB 101",
+    "revision": "A",
+    "date": "2026-09-30",
+    "language": null
+  },
+  "segments": [],
+  "frames": [],
+  "slides": [
+    {
+      "id": "p1",
+      "page": 1,
+      "text": "RAN Evolution Roadmap 2027",
+      "text_sha256": "28cf14ca9cc16a65853e8ed518d0ed73f138864ac56c2b63838e56e6435dcdb5",
+      "phash": "d3d97afc3d79f0bd",
+      "path": "pages/p1.webp",
+      "bytes": 59000
+    },
+    {
+      "id": "p2",
+      "page": 2,
+      "text": "Handover optimisation: fewer dropped calls in dense cells",
+      "text_sha256": "b2dfe29637d1f8e5b85195e364cf0cc3aa48bc3a9a08ec9c031f4f982cc2ee28",
+      "phash": "5fae08e097eb1edd",
+      "path": "pages/p2.webp",
+      "bytes": 60000
+    },
+    {
+      "id": "p3",
+      "page": 3,
+      "text": "Energy saving: sleep modes for idle radio units",
+      "text_sha256": "095276299ded1bfefe801b69a656337c1e293a6556eb688c384308fac6e14e81",
+      "phash": "402da88413d83618",
+      "path": "pages/p3.webp",
+      "bytes": 61000
+    },
+    {
+      "id": "p4",
+      "page": 4,
+      "text": "Results: 12% lower power per site in field trial",
+      "text_sha256": "a9244295de8404866b09966b73b3cdb174202b0396ca4528d10d7c6be4c1ed33",
+      "phash": "5cabedb3374d758f",
+      "path": "pages/p4.webp",
+      "bytes": 62000
+    }
+  ],
+  "derived_files": [
+    {
+      "path": "pages/p1.webp",
+      "bytes": 59000,
+      "kind": "page_image"
+    },
+    {
+      "path": "pages/p2.webp",
+      "bytes": 60000,
+      "kind": "page_image"
+    },
+    {
+      "path": "pages/p3.webp",
+      "bytes": 61000,
+      "kind": "page_image"
+    },
+    {
+      "path": "pages/p4.webp",
+      "bytes": 62000,
+      "kind": "page_image"
+    }
+  ],
+  "pipeline": {
+    "version": "0.1",
+    "model": null,
+    "frame_threshold": null,
+    "seconds": 1.8,
+    "warnings": []
+  }
+}

@@ -1,0 +1,1574 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://ericsson-dso.local/contracts/api.schema.json",
+  "title": "DsoApiTypes",
+  "description": "FROZEN v1.0. Request/response types for the REST API on the approved design Page (section 5, Backend / API). Used by openapi.yaml, the generated TypeScript types (Stream 1) and the generated Pydantic models (Stream 2). URLs in responses are RELATIVE to the API base (e.g. '/files/derived/a_01/frames/f3.webp'); the frontend prefixes its base URL.",
+  "$defs": {
+    "AssetId": {
+      "$ref": "manifest.schema.json#/$defs/AssetId"
+    },
+    "AssetKind": {
+      "$ref": "manifest.schema.json#/$defs/AssetKind"
+    },
+    "AssetMetadata": {
+      "$ref": "manifest.schema.json#/$defs/AssetMetadata"
+    },
+    "PipelineInfo": {
+      "$ref": "manifest.schema.json#/$defs/PipelineInfo"
+    },
+    "DerivedFileKind": {
+      "$ref": "manifest.schema.json#/$defs/DerivedFileKind"
+    },
+    "Segment": {
+      "$ref": "manifest.schema.json#/$defs/Segment"
+    },
+    "ItemRef": {
+      "description": "Global id of an item: '<asset_id>' for a whole file, or '<asset_id>:<local_id>' for a segment/frame/slide, e.g. 'a_02:p4'. Used in matches.a_id/b_id and export chunk ids.",
+      "type": "string",
+      "pattern": "^a_[A-Za-z0-9]+(:[sfp][0-9]+)?$"
+    },
+    "SourceSystem": {
+      "description": "Simulated source label (PDF p.1 names SharePoint, OneDrive, Ericsson Play). No live connectors in the MVP; source_simulated is always true.",
+      "type": "string",
+      "enum": [
+        "sharepoint",
+        "onedrive",
+        "ericsson_play"
+      ]
+    },
+    "AssetStatus": {
+      "description": "OUR RECOMMENDATION for the status values (Page only says 'status').",
+      "type": "string",
+      "enum": [
+        "uploaded",
+        "queued",
+        "processing",
+        "ready",
+        "failed"
+      ]
+    },
+    "JobStatus": {
+      "type": "string",
+      "enum": [
+        "queued",
+        "running",
+        "done",
+        "failed"
+      ]
+    },
+    "ErrorCode": {
+      "type": "string",
+      "enum": [
+        "not_found",
+        "validation_error",
+        "unsupported_file_type",
+        "conflict",
+        "pipeline_failed",
+        "internal_error"
+      ]
+    },
+    "ErrorResponse": {
+      "description": "Every non-2xx response uses this body (backend must override FastAPI's default 422 shape).",
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "error"
+      ],
+      "properties": {
+        "error": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "code",
+            "message"
+          ],
+          "properties": {
+            "code": {
+              "$ref": "#/$defs/ErrorCode"
+            },
+            "message": {
+              "description": "Simple English, safe to show in the UI.",
+              "type": "string"
+            },
+            "details": {
+              "description": "Optional extra info (e.g. field errors).",
+              "type": [
+                "object",
+                "null"
+              ]
+            }
+          }
+        }
+      }
+    },
+    "MediaRef": {
+      "description": "A pointer to something the UI can show: a key frame, a slide/page image, or the original (for playback/download).",
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "type",
+        "asset_id",
+        "url"
+      ],
+      "properties": {
+        "type": {
+          "$ref": "#/$defs/MediaType"
+        },
+        "asset_id": {
+          "$ref": "#/$defs/AssetId"
+        },
+        "item_id": {
+          "description": "Local frame/slide id, null for 'original'.",
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "url": {
+          "type": "string"
+        },
+        "bytes": {
+          "type": [
+            "integer",
+            "null"
+          ],
+          "minimum": 0
+        },
+        "t_start": {
+          "type": [
+            "number",
+            "null"
+          ]
+        },
+        "t_end": {
+          "type": [
+            "number",
+            "null"
+          ]
+        },
+        "page": {
+          "type": [
+            "integer",
+            "null"
+          ]
+        }
+      }
+    },
+    "Asset": {
+      "description": "Library row. Returned by POST /api/assets (201) and GET /api/assets.",
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "id",
+        "filename",
+        "kind",
+        "bytes",
+        "sha256",
+        "source_system",
+        "source_simulated",
+        "owner",
+        "status",
+        "created_at",
+        "derived_bytes",
+        "original_url"
+      ],
+      "properties": {
+        "id": {
+          "$ref": "#/$defs/AssetId"
+        },
+        "filename": {
+          "type": "string"
+        },
+        "kind": {
+          "$ref": "#/$defs/AssetKind"
+        },
+        "bytes": {
+          "description": "Measured size of the original.",
+          "type": "integer",
+          "minimum": 0
+        },
+        "sha256": {
+          "$ref": "manifest.schema.json#/$defs/Sha256"
+        },
+        "source_system": {
+          "$ref": "#/$defs/SourceSystem"
+        },
+        "source_simulated": {
+          "type": "boolean"
+        },
+        "owner": {
+          "type": "string"
+        },
+        "status": {
+          "$ref": "#/$defs/AssetStatus"
+        },
+        "created_at": {
+          "description": "OUR RECOMMENDATION: upload time (ISO 8601). Used to pick the copy kept in scenario 2.",
+          "type": "string",
+          "format": "date-time"
+        },
+        "derived_bytes": {
+          "description": "Sum of derived_files + manifest bytes; 0 until processed.",
+          "type": "integer",
+          "minimum": 0
+        },
+        "original_url": {
+          "description": "e.g. '/files/originals/a_01/deck.pdf'",
+          "type": "string"
+        }
+      }
+    },
+    "DerivedSummary": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "derived_bytes",
+        "manifest_bytes",
+        "file_count",
+        "segment_count",
+        "frame_count",
+        "slide_count",
+        "bytes_by_kind"
+      ],
+      "properties": {
+        "derived_bytes": {
+          "description": "derived_files total + manifest_bytes.",
+          "type": "integer",
+          "minimum": 0
+        },
+        "manifest_bytes": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "file_count": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "segment_count": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "frame_count": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "slide_count": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "bytes_by_kind": {
+          "type": "object",
+          "additionalProperties": {
+            "type": "integer",
+            "minimum": 0
+          }
+        }
+      }
+    },
+    "AssetDetail": {
+      "description": "GET /api/assets/{id}: one asset with metadata and derived summary.",
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "asset",
+        "metadata",
+        "derived",
+        "pipeline",
+        "latest_job"
+      ],
+      "properties": {
+        "asset": {
+          "$ref": "#/$defs/Asset"
+        },
+        "metadata": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/AssetMetadata"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "derived": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/DerivedSummary"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "pipeline": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/PipelineInfo"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "latest_job": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/Job"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        }
+      }
+    },
+    "AssetList": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "assets"
+      ],
+      "properties": {
+        "assets": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/Asset"
+          }
+        }
+      }
+    },
+    "Job": {
+      "description": "Progress and errors are real, never faked.",
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "id",
+        "asset_id",
+        "status",
+        "progress",
+        "error",
+        "started_at",
+        "finished_at"
+      ],
+      "properties": {
+        "id": {
+          "type": "string"
+        },
+        "asset_id": {
+          "$ref": "#/$defs/AssetId"
+        },
+        "status": {
+          "$ref": "#/$defs/JobStatus"
+        },
+        "progress": {
+          "description": "0.0 to 1.0",
+          "type": "number",
+          "minimum": 0,
+          "maximum": 1
+        },
+        "stage": {
+          "description": "OUR RECOMMENDATION: optional current step, e.g. 'transcribing'.",
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "error": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "started_at": {
+          "type": [
+            "string",
+            "null"
+          ],
+          "format": "date-time"
+        },
+        "finished_at": {
+          "type": [
+            "string",
+            "null"
+          ],
+          "format": "date-time"
+        }
+      }
+    },
+    "FrameView": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "id",
+        "t_start",
+        "t_end",
+        "image_url",
+        "bytes",
+        "phash",
+        "matched_slide"
+      ],
+      "properties": {
+        "id": {
+          "type": "string"
+        },
+        "t_start": {
+          "type": "number"
+        },
+        "t_end": {
+          "type": "number"
+        },
+        "image_url": {
+          "type": "string"
+        },
+        "bytes": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "phash": {
+          "type": "string"
+        },
+        "matched_slide": {
+          "type": [
+            "string",
+            "null"
+          ]
+        }
+      }
+    },
+    "Timeline": {
+      "description": "GET /api/assets/{id}/timeline: transcript segments joined to frames.",
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "asset_id",
+        "language",
+        "duration_seconds",
+        "original_url",
+        "segments",
+        "frames"
+      ],
+      "properties": {
+        "asset_id": {
+          "$ref": "#/$defs/AssetId"
+        },
+        "language": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "duration_seconds": {
+          "type": [
+            "number",
+            "null"
+          ]
+        },
+        "original_url": {
+          "description": "Original video, kept, for playback.",
+          "type": "string"
+        },
+        "segments": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/Segment"
+          }
+        },
+        "frames": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/FrameView"
+          }
+        }
+      }
+    },
+    "MatchType": {
+      "type": "string",
+      "enum": [
+        "exact",
+        "shared",
+        "similar"
+      ]
+    },
+    "MatchLevel": {
+      "type": "string",
+      "enum": [
+        "file",
+        "slide"
+      ]
+    },
+    "SlideMatch": {
+      "description": "A match from this slide to a slide in ANOTHER asset.",
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "type",
+        "other_asset_id",
+        "other_slide_id",
+        "other_filename",
+        "other_page",
+        "other_source_system",
+        "score",
+        "method"
+      ],
+      "properties": {
+        "type": {
+          "$ref": "#/$defs/SlideMatchType"
+        },
+        "other_asset_id": {
+          "$ref": "#/$defs/AssetId"
+        },
+        "other_slide_id": {
+          "type": "string"
+        },
+        "other_filename": {
+          "type": "string"
+        },
+        "other_page": {
+          "type": "integer"
+        },
+        "other_source_system": {
+          "$ref": "#/$defs/SourceSystem"
+        },
+        "score": {
+          "type": "number"
+        },
+        "method": {
+          "type": "string"
+        }
+      }
+    },
+    "HashRecord": {
+      "description": "The three hashes for one slide (PDF p.2: split into slides and hash each).",
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "file_sha256",
+        "text_sha256",
+        "phash"
+      ],
+      "properties": {
+        "file_sha256": {
+          "$ref": "manifest.schema.json#/$defs/Sha256"
+        },
+        "text_sha256": {
+          "$ref": "manifest.schema.json#/$defs/Sha256"
+        },
+        "phash": {
+          "$ref": "manifest.schema.json#/$defs/PHash"
+        }
+      }
+    },
+    "SlideView": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "id",
+        "page",
+        "text",
+        "hashes",
+        "image_url",
+        "bytes",
+        "matches"
+      ],
+      "properties": {
+        "id": {
+          "type": "string"
+        },
+        "page": {
+          "type": "integer",
+          "minimum": 1
+        },
+        "text": {
+          "type": "string"
+        },
+        "hashes": {
+          "$ref": "#/$defs/HashRecord"
+        },
+        "image_url": {
+          "type": "string"
+        },
+        "bytes": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "matches": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/SlideMatch"
+          }
+        }
+      }
+    },
+    "SlideList": {
+      "description": "GET /api/assets/{id}/slides: pages with hashes and matches.",
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "asset_id",
+        "metadata",
+        "slides"
+      ],
+      "properties": {
+        "asset_id": {
+          "$ref": "#/$defs/AssetId"
+        },
+        "metadata": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/AssetMetadata"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "slides": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/SlideView"
+          }
+        }
+      }
+    },
+    "SearchHit": {
+      "description": "One search result: text + frame/slide image + timestamp (video) or page (document).",
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "hit_type",
+        "asset_id",
+        "filename",
+        "kind",
+        "source_system",
+        "owner",
+        "text",
+        "snippet",
+        "start",
+        "end",
+        "page",
+        "item_id",
+        "frame_id",
+        "media",
+        "score"
+      ],
+      "properties": {
+        "hit_type": {
+          "$ref": "#/$defs/HitType"
+        },
+        "asset_id": {
+          "$ref": "#/$defs/AssetId"
+        },
+        "filename": {
+          "type": "string"
+        },
+        "kind": {
+          "$ref": "#/$defs/AssetKind"
+        },
+        "source_system": {
+          "$ref": "#/$defs/SourceSystem"
+        },
+        "owner": {
+          "type": "string"
+        },
+        "text": {
+          "description": "Full segment or slide text.",
+          "type": "string"
+        },
+        "snippet": {
+          "description": "FTS5 snippet() with matches wrapped in <mark>…</mark>. Only <mark> tags; frontend must escape everything else.",
+          "type": "string"
+        },
+        "start": {
+          "description": "Seconds (segments only).",
+          "type": [
+            "number",
+            "null"
+          ]
+        },
+        "end": {
+          "type": [
+            "number",
+            "null"
+          ]
+        },
+        "page": {
+          "description": "Page number (slides only).",
+          "type": [
+            "integer",
+            "null"
+          ]
+        },
+        "item_id": {
+          "description": "Local segment id ('s12') or slide id ('p4').",
+          "type": "string"
+        },
+        "frame_id": {
+          "description": "Frame on screen for a segment hit; null for slides.",
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "media": {
+          "description": "Frame image (segment hit) or page image (slide hit).",
+          "anyOf": [
+            {
+              "$ref": "#/$defs/MediaRef"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "score": {
+          "description": "FTS5 bm25 rank turned positive; higher = better.",
+          "type": "number"
+        }
+      }
+    },
+    "SearchResponse": {
+      "description": "GET /api/search?q=",
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "query",
+        "total",
+        "hits"
+      ],
+      "properties": {
+        "query": {
+          "type": "string"
+        },
+        "total": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "hits": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/SearchHit"
+          }
+        }
+      }
+    },
+    "DuplicateType": {
+      "type": "string",
+      "enum": [
+        "exact_file",
+        "shared_slide",
+        "similar_slide"
+      ]
+    },
+    "DuplicateMember": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "asset_id",
+        "filename",
+        "source_system",
+        "owner",
+        "bytes",
+        "slide_id",
+        "page",
+        "image_url"
+      ],
+      "properties": {
+        "asset_id": {
+          "$ref": "#/$defs/AssetId"
+        },
+        "filename": {
+          "type": "string"
+        },
+        "source_system": {
+          "$ref": "#/$defs/SourceSystem"
+        },
+        "owner": {
+          "type": "string"
+        },
+        "bytes": {
+          "description": "Original file bytes.",
+          "type": "integer",
+          "minimum": 0
+        },
+        "slide_id": {
+          "description": "null for exact_file groups.",
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "page": {
+          "type": [
+            "integer",
+            "null"
+          ]
+        },
+        "image_url": {
+          "type": [
+            "string",
+            "null"
+          ]
+        }
+      }
+    },
+    "DuplicateEvidence": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "method"
+      ],
+      "properties": {
+        "method": {
+          "description": "e.g. 'sha256', 'text_sha256+phash', 'phash', 'text_ratio'.",
+          "type": "string"
+        },
+        "sha256": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "text_sha256": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "phash_distance": {
+          "type": [
+            "integer",
+            "null"
+          ]
+        },
+        "text_similarity": {
+          "description": "0..1",
+          "type": [
+            "number",
+            "null"
+          ]
+        }
+      }
+    },
+    "DuplicateGroup": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "id",
+        "type",
+        "needs_review",
+        "score",
+        "evidence",
+        "members"
+      ],
+      "properties": {
+        "id": {
+          "type": "string"
+        },
+        "type": {
+          "$ref": "#/$defs/DuplicateType"
+        },
+        "needs_review": {
+          "description": "true for similar_slide (never treated as exact).",
+          "type": "boolean"
+        },
+        "score": {
+          "description": "1.0 for exact; similarity 0..1 otherwise.",
+          "type": "number"
+        },
+        "evidence": {
+          "$ref": "#/$defs/DuplicateEvidence"
+        },
+        "members": {
+          "type": "array",
+          "minItems": 2,
+          "items": {
+            "$ref": "#/$defs/DuplicateMember"
+          }
+        }
+      }
+    },
+    "DuplicateReport": {
+      "description": "GET /api/duplicates: groups by type.",
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "groups",
+        "counts"
+      ],
+      "properties": {
+        "groups": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/DuplicateGroup"
+          }
+        },
+        "counts": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "exact_file",
+            "shared_slide",
+            "similar_slide"
+          ],
+          "properties": {
+            "exact_file": {
+              "type": "integer",
+              "minimum": 0
+            },
+            "shared_slide": {
+              "type": "integer",
+              "minimum": 0
+            },
+            "similar_slide": {
+              "type": "integer",
+              "minimum": 0
+            }
+          }
+        }
+      }
+    },
+    "ScenarioKey": {
+      "description": "The four scenarios from the Page's savings section (0 = today/real, 1-3 = hypothetical after approval).",
+      "type": "string",
+      "enum": [
+        "today",
+        "replace_videos",
+        "remove_exact_duplicates",
+        "both"
+      ]
+    },
+    "RemovedItem": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "asset_id",
+        "filename",
+        "bytes",
+        "reason",
+        "kept_copy_asset_id"
+      ],
+      "properties": {
+        "asset_id": {
+          "$ref": "#/$defs/AssetId"
+        },
+        "filename": {
+          "type": "string"
+        },
+        "bytes": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "reason": {
+          "$ref": "#/$defs/RemovalReason"
+        },
+        "kept_copy_asset_id": {
+          "description": "For exact_duplicate: the copy that stays.",
+          "anyOf": [
+            {
+              "$ref": "#/$defs/AssetId"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        }
+      }
+    },
+    "StorageScenario": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "id",
+        "key",
+        "label",
+        "description",
+        "hypothetical",
+        "formula",
+        "before_bytes",
+        "after_bytes",
+        "saved_bytes",
+        "savings_pct",
+        "kept_original_bytes",
+        "derived_bytes",
+        "index_bytes",
+        "removed"
+      ],
+      "properties": {
+        "id": {
+          "description": "0 = today (real), 1-3 hypothetical.",
+          "type": "integer",
+          "minimum": 0,
+          "maximum": 3
+        },
+        "key": {
+          "$ref": "#/$defs/ScenarioKey"
+        },
+        "label": {
+          "type": "string"
+        },
+        "description": {
+          "type": "string"
+        },
+        "hypothetical": {
+          "description": "false only for scenario 0. Nothing is ever deleted by the tool.",
+          "type": "boolean"
+        },
+        "formula": {
+          "description": "Human-readable A formula for this scenario.",
+          "type": "string"
+        },
+        "before_bytes": {
+          "description": "O",
+          "type": "integer",
+          "minimum": 0
+        },
+        "after_bytes": {
+          "description": "A = kept_original_bytes + derived_bytes + index_bytes",
+          "type": "integer",
+          "minimum": 0
+        },
+        "saved_bytes": {
+          "description": "O - A (negative in scenario 0).",
+          "type": "integer"
+        },
+        "savings_pct": {
+          "description": "(O - A) / O * 100; null when O = 0.",
+          "type": [
+            "number",
+            "null"
+          ]
+        },
+        "kept_original_bytes": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "derived_bytes": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "index_bytes": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "removed": {
+          "description": "Hypothetical removals after approval. Empty for scenario 0.",
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/RemovedItem"
+          }
+        }
+      }
+    },
+    "StorageTotals": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "asset_count",
+        "original_bytes",
+        "video_original_bytes",
+        "document_original_bytes",
+        "derived_bytes",
+        "index_bytes",
+        "extra_exact_copy_bytes"
+      ],
+      "properties": {
+        "asset_count": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "original_bytes": {
+          "description": "O: every copy on every (simulated) system.",
+          "type": "integer",
+          "minimum": 0
+        },
+        "video_original_bytes": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "document_original_bytes": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "derived_bytes": {
+          "description": "All derived_files + manifests, all assets.",
+          "type": "integer",
+          "minimum": 0
+        },
+        "index_bytes": {
+          "description": "Measured size of the SQLite file (incl. FTS).",
+          "type": "integer",
+          "minimum": 0
+        },
+        "extra_exact_copy_bytes": {
+          "description": "Bytes of all copies beyond the first in each SHA-256 group.",
+          "type": "integer",
+          "minimum": 0
+        }
+      }
+    },
+    "StorageReport": {
+      "description": "GET /api/storage/report: measured bytes and the four scenarios.",
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "generated_at",
+        "formula",
+        "totals",
+        "scenarios",
+        "not_counted",
+        "information_lost",
+        "notes"
+      ],
+      "properties": {
+        "generated_at": {
+          "type": "string",
+          "format": "date-time"
+        },
+        "formula": {
+          "type": "string",
+          "const": "Savings % = (O − A) / O × 100"
+        },
+        "totals": {
+          "$ref": "#/$defs/StorageTotals"
+        },
+        "scenarios": {
+          "type": "array",
+          "minItems": 4,
+          "maxItems": 4,
+          "items": {
+            "$ref": "#/$defs/StorageScenario"
+          }
+        },
+        "not_counted": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "information_lost": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "notes": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        }
+      }
+    },
+    "OffboardingRecommendation": {
+      "type": "string",
+      "enum": [
+        "eligible_after_approval",
+        "keep"
+      ]
+    },
+    "DuplicateLocation": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "asset_id",
+        "filename",
+        "source_system",
+        "owner"
+      ],
+      "properties": {
+        "asset_id": {
+          "$ref": "#/$defs/AssetId"
+        },
+        "filename": {
+          "type": "string"
+        },
+        "source_system": {
+          "$ref": "#/$defs/SourceSystem"
+        },
+        "owner": {
+          "type": "string"
+        }
+      }
+    },
+    "OffboardingRow": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "asset_id",
+        "filename",
+        "kind",
+        "bytes",
+        "source_system",
+        "recommendation",
+        "reason",
+        "duplicates_elsewhere"
+      ],
+      "properties": {
+        "asset_id": {
+          "$ref": "#/$defs/AssetId"
+        },
+        "filename": {
+          "type": "string"
+        },
+        "kind": {
+          "$ref": "#/$defs/AssetKind"
+        },
+        "bytes": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "source_system": {
+          "$ref": "#/$defs/SourceSystem"
+        },
+        "recommendation": {
+          "$ref": "#/$defs/OffboardingRecommendation"
+        },
+        "reason": {
+          "description": "e.g. 'Confirmed exact duplicate at SharePoint: deck.pdf (owner: bob)' or 'No exact copy elsewhere'.",
+          "type": "string"
+        },
+        "duplicates_elsewhere": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/DuplicateLocation"
+          }
+        }
+      }
+    },
+    "OffboardingReview": {
+      "description": "GET /api/offboarding?owner=. Recommendation only; the API has no delete endpoint.",
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "owner",
+        "generated_at",
+        "deletes_performed",
+        "rows",
+        "summary"
+      ],
+      "properties": {
+        "owner": {
+          "type": "string"
+        },
+        "generated_at": {
+          "type": "string",
+          "format": "date-time"
+        },
+        "deletes_performed": {
+          "type": "boolean",
+          "const": false
+        },
+        "rows": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/OffboardingRow"
+          }
+        },
+        "summary": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "total",
+            "eligible",
+            "keep",
+            "eligible_bytes"
+          ],
+          "properties": {
+            "total": {
+              "type": "integer",
+              "minimum": 0
+            },
+            "eligible": {
+              "type": "integer",
+              "minimum": 0
+            },
+            "keep": {
+              "type": "integer",
+              "minimum": 0
+            },
+            "eligible_bytes": {
+              "type": "integer",
+              "minimum": 0
+            }
+          }
+        }
+      }
+    },
+    "Provenance": {
+      "description": "Where a piece of data came from. Every export chunk carries this.",
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "asset_id",
+        "filename",
+        "sha256",
+        "source_system",
+        "source_simulated",
+        "owner",
+        "original_url"
+      ],
+      "properties": {
+        "asset_id": {
+          "$ref": "#/$defs/AssetId"
+        },
+        "filename": {
+          "type": "string"
+        },
+        "sha256": {
+          "$ref": "manifest.schema.json#/$defs/Sha256"
+        },
+        "source_system": {
+          "$ref": "#/$defs/SourceSystem"
+        },
+        "source_simulated": {
+          "type": "boolean"
+        },
+        "owner": {
+          "type": "string"
+        },
+        "original_url": {
+          "type": "string"
+        }
+      }
+    },
+    "ExportChunk": {
+      "description": "One AI-ready text chunk. GET /api/export.jsonl returns one ExportChunk per line. 'metadata' repeats the asset's doc_number / revision / title for revision tracking.",
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "schema_version",
+        "chunk_id",
+        "kind",
+        "text",
+        "start",
+        "end",
+        "page",
+        "frame_id",
+        "slide_id",
+        "image_url",
+        "language",
+        "metadata",
+        "source"
+      ],
+      "properties": {
+        "schema_version": {
+          "type": "string",
+          "const": "1.0"
+        },
+        "chunk_id": {
+          "$ref": "#/$defs/ItemRef"
+        },
+        "kind": {
+          "$ref": "#/$defs/ChunkKind"
+        },
+        "text": {
+          "type": "string"
+        },
+        "start": {
+          "type": [
+            "number",
+            "null"
+          ]
+        },
+        "end": {
+          "type": [
+            "number",
+            "null"
+          ]
+        },
+        "page": {
+          "type": [
+            "integer",
+            "null"
+          ]
+        },
+        "frame_id": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "slide_id": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "image_url": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "language": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "metadata": {
+          "$ref": "#/$defs/AssetMetadata"
+        },
+        "source": {
+          "$ref": "#/$defs/Provenance"
+        }
+      }
+    },
+    "ExportMatch": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "level",
+        "type",
+        "a",
+        "b",
+        "score",
+        "method"
+      ],
+      "properties": {
+        "level": {
+          "$ref": "#/$defs/MatchLevel"
+        },
+        "type": {
+          "$ref": "#/$defs/MatchType"
+        },
+        "a": {
+          "$ref": "#/$defs/ItemRef"
+        },
+        "b": {
+          "$ref": "#/$defs/ItemRef"
+        },
+        "score": {
+          "type": "number"
+        },
+        "method": {
+          "type": "string"
+        }
+      }
+    },
+    "ExportAsset": {
+      "description": "GET /api/assets/{id}/export: AI-ready JSON for one asset with provenance.",
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "schema_version",
+        "exported_at",
+        "source",
+        "kind",
+        "metadata",
+        "pipeline",
+        "chunks",
+        "frames",
+        "slides",
+        "matches"
+      ],
+      "properties": {
+        "schema_version": {
+          "type": "string",
+          "const": "1.0"
+        },
+        "exported_at": {
+          "type": "string",
+          "format": "date-time"
+        },
+        "source": {
+          "$ref": "#/$defs/Provenance"
+        },
+        "kind": {
+          "$ref": "#/$defs/AssetKind"
+        },
+        "metadata": {
+          "$ref": "#/$defs/AssetMetadata"
+        },
+        "pipeline": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/PipelineInfo"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "chunks": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/ExportChunk"
+          }
+        },
+        "frames": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/FrameView"
+          }
+        },
+        "slides": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/SlideView"
+          }
+        },
+        "matches": {
+          "description": "All exact/shared/similar matches touching this asset.",
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/ExportMatch"
+          }
+        }
+      }
+    },
+    "Health": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "status",
+        "version"
+      ],
+      "properties": {
+        "status": {
+          "type": "string",
+          "const": "ok"
+        },
+        "version": {
+          "type": "string"
+        }
+      }
+    },
+    "MediaType": {
+      "type": "string",
+      "enum": [
+        "frame",
+        "slide",
+        "original"
+      ]
+    },
+    "SlideMatchType": {
+      "type": "string",
+      "enum": [
+        "shared",
+        "similar"
+      ]
+    },
+    "HitType": {
+      "type": "string",
+      "enum": [
+        "segment",
+        "slide"
+      ]
+    },
+    "RemovalReason": {
+      "type": "string",
+      "enum": [
+        "replaced_by_derived",
+        "exact_duplicate"
+      ]
+    },
+    "ChunkKind": {
+      "type": "string",
+      "enum": [
+        "transcript_segment",
+        "slide_text"
+      ]
+    }
+  }
+}
