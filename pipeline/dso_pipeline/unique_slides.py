@@ -13,12 +13,15 @@ Rules (conservative; nothing is decided by on-screen duration alone):
   * Two frames show the SAME slide only if BOTH hold (outside the mask):
       - every block_px x block_px block of a 320x180 gray thumbnail has <= max_block_change_fraction
         of its pixels changed by > pixel_level (cursor, scroll dots, webcam spill: yes; a changed
-        heading, a new bullet, a moved highlight: no), and
+        heading, a new bullet, a moved highlight: no). A block partly under the mask is judged on its
+        unmasked pixels only; a partial block at the right/bottom edge is checked too, and
       - pHash distance of the masked picture <= max_phash_distance (tighter than extraction's 12).
   * A frame is merged into the slide on screen before it if it is the same; otherwise, if it is the
     same as an earlier unique slide (the talk went back to it), it reuses that image; otherwise it
     becomes a NEW unique slide, however short it was on screen.
-  * Each unique slide keeps the member frame that was on screen longest (earliest on a tie).
+  * Each unique slide keeps the member frame that was on screen longest (earliest on a tie), but only
+    if that image passes both checks against EVERY member; otherwise it keeps the slide's first frame
+    (which every member was matched against). The per-member check is returned as "verification".
 
 Output: a timeline of contiguous runs. Each run keeps the id of its FIRST source frame (so ids stay
 'f<n>' and time-ordered), points at the unique slide's image, and lists its source_frames, so the
@@ -34,7 +37,7 @@ from PIL import Image
 
 from .common import phash_hex
 
-METHOD = "masked-block-diff+masked-phash v1"
+METHOD = "masked-block-diff+masked-phash v2 (representative verified)"
 DEFAULTS: dict[str, Any] = {
     "enabled": True,
     "thumb_width": 320,
@@ -127,14 +130,17 @@ def _masked_phash(path: Path, box: list[float] | None, hash_size: int) -> str:
 
 class _Comparer:
     def __init__(self, th: np.ndarray, mask: np.ndarray, cfg: dict[str, Any]):
-        self.th, self.keep = th, ~mask
         n, h, w = th.shape
         c = int(cfg["block_px"])
-        self.c, self.gh, self.gw = c, h // c, w // c
+        if c < 1:
+            raise ValueError("block_px must be positive")
+        self.c, self.gh, self.gw = c, (h + c - 1) // c, (w + c - 1) // c
         self.h, self.w = self.gh * c, self.gw * c
+        self.th = np.pad(th, ((0, 0), (0, self.h - h), (0, self.w - w)))
+        self.keep = np.pad(~mask, ((0, self.h - h), (0, self.w - w)), constant_values=False)
         self.lvl = int(cfg["pixel_level"])
         kc = self.keep[: self.h, : self.w].reshape(self.gh, c, self.gw, c).sum((1, 3)).astype(np.float64)
-        self.valid = kc >= 0.5 * c * c  # blocks mostly outside the mask
+        self.valid = kc > 0  # every unmasked pixel counts, including partial edge blocks
         self.kc = np.maximum(kc, 1)
 
     def block_max(self, i: int, js: list[int]) -> np.ndarray:
@@ -192,9 +198,28 @@ def plan(frames: list[dict[str, Any]], base: Path, cfg: dict[str, Any], hash_siz
         cur = hit
 
     dur = [max(0.0, float(f["t_end"]) - float(f["t_start"])) for f in frames]
+
+    def checks(rep: int, mem: list[int]):
+        """(member, block change, pHash distance) of every member against rep, in chunks (bounded memory)."""
+        for start in range(0, len(mem), 64):
+            chunk = mem[start:start + 64]
+            for j, block in zip(chunk, cmp.block_max(rep, chunk)):
+                yield j, float(block), _hd(mph[rep], mph[j])
+
     slides = []
+    verification = []
     for k, mem in enumerate(members):
         rep = max(mem, key=lambda j: (dur[j], -j))
+        # "Same slide" is not transitive: B ~ A and C ~ A do not make B ~ C. Every member was checked
+        # against the seed (first frame), so if the longest-shown frame does not cover every member,
+        # the seed's image is kept instead. Then every member is re-checked against the final image.
+        if rep != seeds[k] and any(b > max_blk or ph > max_ph for _, b, ph in checks(rep, mem)):
+            rep = seeds[k]
+        for j, b, ph in checks(rep, mem):
+            if b > max_blk or ph > max_ph:  # cannot happen (the seed matched every member); never hide it
+                raise ValueError(f"unique slide {k + 1}: image {frames[rep]['id']} does not cover {frames[j]['id']}")
+            verification.append({"frame_id": frames[j]["id"], "representative": frames[rep]["id"],
+                                 "max_block_change_fraction": round(b, 4), "phash_distance": ph})
         slides.append({
             "slide": k + 1, "representative": frames[rep]["id"], "path": frames[rep]["path"],
             "seconds_on_screen": round(sum(dur[j] for j in mem), 3),
@@ -207,7 +232,7 @@ def plan(frames: list[dict[str, Any]], base: Path, cfg: dict[str, Any], hash_siz
             "id": fs[0]["id"], "t_start": fs[0]["t_start"], "t_end": fs[-1]["t_end"], "slide": r["slide"] + 1,
             "source_frames": [f["id"] for f in fs],
         })
-    return {"runs": out_runs, "slides": slides, "overlay": overlay}
+    return {"runs": out_runs, "slides": slides, "overlay": overlay, "verification": verification}
 
 
 def apply(frames: list[dict[str, Any]], base: Path, cfg: dict[str, Any], hash_size: int = 8) -> dict[str, Any]:
@@ -236,4 +261,4 @@ def apply(frames: list[dict[str, Any]], base: Path, cfg: dict[str, Any], hash_si
         "params": {k: cfg[k] for k in DEFAULTS if k != "enabled"},
     }
     return {"frames": new_frames, "slides": p["slides"], "keep_paths": keep_paths, "drop_paths": drop_paths,
-            "info": info}
+            "info": info, "verification": p.get("verification", [])}

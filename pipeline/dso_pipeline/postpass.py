@@ -121,6 +121,7 @@ def run_unique_slides(asset_id: str, out_dir: Path, audit_dir: Path | None = Non
         write_json_atomic(audit_dir / f"{asset_id}-unique-slides-{stamp}.json", {
             "summary": summary, "info": info, "slides": r["slides"],
             "frame_sha256_before": shas, "drop_paths": r["drop_paths"],
+            "verification": r["verification"],
         })
 
     transcript_path = out_dir / "transcript.json"
