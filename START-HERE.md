@@ -11,9 +11,20 @@ Nothing is deleted: originals stay on disk, and offboarding only recommends.
 
 The first video you process downloads a local faster-whisper model. After that it works offline.
 
-Optional: with an NVIDIA GPU, Whisper runs about 3.5× faster. It is off by default, because the
-GPU text differs a little from the CPU text (about 97–98% the same words). See
-[pipeline/README.md → NVIDIA GPU](pipeline/README.md#nvidia-gpu-opt-in) for the setup.
+Optional: with an NVIDIA GPU, speech-to-text is much faster. Setup:
+[pipeline/README.md → NVIDIA GPU](pipeline/README.md#nvidia-gpu-opt-in).
+
+**Which speech model?** Pick it on the app's **Settings** page:
+
+| Your computer | Pick in Settings |
+|---|---|
+| No NVIDIA GPU | **Fast** (`small`) on **CPU** (the default) |
+| NVIDIA GPU, 4 GB or more | **Fast + accurate** (`large-v3-turbo`) on **GPU** (our pick) |
+| NVIDIA GPU, 6 GB or more, best text matters more than time | **Most accurate** (`large-v3`) on **GPU** |
+
+Download the big models once before you pick them, and see the measured times, in
+[README.md → Which Whisper model?](README.md#which-whisper-model). On an RTX 5070 Laptop, `large-v3-turbo`
+on the GPU took 20 s for a 16-minute video (`small` on the CPU: 84 s).
 
 ## 1. First-time setup (once)
 

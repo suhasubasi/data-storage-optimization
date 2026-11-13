@@ -63,6 +63,73 @@ python3 -m venv .venv-tools && .venv-tools/bin/pip install jsonschema referencin
 contracts/scripts/generate.sh && python3 contracts/scripts/make_fixtures.py && .venv-tools/bin/python contracts/scripts/check_contracts.py
 ```
 
+## Which Whisper model?
+
+The app turns speech into text with Whisper (faster-whisper, runs on your own computer). You choose the
+model on the **Settings** page. The choice is used for the next file you process. Files that are already
+processed are never re-processed by themselves. Each transcript records the model and device that made it
+(the "Model" box on the recording page).
+
+| Model in Settings | Best for | NVIDIA GPU memory it used (measured) | On a CPU only | Download size |
+|---|---|---|---|---|
+| **Fast** · `small` (default) | Any computer, also without a GPU | about 0.6 GB | Yes, works well | about 0.5 GB |
+| **Fast + accurate** · `large-v3-turbo` | A computer with an NVIDIA GPU (4 GB or more is comfortable) | about 1.3 GB | Possible but slow (about 3× slower than `small`) | about 1.5 GB |
+| **Most accurate** · `large-v3` | A computer with an NVIDIA GPU (6 GB or more is comfortable) | about 2.4 GB | Not recommended (about 5× slower than `small`) | about 3 GB |
+
+`medium` is not offered on purpose, to keep the choice simple. The "4 GB / 6 GB is comfortable" advice is our
+recommendation with room to spare, not a measured limit.
+
+**Our pick:** with an NVIDIA GPU, use **Fast + accurate (`large-v3-turbo`)** and Device **GPU**.
+Without a GPU, keep **Fast (`small`)** on **CPU**.
+
+### Download a model (once)
+
+`small` downloads by itself the first time you process a video. Download the big ones before you pick them
+(the Settings page shows "not installed" until then). Run this in the project folder (Windows, PowerShell):
+
+```powershell
+# Fast + accurate (about 1.5 GB)
+pipeline\.venv\Scripts\python.exe -c "from faster_whisper.utils import download_model; print(download_model('large-v3-turbo'))"
+# Most accurate (about 3 GB)
+pipeline\.venv\Scripts\python.exe -c "from faster_whisper.utils import download_model; print(download_model('large-v3'))"
+# Fast (about 0.5 GB)
+pipeline\.venv\Scripts\python.exe -c "from faster_whisper.utils import download_model; print(download_model('small'))"
+```
+
+(Linux/macOS: `pipeline/.venv/bin/python` instead.) The models go to `~/.cache/huggingface/hub`, outside git.
+For the GPU you also need the one-time GPU setup in [pipeline/README.md → NVIDIA GPU](pipeline/README.md#nvidia-gpu-opt-in).
+Then open **Settings**, pick the model and the device, and press **Save**. Reload the page after a download.
+
+If the backend was started with `DSO_WHISPER_MODEL` or `DSO_WHISPER_DEVICE` set, that value wins over the
+Settings page (the page tells you when this happens).
+
+### Measured speed (RTX 5070 Laptop GPU 8 GB, AMD Ryzen AI 7 350, 13 Nov 2026)
+
+Only the speech-to-text step, same settings for all (beam 5, silence filter on). Model load time not included
+(1.5 s for `small`, about 3.3 s for `large-v3-turbo`, 5–6.5 s for `large-v3`).
+
+| Video | `small` CPU | `small` GPU | `large-v3-turbo` GPU | `large-v3` GPU |
+|---|---|---|---|---|
+| Jury and prizes (6 min) | 25.7 s | 7.8 s | **5.0 s** | 14.0 s |
+| GraalVM talk (16 min) | 83.5 s | 24.7 s | **20.1 s** | 49.3 s |
+
+CPU only, first 60 s of the Jury video: `small` 7.0 s, `large-v3-turbo` 22.8 s, `large-v3` 34.1 s.
+So on a CPU, `large-v3-turbo` needs roughly 23 minutes for a 1-hour recording (an estimate from that 60-s test).
+
+How accurate? We have no hand-checked "true" transcript, so we cannot give a real error rate. We compared the
+texts and looked at clear cases:
+
+- `small` wrote "the s computer and writehub in dynamic resource allocation"; both large models wrote
+  "edge computing right having dynamic resource allocation".
+- `small` wrote "holo fame"; `large-v3-turbo` wrote "hall of fame".
+- `small` (CPU) wrote "ahead of time completion"; `large-v3-turbo` wrote "ahead of time compilation".
+- `large-v3` alone wrote "more prizes" (the others: "more prices") and got the name "Tommy Watson" right,
+  where `large-v3-turbo` wrote "me tell me".
+- `large-v3-turbo` sometimes repeats a short word ("when when when"), and `large-v3` keeps "uh" and "um".
+
+About 94–95% of the words are the same between `small` and the large models, and 96–98% between
+`large-v3-turbo` and `large-v3`.
+
 ## Safety rules
 
 - Nothing deletes or modifies originals. No DELETE endpoint. Offboarding = recommendation only.
