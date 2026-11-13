@@ -6,3 +6,4 @@ imagehash>=4.3
 Pillow>=10.3
 numpy>=1.26
 pytest>=8
+jsonschema>=4.21
