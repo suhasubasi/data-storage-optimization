@@ -51,7 +51,8 @@ export const liveApi: Api = {
   getSlides: (id) => json(`/api/assets/${enc(id)}/slides`),
   search: (q, limit = 20) => json(`/api/search?q=${enc(q)}&limit=${limit}`),
   getDuplicates: (type) => json(`/api/duplicates${type ? `?type=${type}` : ""}`),
-  getStorageReport: () => json("/api/storage/report"),
+  getStorageReport: (includeTestData = false) =>
+    json(`/api/storage/report${includeTestData ? "?include_test_data=true" : ""}`),
   getOffboarding: (owner) => json(`/api/offboarding?owner=${enc(owner)}`),
   exportAsset: (id) => json(`/api/assets/${enc(id)}/export`),
   exportJsonl: async () => (await request("/api/export.jsonl")).text(),

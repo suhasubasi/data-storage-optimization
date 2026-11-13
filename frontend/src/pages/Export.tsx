@@ -6,7 +6,8 @@ import { USE_MOCKS, absUrl } from "../api/config";
 import { useAsync } from "../lib/useAsync";
 import { downloadText, formatTime } from "../lib/format";
 import { AssetPicker } from "../components/AssetPicker";
-import { Badge, Callout, Empty, ErrorBox, Loading, PageHeader, SourceBadge } from "../components/ui";
+import { Badge, Callout, Empty, ErrorBox, Loading, PageHeader, SIMULATED_SOURCE_HINT, SourceBadge } from "../components/ui";
+import { Downloads } from "../components/Downloads";
 
 function parseJsonl(text: string): { chunks: ExportChunk[]; bad: number } {
   const chunks: ExportChunk[] = [];
@@ -28,7 +29,7 @@ function sourceLink(c: ExportChunk) {
 }
 
 export default function Export() {
-  const [tab, setTab] = useState<"jsonl" | "asset">("jsonl");
+  const [tab, setTab] = useState<"jsonl" | "asset" | "files">("jsonl");
   const assets = useAsync(() => api.listAssets(), []);
   const ready = (assets.data?.assets ?? []).filter((a) => a.status === "ready");
   const [assetId, setAssetId] = useState<string | undefined>();
@@ -36,6 +37,7 @@ export default function Export() {
 
   const jsonl = useAsync(() => api.exportJsonl(), [], tab === "jsonl");
   const one = useAsync(() => api.exportAsset(id!), [id], tab === "asset" && !!id);
+  const detail = useAsync(() => api.getAsset(id!), [id], tab === "files" && !!id);
   const parsed = useMemo(() => parseJsonl(jsonl.data ?? ""), [jsonl.data]);
 
   return (
@@ -51,7 +53,13 @@ export default function Export() {
         <button role="tab" aria-selected={tab === "asset"} className={`tab ${tab === "asset" ? "on" : ""}`} onClick={() => setTab("asset")}>
           One file · JSON
         </button>
+        <button role="tab" aria-selected={tab === "files"} className={`tab ${tab === "files" ? "on" : ""}`} onClick={() => setTab("files")}>
+          Text &amp; slides · .txt / .pptx / .pdf
+        </button>
       </div>
+      <Callout tone="info" title="About source_simulated: true">
+        {SIMULATED_SOURCE_HINT} The JSON / JSONL formats are unchanged.
+      </Callout>
 
       {tab === "jsonl" ? (
         jsonl.loading ? (
@@ -141,6 +149,30 @@ export default function Export() {
             </details>
           </>
         )
+      ) : tab === "files" ? (
+        <>
+          <div className="card">
+            {assets.data && <AssetPicker assets={ready} kind="any" value={id} label="Processed file" onChange={setAssetId} />}
+          </div>
+          {assets.error ? (
+            <ErrorBox error={assets.error} onRetry={assets.reload} />
+          ) : !id ? (
+            <Empty>No processed files yet.</Empty>
+          ) : detail.loading ? (
+            <Loading />
+          ) : detail.error ? (
+            <ErrorBox error={detail.error} onRetry={detail.reload} />
+          ) : detail.data ? (
+            <div className="card">
+              <h3>{detail.data.asset.filename}</h3>
+              <Downloads detail={detail.data} />
+              <p className="muted small">
+                Built on request from the stored transcript and frames, so they add no stored bytes. The text is exactly what
+                speech-to-text produced (no corrections). The original file stays the source of truth.
+              </p>
+            </div>
+          ) : null}
+        </>
       ) : (
         <>
           <div className="card">

@@ -80,7 +80,7 @@ function diffMark(text: string, other: string) {
     .join("");
 }
 
-function GroupCard({ g, created, texts }: { g: DuplicateGroup; created: Record<string, string>; texts: Record<string, string> }) {
+function GroupCard({ g, created, texts, testIds }: { g: DuplicateGroup; created: Record<string, string>; texts: Record<string, string>; testIds: Set<string> }) {
   const t = TYPES.find((x) => x.key === g.type)!;
   const isFile = g.type === "exact_file";
   // Scenario 2 keeps the earliest upload in each SHA-256 group (CONTRACTS.md §6).
@@ -120,6 +120,9 @@ function GroupCard({ g, created, texts }: { g: DuplicateGroup; created: Record<s
               )}
               <div>
                 <b>{m.filename}</b>
+                {testIds.has(m.asset_id) && (
+                  <Badge tone="amber" title="Generated test file (synthetic sample), not a real upload">test file</Badge>
+                )}
                 {m.page && <span> · page {m.page}</span>}
                 {isFile && m.asset_id === keptId && <Badge tone="green" title="Earliest upload is the copy kept in scenario 2">kept copy</Badge>}
               </div>
@@ -160,6 +163,7 @@ export default function Duplicates() {
     slideAssets.length > 0,
   );
   const created = Object.fromEntries((assets.data?.assets ?? []).map((a) => [a.id, a.created_at]));
+  const testIds = new Set((assets.data?.assets ?? []).filter((a) => a.test_data).map((a) => a.id));
   const groups = (res.data?.groups ?? []).filter((g) => !filter || g.type === filter);
 
   return (
@@ -189,7 +193,7 @@ export default function Duplicates() {
       ) : groups.length === 0 ? (
         <Empty>No groups of this type. Upload the same PDF twice (e.g. as “deck (1).pdf”) to see an exact copy.</Empty>
       ) : (
-        groups.map((g) => <GroupCard key={g.id} g={g} created={created} texts={slideTexts.data ?? {}} />)
+        groups.map((g) => <GroupCard key={g.id} g={g} created={created} texts={slideTexts.data ?? {}} testIds={testIds} />)
       )}
     </section>
   );

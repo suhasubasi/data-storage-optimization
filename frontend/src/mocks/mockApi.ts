@@ -294,7 +294,7 @@ export const mockApi: Api = {
     return delay(type ? { ...r, groups: r.groups.filter((g) => g.type === type) } : r);
   },
 
-  getStorageReport: () => delay(mocks.storageReport, 300),
+  getStorageReport: (_includeTestData = false) => delay(mocks.storageReport, 300),
 
   getOffboarding: async (owner) => {
     if (!owner.trim()) throw new ApiError("validation_error", "Pick an owner.", 422);

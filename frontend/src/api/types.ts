@@ -15,7 +15,8 @@ export interface Api {
   getSlides(assetId: string): Promise<SlideList>;
   search(q: string, limit?: number): Promise<SearchResponse>;
   getDuplicates(type?: DuplicateType): Promise<DuplicateReport>;
-  getStorageReport(): Promise<StorageReport>;
+  /** includeTestData=false (default): only real uploaded files; generated test files are left out. */
+  getStorageReport(includeTestData?: boolean): Promise<StorageReport>;
   getOffboarding(owner: string): Promise<OffboardingReview>;
   exportAsset(assetId: string): Promise<ExportAsset>;
   exportJsonl(): Promise<string>;

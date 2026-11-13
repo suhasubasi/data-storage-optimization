@@ -9,11 +9,21 @@ import { MediaImage } from "../components/MediaImage";
 import { Snippet } from "../components/Snippet";
 import { Badge, Empty, ErrorBox, Loading, PageHeader, SourceBadge } from "../components/ui";
 
-const EXAMPLES = ["handover", "energy saving", "power per site", "dropped calls", "sleep modes"];
+// Example queries only match the MOCK fixture files, so they are shown in mock mode only (in live mode they
+// returned 0 hits and were misleading).
+const EXAMPLES = USE_MOCKS ? ["handover", "energy saving", "power per site", "dropped calls", "sleep modes"] : [];
 
 function hitLink(h: SearchHit) {
-  return h.hit_type === "segment" ? `/recording/${h.asset_id}?seg=${h.item_id}` : `/document/${h.asset_id}?page=${h.page}`;
+  if (h.hit_type === "segment") return `/recording/${h.asset_id}?seg=${h.item_id}`;
+  if (h.hit_type === "asset") return h.kind === "video" ? `/recording/${h.asset_id}` : `/document/${h.asset_id}?page=1`;
+  return `/document/${h.asset_id}?page=${h.page}`;
 }
+
+const HIT_LABEL: Record<SearchHit["hit_type"], [string, "blue" | "purple" | "grey"]> = {
+  segment: ["Recording", "blue"],
+  slide: ["Slide", "purple"],
+  asset: ["Title / file name", "grey"],
+};
 
 export default function Search() {
   const [params, setParams] = useSearchParams();
@@ -60,7 +70,7 @@ export default function Search() {
     <section onKeyDown={onKeyDown}>
       <PageHeader
         title="Search"
-        lead="One box over every transcript sentence and every slide. Each result shows the text, the frame or slide it belongs to, and the timestamp or page."
+        lead="One box over every transcript sentence, every slide, and each file's title, file name and metadata. Each result shows the text, the frame or slide it belongs to, and the timestamp or page. Words are matched as spoken/written: no spelling fixes are applied."
       />
       <form className="search-bar" onSubmit={submit} role="search">
         <input
@@ -75,7 +85,7 @@ export default function Search() {
         <button className="btn primary">Search</button>
       </form>
       <div className="chips">
-        <span className="muted small">Try:</span>
+        {EXAMPLES.length > 0 && <span className="muted small">Try (mock data):</span>}
         {EXAMPLES.map((x) => (
           <button key={x} className="chip" onClick={() => submit(undefined, x)}>
             {x}
@@ -114,15 +124,15 @@ export default function Search() {
                   <div className="hit-media">
                     <MediaImage
                       url={h.media?.url}
-                      kind={h.hit_type === "segment" ? "frame" : "slide"}
+                      kind={h.media?.type === "frame" || h.hit_type === "segment" ? "frame" : "slide"}
                       title={h.text}
-                      sub={h.hit_type === "segment" ? `${h.frame_id ?? ""} · ${formatTime(h.media?.t_start)}` : `page ${h.page}`}
-                      alt={h.hit_type === "segment" ? `Frame ${h.frame_id}` : `Page ${h.page}`}
+                      sub={h.hit_type === "segment" ? `${h.frame_id ?? ""} · ${formatTime(h.media?.t_start)}` : h.hit_type === "asset" ? h.filename : `page ${h.page}`}
+                      alt={h.hit_type === "segment" ? `Frame ${h.frame_id}` : h.hit_type === "asset" ? `First image of ${h.filename}` : `Page ${h.page}`}
                     />
                   </div>
                   <div className="hit-body">
                     <div className="hit-meta">
-                      <Badge tone={h.hit_type === "segment" ? "blue" : "purple"}>{h.hit_type === "segment" ? "Recording" : "Slide"}</Badge>
+                      <Badge tone={HIT_LABEL[h.hit_type][1]}>{HIT_LABEL[h.hit_type][0]}</Badge>
                       <b>{h.filename}</b>
                       <SourceBadge source={h.source_system} />
                       <span className="muted small">owner {h.owner}</span>
@@ -135,6 +145,8 @@ export default function Search() {
                         <>
                           ⏱ <b>{formatTime(h.start)}</b>–{formatTime(h.end)} · frame <code>{h.frame_id ?? "—"}</code> → jump to this moment
                         </>
+                      ) : h.hit_type === "asset" ? (
+                        <>matched the file's title / file name / metadata → open the {h.kind === "video" ? "recording" : "document"}</>
                       ) : (
                         <>
                           📄 page <b>{h.page}</b> → open this page
