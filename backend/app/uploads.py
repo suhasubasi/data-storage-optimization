@@ -14,7 +14,7 @@ from dso_contracts.models import ErrorCode
 from . import db, duplicates, settings
 from .errors import ApiError
 
-KIND_BY_EXT = {".mp4": "video", ".pdf": "document"}
+KIND_BY_EXT = {".mp4": "video", ".pdf": "document", ".pptx": "document"}
 CHUNK = 1024 * 1024
 
 
@@ -28,7 +28,7 @@ def safe_filename(name: str | None) -> str:
 def kind_for(filename: str) -> str:
     kind = KIND_BY_EXT.get(Path(filename).suffix.lower())
     if kind is None:
-        raise ApiError(ErrorCode.unsupported_file_type, "Only .mp4 videos and .pdf documents are supported.",
+        raise ApiError(ErrorCode.unsupported_file_type, "Only .mp4 videos and .pdf / .pptx documents are supported.",
                        {"filename": filename})
     return kind
 
