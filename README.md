@@ -8,13 +8,13 @@ duplicates across (simulated) SharePoint / OneDrive / Ericsson Play — **withou
 - Duplicates: exact file · shared slide · similar (needs review)
 - Search → text + frame/slide + timestamp
 - Offboarding review → recommends, never deletes
-- AI-ready JSON / JSONL export with source links
+- Exports: transcript `.txt`, unique slides as `.pptx` / `.pdf`, AI-ready JSON / JSONL with source links
+- Unique-slide pass: near-duplicate frames are merged, the transcript is not re-run
 - Storage report from **measured bytes** with four scenarios (0 today/real, 1 replace videos, 2 remove exact copies, 3 both)
 
 Out of scope: speaker ID, slide/video recreation, live SharePoint/OneDrive/Ericsson Play, chatbot, real deletion, cloud AI.
 
-**Window:** tonight (Thu 12 Nov) + Friday 13 Nov. Checkpoints Fri 12:00 and 16:00, feature freeze Fri 19:00 (Stockholm).
-Design source of truth: the approved design Page "Data Storage Optimization — System Design & MVP Plan".
+**How to run it:** see [`START-HERE.md`](START-HERE.md) (Windows, step by step).
 
 ## Layout and ownership
 
@@ -28,26 +28,32 @@ data/        originals/ (read-only, never deleted) · derived/<asset_id>/ · sam
 
 **Rule:** streams share ONLY `contracts/` and hand off via **one `manifest.json` per file**
 (`data/derived/<asset_id>/manifest.json`). No stream imports another stream's code. Read
-[`contracts/CONTRACTS.md`](contracts/CONTRACTS.md) before writing code. One branch per stream
-(`stream1-frontend`, `stream2-backend`, `stream3-pipeline`), merged to `main` at checkpoints.
+[`contracts/CONTRACTS.md`](contracts/CONTRACTS.md) before writing code. Work happens on a branch per change
+(`feature/...`, `fix/...`, `docs/...`) and is merged to `main` through a pull request.
 
-## Run (skeletons today)
+## Run
+
+Windows step-by-step guide: [`START-HERE.md`](START-HERE.md). Short version for Linux/macOS:
 
 ```bash
-# Stream 1
-cd frontend && npm install && npm run dev                      # http://localhost:5173 (mock data)
-
-# Stream 2
+# Backend – http://localhost:8000/health
 cd backend && python3 -m venv .venv && . .venv/bin/activate \
   && pip install -r requirements.txt -e ../contracts/python \
-  && uvicorn app.main:app --reload --port 8000                 # http://localhost:8000/health
+  && uvicorn app.main:app --port 8000
 
-# Stream 3 (needs system ffmpeg)
+# Pipeline (needs system ffmpeg) – used by the backend to process uploads
 cd pipeline && python3 -m venv .venv && . .venv/bin/activate \
-  && pip install -r requirements.txt -e ../contracts/python -e . \
-  && python -m dso_pipeline --help
+  && pip install -r requirements.txt -e ../contracts/python -e .
 
-# Contracts (only when all 3 agree to change them)
+# Frontend – http://localhost:5173 (live API)
+cd frontend && echo "VITE_USE_MOCKS=false" > .env.local && npm install && npm run dev
+```
+
+Do not run `app.cli load-fixtures --reset` on a database you care about: it wipes it and loads generated demo data.
+
+Contracts (only when all streams agree to change them):
+
+```bash
 python3 -m venv .venv-tools && .venv-tools/bin/pip install jsonschema referencing datamodel-code-generator pyyaml openapi-spec-validator pydantic
 contracts/scripts/generate.sh && python3 contracts/scripts/make_fixtures.py && .venv-tools/bin/python contracts/scripts/check_contracts.py
 ```
