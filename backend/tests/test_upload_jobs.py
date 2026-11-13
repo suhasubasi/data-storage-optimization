@@ -148,3 +148,10 @@ def test_file_serving_is_confined(demo):
     assert demo.get("/files/derived/a_01/%2e%2e/%2e%2e/dso.sqlite").status_code == 404
     r = demo.get("/files/originals/a_01/event-recording.mp4")  # demo data: no real file on disk
     assert r.status_code == 404 and r.json()["error"]["code"] == "not_found"
+
+
+def test_upload_accepts_pptx_as_document(empty):
+    r = upload(empty, "Deck v2.PPTX", data=b"PK\x03\x04 tiny")
+    assert r.status_code == 201 and r.json()["kind"] == "document"
+    r = upload(empty, "old.ppt")
+    assert r.status_code == 415 and r.json()["error"]["code"] == "unsupported_file_type"

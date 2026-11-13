@@ -78,10 +78,15 @@ def run(asset_id: str, kind: str, input_path: Path, out_dir: Path) -> dict[str, 
 
         if kind == "document":
             with open(input_path, "rb") as f:
-                if f.read(5) != b"%PDF-":
-                    raise PipelineError("kind 'document' needs a PDF file (no %PDF- header found)")
-            from .document import process_document
-            parts = process_document(input_path, out_dir, thresholds, status)
+                head = f.read(5)
+            if head == b"%PDF-":
+                from .document import process_document
+                parts = process_document(input_path, out_dir, thresholds, status)
+            else:
+                from .presentation import is_pptx, process_presentation
+                if not is_pptx(input_path):
+                    raise PipelineError("kind 'document' needs a PDF or a PowerPoint .pptx file")
+                parts = process_presentation(input_path, out_dir, thresholds, status)
         elif kind == "video":
             from .video import process_video
             parts = process_video(input_path, out_dir, thresholds, status)

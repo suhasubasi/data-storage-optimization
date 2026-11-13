@@ -63,3 +63,14 @@ contracts/build/
 
 # --- Local audit evidence (large, machine-specific)
 data/audit/
+
+# --- Ericsson sample files (never pushed: Brief/ and anything copied or derived from it)
+Brief/
+**/Brief/
+brief-files/
+brief-test/
+*.msg
+*.docx
+*.png
+*.jpg
+*.jpeg

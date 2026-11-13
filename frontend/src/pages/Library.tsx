@@ -68,7 +68,7 @@ export default function Library() {
 
   async function upload(e: FormEvent) {
     e.preventDefault();
-    if (!file) return setFormError(new Error("Choose an .mp4 or .pdf file first."));
+    if (!file) return setFormError(new Error("Choose an .mp4, .pdf or .pptx file first."));
     if (!owner.trim()) return setFormError(new Error("Owner is required (who owns this file?)."));
     setBusy(true);
     setFormError(null);
@@ -112,7 +112,7 @@ export default function Library() {
     <section>
       <PageHeader
         title="Library & ingest"
-        lead="Upload a recording (.mp4) or a document (.pdf) with a simulated source label and owner, then start processing. The original is kept untouched."
+        lead="Upload a recording (.mp4) or a document (.pdf or PowerPoint .pptx) with a simulated source label and owner, then start processing. The original is kept untouched."
       />
 
       <div className="grid-2">
@@ -131,7 +131,7 @@ export default function Library() {
               ref={fileInput}
               id="file"
               type="file"
-              accept=".mp4,.pdf,video/mp4,application/pdf"
+              accept=".mp4,.pdf,.pptx,video/mp4,application/pdf,application/vnd.openxmlformats-officedocument.presentationml.presentation"
               onChange={(e) => setFile(e.target.files?.[0] ?? null)}
             />
             <label htmlFor="file">
@@ -140,7 +140,7 @@ export default function Library() {
                   <strong>{file.name}</strong> · {formatBytes(file.size)}
                 </>
               ) : (
-                <>Drop a file here or <u>browse</u> (.mp4 or .pdf)</>
+                <>Drop a file here or <u>browse</u> (.mp4, .pdf or .pptx)</>
               )}
             </label>
           </div>

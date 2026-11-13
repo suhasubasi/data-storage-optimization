@@ -118,4 +118,4 @@ A = kept original bytes + D + I
 
 Every non-2xx body: `{"error": {"code": ErrorCode, "message": "simple English", "details": {...}|null}}`.
 Codes: `not_found` 404, `validation_error` 422 (override FastAPI's default shape), `unsupported_file_type` 415
-(only `.mp4` → video, `.pdf` → document), `conflict` 409 (job already running), `pipeline_failed`, `internal_error` 500.
+(only `.mp4` → video, `.pdf` or `.pptx` → document; v1.2), `conflict` 409 (job already running), `pipeline_failed`, `internal_error` 500.
