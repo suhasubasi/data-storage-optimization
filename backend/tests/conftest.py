@@ -12,10 +12,11 @@ from pathlib import Path  # noqa: E402
 import pytest  # noqa: E402
 from fastapi.testclient import TestClient  # noqa: E402
 
-from app import ingest, settings  # noqa: E402
+from app import settings  # noqa: E402
 from app.main import app  # noqa: E402
+from fixture_data import FIXTURES_DIR, load_fixtures, reset_database  # noqa: E402
 
-FIX = settings.FIXTURES_DIR
+FIX = FIXTURES_DIR
 assert str(settings.DATA_DIR).startswith(_TMP), "tests must not touch the real data/ dir"
 
 
@@ -44,14 +45,14 @@ def client():
 
 @pytest.fixture
 def demo(client):
-    """Fresh DB with the contracts/fixtures demo dataset."""
-    ingest.load_fixtures(reset=True)
+    """Fresh throwaway test DB with the synthetic contract examples (tests only)."""
+    load_fixtures(reset=True)
     return client
 
 
 @pytest.fixture
 def empty(client):
-    ingest.reset_database()
+    reset_database()
     from app import db
     db.init_db()
     return client
