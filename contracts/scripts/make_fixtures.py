@@ -151,7 +151,8 @@ JOB = {"id": "j_01", "asset_id": "a_01", "status": "done", "progress": 1.0, "sta
        "started_at": "2026-11-13T08:05:00Z", "finished_at": "2026-11-13T08:15:40Z"}
 dump("job.json", JOB)
 dump("job_running.json", {"id": "j_02", "asset_id": "a_05", "status": "running", "progress": 0.4,
-                          "stage": "rendering pages", "error": None, "started_at": "2026-11-13T10:00:00Z", "finished_at": None})
+                          "stage": "rendering pages", "stage_progress": 0.4, "error": None,
+                          "started_at": "2026-11-13T10:00:00Z", "finished_at": None, "elapsed_s": 120.0, "eta_s": 180.0})
 dump("error.json", {"error": {"code": "not_found", "message": "Asset a_99 was not found.", "details": None}})
 
 

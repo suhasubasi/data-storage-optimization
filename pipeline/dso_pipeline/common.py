@@ -110,7 +110,10 @@ class Status:
         self._last_progress_value = -1.0
         self._last_stage_written: str | None = None
 
-    def progress(self, stage: str, progress: float) -> None:
+    def progress(self, stage: str, progress: float, stage_progress: float | None = None) -> None:
+        """progress = whole job (0..1, stage-weighted: fixed weights per step, see video.py).
+        stage_progress = real fraction of the CURRENT step only (e.g. transcribing = last finished
+        Whisper segment end / media duration). It is only written when the step really measures it."""
         self.stage = stage
         value = round(max(0.0, min(1.0, progress)), 3)
         now = time.monotonic()
@@ -123,10 +126,10 @@ class Status:
         )
         if not should_write:
             return
-        write_json_atomic(
-            self.out_dir / "progress.json",
-            {"stage": stage, "progress": value},
-        )
+        data: dict[str, Any] = {"stage": stage, "progress": value}
+        if stage_progress is not None:
+            data["stage_progress"] = round(max(0.0, min(1.0, stage_progress)), 3)
+        write_json_atomic(self.out_dir / "progress.json", data)
         self._last_progress_write = now
         self._last_progress_value = value
         self._last_stage_written = stage

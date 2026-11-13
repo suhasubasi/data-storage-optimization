@@ -23,7 +23,7 @@ from pathlib import Path
 
 from dso_contracts.models import ErrorCode, Job
 
-from . import db, ingest, settings
+from . import db, ingest, progress, settings
 from .errors import ApiError
 from .services import get_asset_row, to_job
 
@@ -86,8 +86,10 @@ def _read_json(path: Path, newer_than: float) -> dict | None:
 
 def _fail(job_id: str, asset_id: str, message: str) -> None:
     log.warning("job %s failed: %s", job_id, message)
-    _update_job(job_id, status="failed", error=message[:4000], finished_at=db.utc_now())
+    # One transaction: a poller never sees the job 'failed' while the asset still says 'processing'.
     with db.write() as conn:
+        conn.execute("UPDATE jobs SET status = 'failed', error = ?, finished_at = ? WHERE id = ?",
+                     (message[:4000], db.utc_now(), job_id))
         had = conn.execute("SELECT manifest_bytes FROM assets WHERE id = ?", (asset_id,)).fetchone()
         # REC: if an earlier run was ingested, its data stays valid -> asset stays 'ready'.
         conn.execute("UPDATE assets SET status = ? WHERE id = ?",
@@ -105,6 +107,8 @@ def run_job(job_id: str, asset_id: str, kind: str, original_path: str) -> None:
     except Exception as e:  # never leave a job 'running' forever
         log.exception("job %s crashed", job_id)
         _fail(job_id, asset_id, f"Backend error while running the job: {type(e).__name__}: {e}")
+    finally:
+        progress.clear(job_id)
 
 
 def staging_root() -> Path:
@@ -202,7 +206,14 @@ def _run_job(job_id: str, asset_id: str, kind: str, original_path: str) -> None:
                         prog = min(max(float(p.get("progress") or 0), 0.0), 0.99)
                     except (TypeError, ValueError):
                         prog = 0.0
+                    try:
+                        sp = p.get("stage_progress")
+                        sp = None if sp is None else min(max(float(sp), 0.0), 1.0)
+                    except (TypeError, ValueError):
+                        sp = None
                     _update_job(job_id, progress=prog, stage=str(p.get("stage") or "running")[:200])
+                    # Rate sample for the time-left ESTIMATE (elapsed when this real progress was seen).
+                    progress.record_sample(job_id, prog, sp, time.time() - started)
                 time.sleep(POLL_S)
             out.seek(0)
             tail = out.read().decode("utf-8", "replace")[-2000:].strip()
@@ -218,6 +229,7 @@ def _run_job(job_id: str, asset_id: str, kind: str, original_path: str) -> None:
         except ingest.IngestError as e:
             return _fail(job_id, asset_id, f"Could not ingest manifest.json: {e}")
         _update_job(job_id, stage="ingesting", progress=0.99)
+        progress.record_sample(job_id, 0.99, None, time.time() - started)  # new step: no per-step fraction
         try:
             old = swap_in(asset_id, job_id, stage)
         except Exception as e:  # noqa: BLE001

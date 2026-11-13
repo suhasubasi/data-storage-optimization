@@ -1,5 +1,7 @@
 # Shared contracts — FROZEN v1.0 (Thu 12 Nov 2026, 23:00 Stockholm)
 
+v1.3 (Fri 13 Nov 2026): `Job` gains optional `stage_progress`, `elapsed_s`, `eta_s` (real progress bar). Additive only.
+
 Source of truth: the approved design Page "Data Storage Optimization — System Design & MVP Plan"
 (which follows the Ericsson challenge PDF). Anything **not** on the Page is marked
 **REC** (= our recommendation) in the schema descriptions / SQL comments, and kept minimal.
@@ -61,7 +63,10 @@ Conventions:
     --input data/originals/a_01/<file> --out data/derived/a_01
 ```
 Exit 0 + `manifest.json` present = done. Non-zero = failed; reason on stderr and in `error.json`.
-Optional `progress.json` = `{"stage": "transcribing", "progress": 0.4}` for real job progress.
+Optional `progress.json` = `{"stage": "transcribing", "progress": 0.4, "stage_progress": 0.08}` for real job progress
+(v1.3: `stage_progress` is optional = real fraction of the current step, e.g. last finished Whisper segment end / duration;
+`progress` is stage-weighted with fixed step weights). The backend adds `elapsed_s` and `eta_s` to `Job`
+(v1.3, REC): `eta_s` is an ESTIMATE from the measured rate so far, `null` until progress ≥ 3 % and ≥ 10 s.
 `progress.json` / `error.json` are status files, not derived data (never counted). A subprocess keeps
 the heavy ML deps out of the backend venv. Backend path: env `DSO_PIPELINE_PYTHON`.
 

@@ -73,7 +73,7 @@ paths:
 
   /api/jobs/{job_id}:
     get:
-      summary: Job progress and errors (never faked)
+      summary: "Job progress and errors (never faked). v1.3: also stage_progress, elapsed_s and eta_s (an estimate from the measured rate). Poll every 1-2 s while running."
       operationId: getJob
       parameters:
         - { name: job_id, in: path, required: true, schema: { type: string } }

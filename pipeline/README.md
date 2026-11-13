@@ -28,7 +28,7 @@ ffmpeg -version            # system dependency (needs libwebp + libx264 + flite 
 Exit 0 = `manifest.json` written (validated against `dso_contracts.models.Manifest`, written atomically
 via `manifest.json.tmp` → rename, and LAST). Exit 1 = failed: message on stderr + `error.json`
 (`{"error": {"code": "pipeline_failed", "message": ..., "details": {"stage": ...}}}`), no manifest.
-Exit 2 = bad arguments. `progress.json` = `{"stage": "...", "progress": 0..1}` is updated during the run.
+Exit 2 = bad arguments. `progress.json` = `{"stage": "...", "progress": 0..1, "stage_progress": 0..1}` is updated during the run. `progress` is stage-weighted (fixed weights per step); `stage_progress` is the real fraction of the current step (key frames = video time / duration, transcribing = last finished Whisper segment end / duration, pages = pages done / pages). Reporting progress never changes Whisper settings or output.
 
 At start, the pipeline removes only its own earlier outputs in `--out` (`manifest.json`, `error.json`,
 `progress.json`, `transcript.json`, `frames/`, `pages/`), so re-processing never leaves stale files.

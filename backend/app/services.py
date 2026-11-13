@@ -14,7 +14,7 @@ from dso_contracts.models import (
     SlideList, SlideMatch, SlideView, StorageReport, StorageScenario, StorageTotals, Timeline,
 )
 
-from . import db, duplicates
+from . import db, duplicates, progress
 from .errors import not_found
 
 EMPTY_META = {"title": None, "author": None, "doc_number": None, "revision": None, "date": None, "language": None}
@@ -96,8 +96,10 @@ def metadata_or_empty(row) -> AssetMetadata:
 
 
 def to_job(row) -> Job:
+    live = progress.live_fields(row["id"], row["status"], row["progress"], row["started_at"], row["finished_at"])
     return Job(id=row["id"], asset_id=row["asset_id"], status=row["status"], progress=row["progress"],
-               stage=row["stage"], error=row["error"], started_at=row["started_at"], finished_at=row["finished_at"])
+               stage=row["stage"], error=row["error"], started_at=row["started_at"], finished_at=row["finished_at"],
+               **live)
 
 
 def provenance(row) -> Provenance:

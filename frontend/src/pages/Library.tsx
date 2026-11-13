@@ -3,7 +3,7 @@ import { Link } from "react-router-dom";
 import type { Asset, Job, SourceSystem } from "@contracts/ts/dso-contracts";
 import { api } from "../api/client";
 import { useAsync } from "../lib/useAsync";
-import { formatBytes, formatDate, KIND_LABEL, SOURCE_LABEL, shortHash } from "../lib/format";
+import { formatBytes, formatDate, formatDuration, formatEta, KIND_LABEL, SOURCE_LABEL, shortHash } from "../lib/format";
 import { Badge, Callout, Empty, ErrorBox, Loading, PageHeader, SourceBadge } from "../components/ui";
 
 const STATUS_TONE = { uploaded: "grey", queued: "amber", processing: "amber", ready: "green", failed: "red" } as const;
@@ -12,22 +12,55 @@ function viewLink(a: Asset) {
   return a.kind === "video" ? `/recording/${a.id}` : `/document/${a.id}`;
 }
 
+const STAGE_LABEL: Record<string, string> = {
+  queued: "Waiting to start",
+  starting: "Starting",
+  "hashing original": "Hashing the original",
+  probing: "Reading the video",
+  "extracting key frames": "Extracting key frames",
+  "finding unique slides": "Finding unique slides",
+  "extracting audio": "Extracting audio",
+  transcribing: "Transcribing speech",
+  "writing transcript": "Writing the transcript",
+  "rendering pages": "Rendering pages",
+  "reading slides": "Reading slides",
+  "rendering slides": "Rendering slides",
+  "saving slide images": "Saving slide images",
+  ingesting: "Saving to the index",
+  done: "Done",
+};
+
+/** Real progress only: percent = pipeline progress.json (stage-weighted), time left = backend ESTIMATE
+ * from the measured rate so far (hidden until there is enough progress). Nothing is animated or guessed here. */
 function JobProgress({ job }: { job: Job }) {
-  const pct = Math.round(job.progress * 100);
-  const tone = job.status === "failed" ? "red" : job.status === "done" ? "green" : "amber";
+  const pct = Math.floor(job.progress * 100);
+  const tone = job.status === "failed" ? "red" : job.status === "done" ? "green" : "";
+  const active = job.status === "queued" || job.status === "running";
+  const stage = job.stage ? STAGE_LABEL[job.stage] ?? job.stage : "—";
+  const stagePct = active && job.stage_progress != null ? Math.floor(job.stage_progress * 100) : null;
+  const eta = active ? formatEta(job.eta_s) : null;
   return (
     <div className="job">
       <div className="job-head">
         <span>
           Job <code>{job.id}</code> for <code>{job.asset_id}</code>
         </span>
-        <Badge tone={tone}>{job.status}</Badge>
+        <Badge tone={job.status === "failed" ? "red" : job.status === "done" ? "green" : "amber"}>{job.status}</Badge>
       </div>
-      <div className="progress" role="progressbar" aria-valuenow={pct} aria-valuemin={0} aria-valuemax={100}>
+      <div className="job-big">
+        <span className="job-pct">{pct}%</span>
+        <span className="job-stage">
+          {stage}
+          {stagePct !== null && <span className="muted"> · this step {stagePct}%</span>}
+        </span>
+      </div>
+      <div className="progress progress-lg" role="progressbar" aria-valuenow={pct} aria-valuemin={0} aria-valuemax={100}
+           aria-label={`Processing ${pct}%`}>
         <div className={`progress-bar ${tone}`} style={{ width: `${pct}%` }} />
       </div>
       <div className="job-foot muted">
-        {pct}% · {job.stage ?? "—"}
+        {job.status === "done" ? "Took" : "Elapsed"} {formatDuration(job.elapsed_s)}
+        {active && (eta ? <> · <b>{eta}</b></> : <> · time left: measuring…</>)}
         {job.error && <span className="err-text"> · {job.error}</span>}
       </div>
     </div>
@@ -46,6 +79,26 @@ export default function Library() {
   const [drag, setDrag] = useState(false);
   const [confirmId, setConfirmId] = useState<string | null>(null);
   const fileInput = useRef<HTMLInputElement>(null);
+
+  // After a page reload, pick up jobs that are still running (real latest_job of each busy asset).
+  const busyIds = (assets.data?.assets ?? [])
+    .filter((a) => a.status === "queued" || a.status === "processing")
+    .map((a) => a.id)
+    .join(",");
+  useEffect(() => {
+    if (!busyIds) return;
+    for (const id of busyIds.split(",")) {
+      if (jobs[id]) continue;
+      api
+        .getAsset(id)
+        .then((d) => {
+          const j = d.latest_job;
+          if (j && (j.status === "queued" || j.status === "running")) setJobs((p) => (p[id] ? p : { ...p, [id]: j }));
+        })
+        .catch(() => undefined);
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [busyIds]);
 
   // Poll running jobs (real job endpoint; progress comes from the pipeline, never simulated).
   const running = Object.values(jobs).filter((j) => j.status === "queued" || j.status === "running");

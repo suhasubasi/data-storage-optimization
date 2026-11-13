@@ -358,7 +358,7 @@
       }
     },
     "Job": {
-      "description": "Progress and errors are real, never faked.",
+      "description": "Progress and errors are real, never faked. progress is stage-weighted: each step reports its own real fraction, and fixed step weights map it to 0..1 (see pipeline/dso_pipeline/video.py).",
       "type": "object",
       "additionalProperties": false,
       "required": [
@@ -393,6 +393,15 @@
             "null"
           ]
         },
+        "stage_progress": {
+          "description": "REC v1.3: real progress of the current step only (0.0 to 1.0), e.g. transcribing = last finished Whisper segment end / media duration. null if the step does not report it.",
+          "type": [
+            "number",
+            "null"
+          ],
+          "minimum": 0,
+          "maximum": 1
+        },
         "error": {
           "type": [
             "string",
@@ -412,6 +421,22 @@
             "null"
           ],
           "format": "date-time"
+        },
+        "elapsed_s": {
+          "description": "REC v1.3: seconds since the job started running (measured by the server clock). null before it starts.",
+          "type": [
+            "number",
+            "null"
+          ],
+          "minimum": 0
+        },
+        "eta_s": {
+          "description": "REC v1.3: ESTIMATE of seconds left = elapsed_s * (1 - progress) / progress, from the measured rate so far. null until progress >= 0.03 and elapsed_s >= 10, and when the job is not running.",
+          "type": [
+            "number",
+            "null"
+          ],
+          "minimum": 0
         }
       }
     },
