@@ -229,6 +229,7 @@ def _run_job(job_id: str, asset_id: str, kind: str, original_path: str) -> None:
         except ingest.IngestError as e:
             return _fail(job_id, asset_id, f"Could not ingest manifest.json: {e}")
         _update_job(job_id, stage="ingesting", progress=0.99)
+        progress.record_sample(job_id, 0.99, None, time.time() - started)  # new step: no per-step fraction
         try:
             old = swap_in(asset_id, job_id, stage)
         except Exception as e:  # noqa: BLE001
