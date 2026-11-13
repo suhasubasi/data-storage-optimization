@@ -54,17 +54,20 @@ export default function DocumentView() {
   const list = slides.data?.slides ?? [];
   const sharedCount = list.filter((s) => s.matches.some((m) => m.type === "shared")).length;
   const similarCount = list.filter((s) => s.matches.some((m) => m.type === "similar")).length;
+  const isDeck = /\.pptx$/i.test(asset?.filename ?? "");
+  const unit = isDeck ? "Slide" : "Page";
+  const warnings = detail.data?.pipeline?.warnings ?? [];
 
   return (
     <section>
-      <PageHeader title="Document / slide view" lead="Each PDF page with its text and three hashes: file SHA-256, normalised-text SHA-256 and perceptual image hash (pHash).">
+      <PageHeader title="Document / slide view" lead="Each PDF page or PowerPoint slide with its text and three hashes: file SHA-256, normalised-text SHA-256 and perceptual image hash (pHash).">
         {assets.data && <AssetPicker assets={assets.data.assets} kind="document" value={id} label="Document" onChange={(v) => navigate(`/document/${v}`)} />}
       </PageHeader>
 
       {assets.error ? (
         <ErrorBox error={assets.error} onRetry={assets.reload} />
       ) : !id && assets.data ? (
-        <Empty>No documents yet. Upload a .pdf in Library & ingest.</Empty>
+        <Empty>No documents yet. Upload a .pdf or .pptx in Library & ingest.</Empty>
       ) : slides.loading || assets.loading ? (
         <Loading label="Loading pages…" />
       ) : slides.error ? (
@@ -86,7 +89,7 @@ export default function DocumentView() {
 
           <div className="stats-row">
             <Stat label="Original (kept)" value={formatBytes(asset?.bytes)} sub={asset && <SourceBadge source={asset.source_system} />} />
-            <Stat label="Derived (added)" value={formatBytes(detail.data?.derived?.derived_bytes)} sub={`${list.length} page images + text`} />
+            <Stat label="Derived (added)" value={formatBytes(detail.data?.derived?.derived_bytes)} sub={`${list.length} ${unit.toLowerCase()} images + text`} />
             <Stat label="Shared slides" value={sharedCount} sub="same text hash + close pHash in another file" />
             <Stat label="Similar slides" value={similarCount} sub="needs human review, never exact" />
           </div>
@@ -109,6 +112,12 @@ export default function DocumentView() {
             </dl>
           </div>
 
+          {warnings.length > 0 && (
+            <Callout tone="info">
+              Processing notes: {warnings.join(" · ")}
+            </Callout>
+          )}
+
           {list.length === 0 ? (
             <Empty>
               No pages for this file yet. Process it first (status: {asset?.status ?? "unknown"}).
@@ -118,13 +127,13 @@ export default function DocumentView() {
             <div className="slide-grid">
               {list.map((s) => (
                 <article key={s.id} ref={(el) => (refs.current[s.page] = el)} className={`card slide-card ${focusPage === s.page ? "focus" : ""}`}>
-                  <MediaImage url={s.image_url} kind="slide" title={s.text} sub={`${asset?.filename ?? id} · page ${s.page}`} alt={`Page ${s.page}: ${s.text}`} />
+                  <MediaImage url={s.image_url} kind="slide" title={s.text} sub={`${asset?.filename ?? id} · ${unit.toLowerCase()} ${s.page}`} alt={`${unit} ${s.page}: ${s.text}`} />
                   <div className="slide-body">
                     <div className="slide-head">
-                      <b>Page {s.page}</b>
+                      <b>{unit} {s.page}</b>
                       <span className="muted small">{formatBytes(s.bytes)} image</span>
                     </div>
-                    <p className="slide-text">{s.text || <span className="muted">No text layer on this page.</span>}</p>
+                    <p className="slide-text">{s.text || <span className="muted">{isDeck ? "No text on this slide." : "No text layer on this page."}</span>}</p>
                     <div className="badges">
                       {s.matches.length === 0 ? <Badge tone="green">Unique in library</Badge> : s.matches.map((m, i) => <MatchBadge key={i} m={m} />)}
                     </div>
