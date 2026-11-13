@@ -1,5 +1,7 @@
 # Ericsson Data Storage Optimization — MVP (Campor × BUILD Hackathon 2026)
 
+[![CI](https://github.com/suhasubasi/ericsson-data-storage-optimization/actions/workflows/ci.yml/badge.svg)](https://github.com/suhasubasi/ericsson-data-storage-optimization/actions/workflows/ci.yml)
+
 Local tool that turns long recordings and documents into compact, searchable, AI-ready data and finds
 duplicates across (simulated) SharePoint / OneDrive / Ericsson Play — **without deleting anything**.
 
