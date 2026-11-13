@@ -132,6 +132,10 @@ def process_video(input_path: Path, out_dir: Path, thresholds: dict[str, Any], s
     hash_size = int(thresholds.get("phash", {}).get("hash_size", 8))
     warnings: list[str] = []
 
+    # Whole-job progress is STAGE-WEIGHTED: each step reports its own real fraction and these fixed
+    # weights place it in 0..1 (probing 0-5%, key frames 5-30%, unique slides + audio 30-35%,
+    # transcribing 35-95%, writing 97%, done 100%). The weights are a fixed choice, not a measurement,
+    # so the backend's time-left number is labelled an estimate.
     status.progress("probing", 0.0)
     info = probe(input_path)
     duration = _duration(info)
@@ -156,7 +160,8 @@ def process_video(input_path: Path, out_dir: Path, thresholds: dict[str, Any], s
             img.save(dest, format=fmt.upper(), quality=75, method=4)
             kept.append((t, dest))
             if duration > 0:
-                status.progress("extracting key frames", 0.05 + 0.25 * min(t / duration, 1.0))
+                f = min(t / duration, 1.0)  # real: video time of the last decoded frame / duration
+                status.progress("extracting key frames", 0.05 + 0.25 * f, stage_progress=f)
         end = duration if duration > 0 else (kept[-1][0] + 1.0 / fps if kept else 0.0)
         for i, (t, dest) in enumerate(kept):
             rel = f"frames/{dest.name}"
@@ -200,8 +205,10 @@ def process_video(input_path: Path, out_dir: Path, thresholds: dict[str, Any], s
             _run(["ffmpeg", "-nostdin", "-v", "error", "-y", "-i", str(input_path), "-vn",
                   "-ac", "1", "-ar", "16000", "-c:a", "pcm_s16le", str(wav)])
             status.progress("transcribing", 0.35)
+            # p is real: end time of the last finished Whisper segment / media duration. Reporting
+            # progress only reads the segments; it never changes what Whisper does or returns.
             result = transcribe(wav, duration, thresholds,
-                                lambda p: status.progress("transcribing", 0.35 + 0.6 * p))
+                                lambda p: status.progress("transcribing", 0.35 + 0.6 * p, stage_progress=p))
     else:
         warnings.append("no audio stream found; transcript is empty")
 

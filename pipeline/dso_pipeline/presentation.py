@@ -229,7 +229,7 @@ def process_presentation(input_path: Path, out_dir: Path, thresholds: dict[str, 
         derived: list[dict[str, Any]] = []
         for s in slides_in:
             pno = s["page"]
-            status.progress("saving slide images", 0.1 + 0.9 * (pno - 1) / n)
+            status.progress("saving slide images", 0.1 + 0.9 * (pno - 1) / n, stage_progress=(pno - 1) / n)
             png = tmp_dir / f"s{pno}.png"
             if not png.is_file():
                 raise RuntimeError(f"{used} did not write an image for slide {pno}")

@@ -75,7 +75,7 @@ def process_document(input_path: Path, out_dir: Path, thresholds: dict[str, Any]
         first_text = ""
         for i, page in enumerate(doc):
             pno = i + 1
-            status.progress("rendering pages", i / n)
+            status.progress("rendering pages", i / n, stage_progress=i / n)  # real: pages done / pages
             text = page.get_text("text").strip()
             if i == 0:
                 first_text = text
