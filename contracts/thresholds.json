@@ -4,6 +4,8 @@
   "video": {
     "sample_fps": 1,
     "frame_change_min_phash_distance": 12,
+    "frame_change_min_pixel_fraction": 0.01,
+    "frame_change_pixel_level": 24,
     "frame_max_width_px": 1280,
     "frame_format": "webp",
     "whisper_model": "small",
