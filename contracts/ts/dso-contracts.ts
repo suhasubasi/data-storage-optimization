@@ -92,7 +92,7 @@ export type SlideMatchType = "shared" | "similar";
  * This interface was referenced by `DsoContracts`'s JSON-Schema
  * via the `definition` "HitType".
  */
-export type HitType = "segment" | "slide";
+export type HitType = "segment" | "slide" | "asset";
 /**
  * This interface was referenced by `DsoContracts`'s JSON-Schema
  * via the `definition` "DuplicateType".
@@ -138,6 +138,7 @@ export interface DsoContracts {
   DerivedFileKind?: DerivedFileKind;
   DerivedFile?: DerivedFile;
   PipelineInfo?: PipelineInfo;
+  UniqueSlidesInfo?: UniqueSlidesInfo;
   Manifest?: Manifest;
   ItemRef?: ItemRef;
   SourceSystem?: SourceSystem;
@@ -264,6 +265,16 @@ export interface Frame {
    * STRETCH (levels 3-4). Global slide ref '<asset_id>:p<page>' or null. Always null in P0.
    */
   matched_slide: string | null;
+  /**
+   * REC v1.1 (unique-slide pass): 1-based number of the unique slide shown in this time range. Several ranges can show the same slide (the talk went back to it); they then share one image file. Absent on manifests made before the pass.
+   */
+  slide?: number;
+  /**
+   * REC v1.1: ids of the originally extracted key frames merged into this time range (audit trail). The first one is this frame's id.
+   *
+   * @minItems 1
+   */
+  source_frames?: [LocalId, ...LocalId[]];
 }
 /**
  * This interface was referenced by `DsoContracts`'s JSON-Schema
@@ -318,6 +329,49 @@ export interface PipelineInfo {
    * OUR RECOMMENDATION (not on the Page): non-fatal issues, e.g. 'no text layer on page 3'. Optional.
    */
   warnings?: string[];
+  /**
+   * REC v1.1: unique-slide pass result (videos); absent or null if it has not run.
+   */
+  unique_slides?: UniqueSlidesInfo | null;
+}
+/**
+ * REC v1.1: result of the unique-slide pass (one image per unique slide; near-identical repeats removed). Video only.
+ *
+ * This interface was referenced by `DsoContracts`'s JSON-Schema
+ * via the `definition` "UniqueSlidesInfo".
+ */
+export interface UniqueSlidesInfo {
+  method: string;
+  /**
+   * 'pipeline' = during processing; 'post_pass' = later, on the already extracted frames (no re-transcription).
+   */
+  applied_as: "pipeline" | "post_pass";
+  /**
+   * ISO 8601 UTC time of a post-pass; null when applied during processing.
+   */
+  applied_at?: string | null;
+  source_frame_count: number;
+  unique_slide_count: number;
+  /**
+   * Number of time ranges in frames[] after the pass.
+   */
+  run_count: number;
+  source_frame_bytes: number;
+  unique_slide_bytes: number;
+  /**
+   * Ignored live-overlay area (e.g. webcam box) as [x0, y0, x1, y1] fractions of the picture, or null.
+   */
+  overlay_mask: {
+    /**
+     * @minItems 4
+     * @maxItems 4
+     */
+    box: [number, number, number, number];
+    area_fraction: number;
+  } | null;
+  params: {
+    [k: string]: number;
+  };
 }
 /**
  * FROZEN v1.0. One manifest.json per processed original, written by Stream 3 (pipeline) to data/derived/<asset_id>/manifest.json and ingested by Stream 2 (backend). Shape follows the approved design Page, section 5. All paths inside 'segments/frames/slides/derived_files' are relative to data/derived/<asset_id>/. The pipeline NEVER deletes or modifies the original.
@@ -421,6 +475,10 @@ export interface Asset {
    * e.g. '/files/originals/a_01/deck.pdf'
    */
   original_url: string;
+  /**
+   * REC v1.1: true = generated sample/test file (not customer data). Kept for the duplicate demo; excluded from the default storage report.
+   */
+  test_data?: boolean;
 }
 /**
  * This interface was referenced by `DsoContracts`'s JSON-Schema
@@ -439,6 +497,14 @@ export interface DerivedSummary {
   bytes_by_kind: {
     [k: string]: number;
   };
+  /**
+   * REC v1.1: unique slides after the unique-slide pass (videos); null if the pass has not run.
+   */
+  unique_slide_count?: number | null;
+  /**
+   * REC v1.1: key frames extracted before the unique-slide pass; null if the pass has not run.
+   */
+  source_frame_count?: number | null;
 }
 /**
  * GET /api/assets/{id}: one asset with metadata and derived summary.
@@ -494,6 +560,10 @@ export interface FrameView {
   bytes: number;
   phash: string;
   matched_slide: string | null;
+  /**
+   * REC v1.1: unique slide number shown in this time range (null before the unique-slide pass).
+   */
+  slide?: number | null;
 }
 /**
  * GET /api/assets/{id}/timeline: transcript segments joined to frames.
@@ -577,7 +647,7 @@ export interface SearchHit {
   source_system: SourceSystem;
   owner: string;
   /**
-   * Full segment or slide text.
+   * Full segment or slide text; for 'asset' hits the indexed title + file name + metadata.
    */
   text: string;
   /**
@@ -594,7 +664,7 @@ export interface SearchHit {
    */
   page: number | null;
   /**
-   * Local segment id ('s12') or slide id ('p4').
+   * Local segment id ('s12'), slide id ('p4'), or 'meta' for a hit on the file's title / file name / metadata (REC v1.1).
    */
   item_id: string;
   /**
@@ -794,6 +864,19 @@ export interface StorageReport {
   not_counted: string[];
   information_lost: string[];
   notes: string[];
+  /**
+   * REC v1.1: 'real_files' (default) = generated test files excluded; 'all_files' = everything in the library.
+   */
+  scope?: "real_files" | "all_files";
+  /**
+   * REC v1.1: generated test files left out of this report (empty when scope = all_files).
+   */
+  excluded_test_data?: {
+    asset_count: number;
+    original_bytes: number;
+    derived_bytes: number;
+    asset_ids: AssetId[];
+  };
 }
 /**
  * This interface was referenced by `DsoContracts`'s JSON-Schema

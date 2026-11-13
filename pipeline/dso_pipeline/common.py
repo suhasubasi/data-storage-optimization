@@ -5,6 +5,7 @@ import hashlib
 import json
 import os
 import re
+import time
 import unicodedata
 from pathlib import Path
 from typing import Any
@@ -62,14 +63,41 @@ def phash_distance(a: str, b: str) -> int:
 
 
 def write_json_atomic(path: Path, data: Any) -> None:
-    """Write to <name>.tmp then rename, so readers never see a half-written file."""
+    """Write to <name>.tmp then rename, so readers never see a half-written file.
+
+    On Windows, os.replace can raise PermissionError (WinError 5) if another process
+    has the destination open (the API or UI polling progress.json, antivirus, etc.).
+    Retry with a short backoff; if it is still locked, overwrite in place so a
+    progress update cannot kill a long job.
+    """
+    path = Path(path)
     tmp = path.with_name(path.name + ".tmp")
+    payload = json.dumps(data, ensure_ascii=False, indent=2) + "\n"
     with open(tmp, "w", encoding="utf-8") as f:
-        json.dump(data, f, ensure_ascii=False, indent=2)
-        f.write("\n")
+        f.write(payload)
         f.flush()
         os.fsync(f.fileno())
-    os.replace(tmp, path)
+    last_err: Exception | None = None
+    for attempt in range(12):
+        try:
+            os.replace(tmp, path)
+            return
+        except PermissionError as e:
+            last_err = e
+            time.sleep(0.05 * (attempt + 1))
+    try:
+        with open(path, "w", encoding="utf-8") as f:
+            f.write(payload)
+            f.flush()
+            os.fsync(f.fileno())
+        try:
+            tmp.unlink(missing_ok=True)
+        except OSError:
+            pass
+    except OSError:
+        if last_err:
+            raise last_err
+        raise
 
 
 class Status:
@@ -78,13 +106,30 @@ class Status:
     def __init__(self, out_dir: Path):
         self.out_dir = out_dir
         self.stage = "starting"
+        self._last_progress_write = -1.0
+        self._last_progress_value = -1.0
+        self._last_stage_written: str | None = None
 
     def progress(self, stage: str, progress: float) -> None:
         self.stage = stage
+        value = round(max(0.0, min(1.0, progress)), 3)
+        now = time.monotonic()
+        should_write = (
+            stage != self._last_stage_written
+            or value >= 1.0
+            or self._last_progress_write < 0
+            or abs(value - self._last_progress_value) >= 0.02
+            or (now - self._last_progress_write) >= 0.5
+        )
+        if not should_write:
+            return
         write_json_atomic(
             self.out_dir / "progress.json",
-            {"stage": stage, "progress": round(max(0.0, min(1.0, progress)), 3)},
+            {"stage": stage, "progress": value},
         )
+        self._last_progress_write = now
+        self._last_progress_value = value
+        self._last_stage_written = stage
 
     def error(self, message: str, details: dict[str, Any] | None = None) -> None:
         write_json_atomic(

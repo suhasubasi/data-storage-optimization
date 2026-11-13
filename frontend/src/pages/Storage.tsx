@@ -97,7 +97,8 @@ function Totals({ r }: { r: StorageReport }) {
 }
 
 export default function Storage() {
-  const res = useAsync(() => api.getStorageReport(), []);
+  const [includeTest, setIncludeTest] = useState(false);
+  const res = useAsync(() => api.getStorageReport(includeTest), [includeTest]);
   const [open, setOpen] = useState<Record<number, boolean>>({});
   const r = res.data;
   const max = r ? Math.max(...r.scenarios.map((s) => Math.max(s.before_bytes, s.after_bytes))) : 1;
@@ -111,6 +112,35 @@ export default function Storage() {
           </Badge>
         )}
       </PageHeader>
+
+      <div className="card scope-bar">
+        <label className="toggle">
+          <input type="checkbox" checked={includeTest} onChange={(e) => setIncludeTest(e.target.checked)} />{" "}
+          Include generated test files
+        </label>
+        <span className="muted small">
+          {r?.scope === "all_files" ? (
+            <>
+              Scope: <b>all files</b>, including generated test files (synthetic samples).
+            </>
+          ) : (
+            <>
+              Scope: <b>real uploaded files only</b>.{" "}
+              {r?.excluded_test_data && r.excluded_test_data.asset_count > 0
+                ? `${r.excluded_test_data.asset_count} generated test files (${formatBytes(r.excluded_test_data.original_bytes)} originals + ${formatBytes(
+                    r.excluded_test_data.derived_bytes,
+                  )} derived) are left out. They stay on disk; nothing is deleted.`
+                : "No generated test files are marked in the library."}
+            </>
+          )}{" "}
+          The index (I) is always the whole database, which keeps the numbers conservative.
+        </span>
+        {r?.scope !== "all_files" && r?.excluded_test_data && r.excluded_test_data.asset_ids.length > 0 && (
+          <div className="muted small">
+            Left out: {r.excluded_test_data.asset_ids.map((id) => <code key={id}>{id} </code>)}
+          </div>
+        )}
+      </div>
 
       {res.loading ? (
         <Loading label="Measuring…" />

@@ -62,6 +62,49 @@ def _write_manifest(conn: sqlite3.Connection, m: Manifest, manifest_bytes: int) 
         [(s.text, aid, "segment", s.id) for s in m.segments if s.text.strip()]
         + [(s.text, aid, "slide", s.id) for s in m.slides if s.text.strip()],
     )
+    index_asset_metadata(conn, aid)
+
+
+# ---------------------------------------------------------------------------------------------
+# Title / file name / metadata in search (REC v1.1). Only values really present on the asset:
+# no spelling fixes, no invented keywords.
+# ---------------------------------------------------------------------------------------------
+META_ITEM_ID = "meta"
+
+
+def asset_search_text(filename: str, metadata: dict) -> str:
+    parts: list[str] = []
+    for v in (metadata.get("title"), metadata.get("author"), metadata.get("doc_number"), metadata.get("revision"),
+              filename):
+        v = (v or "").strip() if isinstance(v, str) else ""
+        if v and v not in parts:
+            parts.append(v)
+    return " · ".join(parts)
+
+
+def index_asset_metadata(conn: sqlite3.Connection, asset_id: str) -> bool:
+    """(Re)write the one 'asset' FTS row of a processed asset. Returns True if a row was written."""
+    conn.execute("DELETE FROM search_fts WHERE asset_id = ? AND item_type = 'asset'", (asset_id,))
+    row = conn.execute("SELECT filename, metadata_json, manifest_bytes FROM assets WHERE id = ?", (asset_id,)).fetchone()
+    if row is None or row["manifest_bytes"] is None:
+        return False
+    try:
+        meta = json.loads(row["metadata_json"] or "{}")
+    except ValueError:
+        meta = {}
+    text = asset_search_text(row["filename"], meta if isinstance(meta, dict) else {})
+    if not text:
+        return False
+    conn.execute("INSERT INTO search_fts (text, asset_id, item_type, item_id) VALUES (?,?,?,?)",
+                 (text, asset_id, "asset", META_ITEM_ID))
+    return True
+
+
+def reindex_asset_metadata() -> int:
+    """Re-index title/file name/metadata for every processed asset (no pipeline run). Idempotent."""
+    with db.write() as conn:
+        ids = [r["id"] for r in conn.execute("SELECT id FROM assets WHERE manifest_bytes IS NOT NULL ORDER BY id")]
+        return sum(index_asset_metadata(conn, aid) for aid in ids)
 
 
 def ingest_manifest(asset_id: str, manifest_path: Path | None = None, *, recompute: bool = True) -> Manifest:
@@ -104,6 +147,7 @@ def load_fixtures(reset: bool = False) -> list[str]:
             for table in ("segments", "frames", "slides", "derived_files", "jobs"):
                 conn.execute(f"DELETE FROM {table} WHERE asset_id = ?", (a["id"],))
             conn.execute("DELETE FROM search_fts WHERE asset_id = ?", (a["id"],))
+            conn.execute("DELETE FROM asset_labels WHERE asset_id = ?", (a["id"],))
             conn.execute("DELETE FROM assets WHERE id = ?", (a["id"],))
             conn.execute(
                 "INSERT INTO assets (id, filename, kind, bytes, sha256, source_system, source_simulated, owner, "

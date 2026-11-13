@@ -230,3 +230,8 @@ details.card summary { cursor: pointer; font-weight: 600; }
   .scenario-grid { grid-template-columns: 1fr; }
 }
 .member-text { font-size: 13px; color: #24425f; }
+.confirm-box { margin-top: 6px; padding: 8px 10px; border: 1px solid var(--amber); border-radius: 8px; background: #fff8e8; max-width: 340px; }
+.confirm-box p { margin: 0 0 6px; }
+.scope-bar { display: flex; flex-wrap: wrap; gap: 6px 16px; align-items: center; }
+.scope-bar .toggle { font-weight: 600; white-space: nowrap; }
+.downloads { display: flex; flex-wrap: wrap; gap: 6px 8px; align-items: center; margin: 8px 0; }

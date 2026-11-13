@@ -54,7 +54,7 @@ export default function App() {
           ))}
         </nav>
         <div className="nav-foot">
-          <p>Sources (SharePoint, OneDrive, Ericsson Play) are simulated labels.</p>
+          <p>Source systems (SharePoint, OneDrive, Ericsson Play) are simulated labels; the files and transcripts are real.</p>
           <p>Nothing is ever deleted.</p>
           <p className="disclaimer">Team prototype for the Ericsson Data Storage Optimization challenge. Not an official Ericsson product.</p>
         </div>

@@ -1,6 +1,10 @@
 {
   "_comment": "OUR RECOMMENDATION. NOT frozen: Stream 3 tunes these on the samples and announces changes. Backend duplicate engine and pipeline both read this file. Starting values only.",
-  "phash": { "algorithm": "imagehash.phash", "hash_size": 8, "hex_length": 16 },
+  "phash": {
+    "algorithm": "imagehash.phash",
+    "hash_size": 8,
+    "hex_length": 16
+  },
   "video": {
     "sample_fps": 1,
     "frame_change_min_phash_distance": 12,
@@ -11,12 +15,30 @@
     "whisper_model": "small",
     "whisper_compute_type": "int8"
   },
-  "document": { "page_image_format": "webp", "page_image_max_width_px": 1280 },
+  "document": {
+    "page_image_format": "webp",
+    "page_image_max_width_px": 1280
+  },
   "duplicates": {
     "shared_slide_max_phash_distance": 4,
     "similar_slide_max_phash_distance": 12,
     "similar_slide_min_text_ratio": 0.85,
     "min_normalised_text_chars_for_text_match": 20
   },
-  "text_normalisation": "unicodedata NFKC -> lowercase -> collapse all whitespace runs to one space -> strip; then SHA-256 of the UTF-8 bytes"
+  "text_normalisation": "unicodedata NFKC -> lowercase -> collapse all whitespace runs to one space -> strip; then SHA-256 of the UTF-8 bytes",
+  "unique_slides": {
+    "_comment": "Unique-slide pass (pipeline/dso_pipeline/unique_slides.py). Runs after key-frame extraction, never re-runs Whisper. Merges only frames that show the same slide: every 20x20 block of a 320x180 gray thumbnail (outside a detected webcam/live-overlay box) has <= 5 % of its pixels changed by > 24, AND masked pHash distance <= 6. Never drops a frame for being short on screen.",
+    "enabled": true,
+    "thumb_width": 320,
+    "thumb_height": 180,
+    "block_px": 20,
+    "pixel_level": 24,
+    "max_block_change_fraction": 0.05,
+    "max_phash_distance": 6,
+    "overlay_min_change_freq": 0.3,
+    "overlay_min_hot_fraction": 0.002,
+    "overlay_max_area_fraction": 0.15,
+    "overlay_margin_px": 8,
+    "overlay_min_frames": 30
+  }
 }

@@ -11,7 +11,8 @@
     "status": "ready",
     "created_at": "2026-11-13T08:00:00Z",
     "derived_bytes": 243446,
-    "original_url": "/files/originals/a_01/event-recording.mp4"
+    "original_url": "/files/originals/a_01/event-recording.mp4",
+    "test_data": false
   },
   "metadata": {
     "title": "RAN evolution session",
@@ -33,14 +34,17 @@
       "transcript": 51200,
       "frame": 189361,
       "manifest": 2885
-    }
+    },
+    "unique_slide_count": null,
+    "source_frame_count": null
   },
   "pipeline": {
     "version": "0.1",
     "model": "faster-whisper small int8",
     "frame_threshold": 12,
     "seconds": 640.0,
-    "warnings": []
+    "warnings": [],
+    "unique_slides": null
   },
   "latest_job": {
     "id": "j_01",

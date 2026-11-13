@@ -60,3 +60,6 @@ contracts/build/
 .DS_Store
 .idea/
 .vscode/
+
+# --- Local audit evidence (large, machine-specific)
+data/audit/

@@ -11,7 +11,8 @@
     "status": "ready",
     "created_at": "2026-11-13T08:01:00Z",
     "derived_bytes": 244156,
-    "original_url": "/files/originals/a_02/ran-deck.pdf"
+    "original_url": "/files/originals/a_02/ran-deck.pdf",
+    "test_data": false
   },
   "metadata": {
     "title": "RAN Evolution Roadmap",
@@ -31,14 +32,17 @@
     "bytes_by_kind": {
       "page_image": 242000,
       "manifest": 2156
-    }
+    },
+    "unique_slide_count": null,
+    "source_frame_count": null
   },
   "pipeline": {
     "version": "0.1",
     "model": null,
     "frame_threshold": null,
     "seconds": 1.8,
-    "warnings": []
+    "warnings": [],
+    "unique_slides": null
   },
   "latest_job": null
 }

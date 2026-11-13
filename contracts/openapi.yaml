@@ -124,6 +124,14 @@ paths:
     get:
       summary: Measured bytes and the four savings scenarios (0 today/real, 1 replace videos, 2 remove exact duplicates, 3 both)
       operationId: getStorageReport
+      parameters:
+        - name: include_test_data
+          in: query
+          required: false
+          schema: { type: boolean, default: false }
+          description: >
+            REC v1.1. Default false = only real uploaded files are in scope; files labelled as generated test data
+            (asset_labels.test_data) are left out and listed in excluded_test_data. true = everything in the library.
       responses:
         "200": { description: OK, content: { application/json: { schema: { $ref: "./schemas/api.schema.json#/$defs/StorageReport" } } } }
 
@@ -141,10 +149,62 @@ paths:
     get:
       summary: AI-ready JSON for one asset, with provenance
       operationId: exportAsset
+      parameters:
+        - { $ref: "#/components/parameters/AssetId" }
+        - name: format
+          in: query
+          required: false
+          schema: { type: string, enum: [json, txt], default: json }
+          description: "REC v1.1: txt = same plain text as GET /api/assets/{asset_id}/transcript.txt (never silently JSON)."
+      responses:
+        "200":
+          description: OK
+          content:
+            application/json: { schema: { $ref: "./schemas/api.schema.json#/$defs/ExportAsset" } }
+            text/plain: { schema: { type: string } }
+        "404": { $ref: "#/components/responses/Error" }
+        "409": { $ref: "#/components/responses/Error" }
+
+  /api/assets/{asset_id}/transcript.txt:
+    get:
+      summary: "REC v1.1: the whole script as plain text (recording: transcript segments in time order; PDF: page text). Built on request, not stored."
+      operationId: exportTranscriptTxt
+      parameters:
+        - { $ref: "#/components/parameters/AssetId" }
+        - name: timestamps
+          in: query
+          required: false
+          schema: { type: boolean, default: true }
+          description: "true = one line per segment with [hh:mm:ss - hh:mm:ss]; false = flowing paragraphs (new paragraph when the slide changes)."
+      responses:
+        "200": { description: Plain text (UTF-8), content: { text/plain: { schema: { type: string } } } }
+        "404": { $ref: "#/components/responses/Error" }
+        "409": { $ref: "#/components/responses/Error" }
+
+  /api/assets/{asset_id}/slides.pptx:
+    get:
+      summary: >
+        REC v1.1: PowerPoint with one slide per UNIQUE slide (recording, after the unique-slide pass) or per page (PDF),
+        in time / page order; speaker notes = when it was on screen + the transcript said meanwhile. Built on request.
+      operationId: exportSlidesPptx
       parameters: [ { $ref: "#/components/parameters/AssetId" } ]
       responses:
-        "200": { description: OK, content: { application/json: { schema: { $ref: "./schemas/api.schema.json#/$defs/ExportAsset" } } } }
+        "200":
+          description: PowerPoint file
+          content:
+            application/vnd.openxmlformats-officedocument.presentationml.presentation: { schema: { type: string, format: binary } }
         "404": { $ref: "#/components/responses/Error" }
+        "409": { $ref: "#/components/responses/Error" }
+
+  /api/assets/{asset_id}/slides.pdf:
+    get:
+      summary: "REC v1.1: the same unique slides as a PDF, one page each with a caption (slide number, time on screen). Built on request."
+      operationId: exportSlidesPdf
+      parameters: [ { $ref: "#/components/parameters/AssetId" } ]
+      responses:
+        "200": { description: PDF file, content: { application/pdf: { schema: { type: string, format: binary } } } }
+        "404": { $ref: "#/components/responses/Error" }
+        "409": { $ref: "#/components/responses/Error" }
 
   /api/export.jsonl:
     get:

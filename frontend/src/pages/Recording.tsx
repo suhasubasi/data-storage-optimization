@@ -9,6 +9,7 @@ import { AssetPicker } from "../components/AssetPicker";
 import { MediaImage } from "../components/MediaImage";
 import { Snippet } from "../components/Snippet";
 import { Badge, Callout, Empty, ErrorBox, Loading, PageHeader, Stat } from "../components/ui";
+import { Downloads } from "../components/Downloads";
 
 const frameAt = (frames: FrameView[], t: number) =>
   frames.find((f) => f.t_start <= t && t < f.t_end) ?? frames[frames.length - 1] ?? null;
@@ -69,6 +70,15 @@ export default function Recording() {
 
   const asset = detail.data?.asset;
   const saidOn = (f: FrameView) => segments.filter((s) => s.frame_id === f.id);
+  // After the unique-slide pass several time ranges share one picture: show each slide once in the strip.
+  const hasSlides = frames.some((f) => f.slide != null);
+  const strip: FrameView[] = useMemo(() => {
+    if (!hasSlides) return frames;
+    const seen = new Set<number>();
+    return frames.filter((f) => f.slide != null && !seen.has(f.slide) && (seen.add(f.slide), true));
+  }, [frames, hasSlides]);
+  const shownFor = (f: FrameView) => frames.filter((x) => x.slide === f.slide).reduce((s, x) => s + (x.t_end - x.t_start), 0);
+  const uniqueCount = detail.data?.derived?.unique_slide_count ?? null;
 
   return (
     <section>
@@ -96,9 +106,18 @@ export default function Recording() {
         </Empty>
       ) : tl ? (
         <>
+          {detail.data && <Downloads detail={detail.data} compact />}
           <div className="stats-row">
             <Stat label="Original (kept)" value={formatBytes(asset?.bytes)} sub={asset ? `${SOURCE_LABEL[asset.source_system]} · ${asset.owner}` : undefined} />
-            <Stat label="Derived (added)" value={formatBytes(detail.data?.derived?.derived_bytes)} sub={`${frames.length} key frames · ${segments.length} segments`} />
+            <Stat
+              label="Derived (added)"
+              value={formatBytes(detail.data?.derived?.derived_bytes)}
+              sub={
+                uniqueCount !== null
+                  ? `${uniqueCount} unique slides (from ${detail.data?.derived?.source_frame_count} key frames) · ${segments.length} segments`
+                  : `${frames.length} key frames · ${segments.length} segments`
+              }
+            />
             <Stat label="Length" value={formatTime(duration)} sub={`language: ${tl.language ?? "unknown"}`} />
             <Stat label="Model" value={<span className="small-val">{detail.data?.pipeline?.model ?? "—"}</span>} sub={detail.data?.pipeline ? `frame threshold: pHash ≥ ${detail.data.pipeline.frame_threshold}` : undefined} />
           </div>
@@ -119,7 +138,7 @@ export default function Recording() {
                 )}
                 <div className="frame-caption">
                   <span>
-                    <b>{formatTime(time)}</b> · frame <code>{current?.id ?? "—"}</code> ({formatTime(current?.t_start)}–{formatTime(current?.t_end)}) ·{" "}
+                    <b>{formatTime(time)}</b> · {current?.slide != null && <>slide <b>{current.slide}</b> · </>}frame <code>{current?.id ?? "—"}</code> ({formatTime(current?.t_start)}–{formatTime(current?.t_end)}) ·{" "}
                     {formatBytes(current?.bytes)} WebP
                   </span>
                   {activeSeg && <span className="muted">“{activeSeg.text}”</span>}
@@ -149,13 +168,27 @@ export default function Recording() {
                 <span>{formatTime(duration)}</span>
               </div>
 
-              <h4>Key frames ({frames.length})</h4>
+              <h4>
+                {hasSlides ? `Unique slides (${strip.length}) · shown in ${frames.length} time ranges` : `Key frames (${frames.length})`}
+              </h4>
               <div className="strip">
-                {frames.map((f) => (
-                  <button key={f.id} className={`strip-item ${current?.id === f.id ? "on" : ""}`} onClick={() => jump(f.t_start)}>
-                    <MediaImage url={f.image_url} kind="frame" title={saidOn(f)[0]?.text ?? f.id} sub={f.id} alt={`Key frame ${f.id}`} />
+                {strip.map((f) => (
+                  <button
+                    key={f.id}
+                    className={`strip-item ${(hasSlides ? current?.slide === f.slide : current?.id === f.id) ? "on" : ""}`}
+                    onClick={() => jump(f.t_start)}
+                  >
+                    <MediaImage url={f.image_url} kind="frame" title={saidOn(f)[0]?.text ?? f.id} sub={f.id} alt={hasSlides ? `Slide ${f.slide}` : `Key frame ${f.id}`} />
                     <span>
-                      {f.id} · {formatTime(f.t_start)} · {formatBytes(f.bytes)}
+                      {hasSlides ? (
+                        <>
+                          slide {f.slide} · first {formatTime(f.t_start)} · on screen {formatTime(shownFor(f))} · {formatBytes(f.bytes)}
+                        </>
+                      ) : (
+                        <>
+                          {f.id} · {formatTime(f.t_start)} · {formatBytes(f.bytes)}
+                        </>
+                      )}
                     </span>
                   </button>
                 ))}

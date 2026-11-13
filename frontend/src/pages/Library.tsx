@@ -46,6 +46,7 @@ export default function Library() {
   const [lastUpload, setLastUpload] = useState<Asset | null>(null);
   const [jobs, setJobs] = useState<Record<string, Job>>({});
   const [drag, setDrag] = useState(false);
+  const [confirmId, setConfirmId] = useState<string | null>(null);
   const fileInput = useRef<HTMLInputElement>(null);
 
   // Poll running jobs (real job endpoint in live mode, simulated in mock mode).
@@ -102,8 +103,10 @@ export default function Library() {
   }
 
   const list = assets.data?.assets ?? [];
-  const totalOrig = list.reduce((s, a) => s + a.bytes, 0);
-  const totalDerived = list.reduce((s, a) => s + a.derived_bytes, 0);
+  const realList = list.filter((a) => !a.test_data);
+  const testList = list.filter((a) => a.test_data);
+  const totalOrig = realList.reduce((s, a) => s + a.bytes, 0);
+  const totalDerived = realList.reduce((s, a) => s + a.derived_bytes, 0);
 
   return (
     <section>
@@ -192,7 +195,13 @@ export default function Library() {
         <div className="card-head">
           <h3>All files</h3>
           <span className="muted">
-            {list.length} files · originals {formatBytes(totalOrig)} · derived (added) {formatBytes(totalDerived)}
+            {realList.length} real file{realList.length === 1 ? "" : "s"} · originals {formatBytes(totalOrig)} · derived (added) {formatBytes(totalDerived)}
+            {testList.length > 0 && (
+              <>
+                {" "}
+                · plus {testList.length} generated test files ({formatBytes(testList.reduce((s, a) => s + a.bytes + a.derived_bytes, 0))}, not in the totals)
+              </>
+            )}
           </span>
         </div>
         {assets.loading && !assets.data ? (
@@ -223,7 +232,12 @@ export default function Library() {
                     <td>
                       {a.status === "ready" ? <Link to={viewLink(a)}>{a.filename}</Link> : a.filename}
                       <div className="muted small">
-                        {a.id} · {formatDate(a.created_at)}
+                        {a.id} · {formatDate(a.created_at)}{" "}
+                        {a.test_data && (
+                          <Badge tone="amber" title="Generated test file (synthetic sample). Kept on disk; left out of the default storage report.">
+                            test file
+                          </Badge>
+                        )}
                       </div>
                     </td>
                     <td>{KIND_LABEL[a.kind]}</td>
@@ -241,9 +255,14 @@ export default function Library() {
                     </td>
                     <td>
                       <div className="actions">
-                      {(a.status === "uploaded" || a.status === "failed" || a.status === "ready") && (
+                      {(a.status === "uploaded" || a.status === "failed") && (
                         <button className="btn small" onClick={() => process(a)}>
-                          {a.status === "ready" ? "Re-process" : "Process"}
+                          Process
+                        </button>
+                      )}
+                      {a.status === "ready" && confirmId !== a.id && (
+                        <button className="btn small" onClick={() => setConfirmId(a.id)}>
+                          Re-process…
                         </button>
                       )}
                       {a.status === "ready" && (
@@ -252,6 +271,30 @@ export default function Library() {
                         </Link>
                       )}
                       </div>
+                      {a.status === "ready" && confirmId === a.id && (
+                        <div className="confirm-box" role="alertdialog" aria-label={`Re-process ${a.filename}?`}>
+                          <p className="small">
+                            Re-process <b>{a.filename}</b>? This runs the whole pipeline again
+                            {a.kind === "video" ? " (speech-to-text included: a long recording can take many minutes)" : ""}. The
+                            current transcript, frames and pages stay in place and keep being served until the new run succeeds; if
+                            it fails, nothing is replaced. The original file is never touched.
+                          </p>
+                          <div className="actions">
+                            <button
+                              className="btn small primary"
+                              onClick={() => {
+                                setConfirmId(null);
+                                process(a);
+                              }}
+                            >
+                              Yes, re-process
+                            </button>
+                            <button className="btn small ghost" onClick={() => setConfirmId(null)}>
+                              Cancel
+                            </button>
+                          </div>
+                        </div>
+                      )}
                     </td>
                   </tr>
                 ))}

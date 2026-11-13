@@ -13,6 +13,7 @@ from __future__ import annotations
 import json
 import logging
 import os
+import shutil
 import subprocess
 import tempfile
 import threading
@@ -106,54 +107,144 @@ def run_job(job_id: str, asset_id: str, kind: str, original_path: str) -> None:
         _fail(job_id, asset_id, f"Backend error while running the job: {type(e).__name__}: {e}")
 
 
+def staging_root() -> Path:
+    return settings.DERIVED_DIR / ".staging"
+
+
+def trash_root() -> Path:
+    return settings.DERIVED_DIR / ".trash"
+
+
+def _rename(src: Path, dst: Path, tries: int = 40) -> None:
+    """os.replace with retries: on Windows a folder cannot be renamed while a file inside is open
+    (e.g. the API is serving a frame image at that moment)."""
+    last: Exception | None = None
+    for i in range(tries):
+        try:
+            os.replace(src, dst)
+            return
+        except PermissionError as e:
+            last = e
+            time.sleep(min(0.05 * (i + 1), 0.5))
+    raise last  # type: ignore[misc]
+
+
+def _rmtree_quiet(p: Path) -> None:
+    if p.exists():
+        shutil.rmtree(p, ignore_errors=True)
+        if p.exists():
+            log.warning("could not fully remove %s (will retry at next start)", p)
+
+
+def swap_in(asset_id: str, job_id: str, stage: Path) -> Path | None:
+    """Make the finished staging folder the live derived folder. Returns where the previous
+    folder was moved (to delete after a successful ingest), or None if there was none."""
+    final = settings.DERIVED_DIR / asset_id
+    old = None
+    if final.exists():
+        trash_root().mkdir(parents=True, exist_ok=True)
+        old = trash_root() / f"{asset_id}-{job_id}"
+        _rename(final, old)
+    try:
+        _rename(stage, final)
+    except Exception:
+        if old is not None:
+            _rename(old, final)  # put the previous, working files back
+        raise
+    return old
+
+
+def swap_back(asset_id: str, job_id: str, old: Path | None) -> None:
+    """Undo swap_in after a failed ingest: the previous files come back, the new ones are discarded."""
+    final = settings.DERIVED_DIR / asset_id
+    if old is None:
+        return
+    failed = trash_root() / f"{asset_id}-{job_id}-failed"
+    _rename(final, failed)
+    _rename(old, final)
+    _rmtree_quiet(failed)
+
+
 def _run_job(job_id: str, asset_id: str, kind: str, original_path: str) -> None:
+    """Runs the pipeline into a STAGING folder. The live derived folder (and so the Recording /
+    Document pages) is untouched until the new run has finished and its manifest is valid; then the
+    folders are swapped and ingested. If anything fails, the previous ready data stays as it was."""
     started = time.time()
     _update_job(job_id, status="running", stage="starting", started_at=db.utc_now())
     _set_asset_status(asset_id, "processing")
     input_path = settings.DATA_DIR / original_path
-    out_dir = settings.DERIVED_DIR / asset_id
+    stage = staging_root() / f"{asset_id}-{job_id}"
     if not input_path.exists():
         return _fail(job_id, asset_id, f"The original file is missing on disk ({original_path}). "
                                        "Fixture demo assets cannot be processed; upload a real file.")
     if not Path(settings.PIPELINE_PYTHON).exists():
         return _fail(job_id, asset_id, f"Pipeline Python not found at {settings.PIPELINE_PYTHON}. "
                                        "Set DSO_PIPELINE_PYTHON or create pipeline/.venv.")
-    cmd = pipeline_command(asset_id, kind, input_path, out_dir)
-    env = dict(os.environ)
-    env["PYTHONPATH"] = os.pathsep.join(p for p in (str(settings.PIPELINE_CWD), env.get("PYTHONPATH")) if p)
-    with tempfile.TemporaryFile() as out:
-        proc = subprocess.Popen(cmd, cwd=settings.PIPELINE_CWD if settings.PIPELINE_CWD.exists() else None,
-                                stdout=out, stderr=subprocess.STDOUT, env=env)
-        last = None
-        while proc.poll() is None:
-            if time.time() - started > settings.PIPELINE_TIMEOUT_S:
-                proc.kill()
-                proc.wait()
-                return _fail(job_id, asset_id, f"Pipeline timed out after {int(settings.PIPELINE_TIMEOUT_S)} s.")
-            p = _read_json(out_dir / "progress.json", started)
-            if p and (p.get("stage"), p.get("progress")) != last:
-                last = (p.get("stage"), p.get("progress"))
-                try:
-                    prog = min(max(float(p.get("progress") or 0), 0.0), 0.99)
-                except (TypeError, ValueError):
-                    prog = 0.0
-                _update_job(job_id, progress=prog, stage=str(p.get("stage") or "running")[:200])
-            time.sleep(POLL_S)
-        out.seek(0)
-        tail = out.read().decode("utf-8", "replace")[-2000:].strip()
-    manifest = out_dir / "manifest.json"
-    if proc.returncode != 0:
-        err = _read_json(out_dir / "error.json", started)
-        reason = (err.get("message") or err.get("error") or json.dumps(err)) if err else (tail or "no output")
-        return _fail(job_id, asset_id, f"Pipeline failed (exit {proc.returncode}): {reason}")
-    if not manifest.exists() or manifest.stat().st_mtime + 1 < started:
-        return _fail(job_id, asset_id, "Pipeline exited OK but did not write a new manifest.json.")
-    _update_job(job_id, stage="ingesting", progress=0.99)
+    _rmtree_quiet(stage)
+    stage.mkdir(parents=True, exist_ok=True)
     try:
-        ingest.ingest_manifest(asset_id, manifest)
-    except ingest.IngestError as e:
-        return _fail(job_id, asset_id, f"Could not ingest manifest.json: {e}")
-    _update_job(job_id, status="done", progress=1.0, stage="done", error=None, finished_at=db.utc_now())
+        cmd = pipeline_command(asset_id, kind, input_path, stage)
+        env = dict(os.environ)
+        env["PYTHONPATH"] = os.pathsep.join(p for p in (str(settings.PIPELINE_CWD), env.get("PYTHONPATH")) if p)
+        with tempfile.TemporaryFile() as out:
+            proc = subprocess.Popen(cmd, cwd=settings.PIPELINE_CWD if settings.PIPELINE_CWD.exists() else None,
+                                    stdout=out, stderr=subprocess.STDOUT, env=env)
+            last = None
+            while proc.poll() is None:
+                if time.time() - started > settings.PIPELINE_TIMEOUT_S:
+                    proc.kill()
+                    proc.wait()
+                    return _fail(job_id, asset_id, f"Pipeline timed out after {int(settings.PIPELINE_TIMEOUT_S)} s.")
+                p = _read_json(stage / "progress.json", started)
+                if p and (p.get("stage"), p.get("progress")) != last:
+                    last = (p.get("stage"), p.get("progress"))
+                    try:
+                        prog = min(max(float(p.get("progress") or 0), 0.0), 0.99)
+                    except (TypeError, ValueError):
+                        prog = 0.0
+                    _update_job(job_id, progress=prog, stage=str(p.get("stage") or "running")[:200])
+                time.sleep(POLL_S)
+            out.seek(0)
+            tail = out.read().decode("utf-8", "replace")[-2000:].strip()
+        manifest = stage / "manifest.json"
+        if proc.returncode != 0:
+            err = _read_json(stage / "error.json", started)
+            reason = (err.get("message") or err.get("error") or json.dumps(err)) if err else (tail or "no output")
+            return _fail(job_id, asset_id, f"Pipeline failed (exit {proc.returncode}): {reason}")
+        if not manifest.exists() or manifest.stat().st_mtime + 1 < started:
+            return _fail(job_id, asset_id, "Pipeline exited OK but did not write a new manifest.json.")
+        try:
+            ingest.load_manifest(manifest)  # validate BEFORE touching the live folder
+        except ingest.IngestError as e:
+            return _fail(job_id, asset_id, f"Could not ingest manifest.json: {e}")
+        _update_job(job_id, stage="ingesting", progress=0.99)
+        try:
+            old = swap_in(asset_id, job_id, stage)
+        except Exception as e:  # noqa: BLE001
+            return _fail(job_id, asset_id, f"Could not switch to the new files ({type(e).__name__}: {e}); "
+                                           "the previous files are still in use.")
+        try:
+            ingest.ingest_manifest(asset_id)
+        except ingest.IngestError as e:
+            swap_back(asset_id, job_id, old)
+            return _fail(job_id, asset_id, f"Could not ingest manifest.json: {e}")
+        except Exception:
+            swap_back(asset_id, job_id, old)
+            raise
+        if old is not None:
+            _rmtree_quiet(old)
+        _update_job(job_id, status="done", progress=1.0, stage="done", error=None, finished_at=db.utc_now())
+    finally:
+        _rmtree_quiet(stage)  # no-op after a successful swap (the folder moved)
+
+
+def clean_stale_staging() -> None:
+    """On startup: staging / trash folders of jobs that cannot be running any more (own temp data only)."""
+    for root in (staging_root(), trash_root()):
+        if root.is_dir():
+            for p in root.iterdir():
+                if p.is_dir():
+                    _rmtree_quiet(p)
 
 
 def fail_stale_jobs() -> None:

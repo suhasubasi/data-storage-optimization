@@ -51,10 +51,15 @@ export function Badge({ tone = "grey", children, title }: { tone?: Tone; childre
   );
 }
 
+/** What source_simulated means: only the SOURCE SYSTEM label is simulated; files and their transcripts are real. */
+export const SIMULATED_SOURCE_HINT =
+  "Only the source-system label is simulated: there is no live SharePoint / OneDrive / Ericsson Play connection in the MVP. " +
+  "The file itself, its hashes and its transcript are real.";
+
 export function SourceBadge({ source }: { source: SourceSystem }) {
   return (
-    <Badge tone="blue" title="Source label is simulated in the MVP (no live connector)">
-      {SOURCE_LABEL[source]} <span className="sim">sim</span>
+    <Badge tone="blue" title={SIMULATED_SOURCE_HINT}>
+      {SOURCE_LABEL[source]} <span className="sim">simulated source</span>
     </Badge>
   );
 }

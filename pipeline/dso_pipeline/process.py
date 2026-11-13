@@ -105,6 +105,8 @@ def run(asset_id: str, kind: str, input_path: Path, out_dir: Path) -> dict[str, 
         }
         if parts["warnings"]:
             pipeline_info["warnings"] = parts["warnings"]
+        if parts.get("unique_slides"):
+            pipeline_info["unique_slides"] = parts["unique_slides"]
         manifest = {
             "schema_version": "1.0",
             "asset_id": asset_id,

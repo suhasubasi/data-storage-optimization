@@ -50,13 +50,39 @@ def asset_derived_bytes(conn, row, totals: dict[str, int] | None = None) -> int:
     return int(files or 0) + int(row["manifest_bytes"] or 0)
 
 
-def to_asset(conn, row, totals: dict[str, int] | None = None) -> Asset:
+def test_data_ids(conn) -> set[str]:
+    """REC v1.1: assets labelled as generated test/sample data (asset_labels.test_data = 1)."""
+    return {r[0] for r in conn.execute("SELECT asset_id FROM asset_labels WHERE test_data = 1")}
+
+
+def to_asset(conn, row, totals: dict[str, int] | None = None, test_ids: set[str] | None = None) -> Asset:
+    if test_ids is None:
+        test_ids = test_data_ids(conn)
     return Asset(
         id=row["id"], filename=row["filename"], kind=row["kind"], bytes=row["bytes"], sha256=row["sha256"],
         source_system=row["source_system"], source_simulated=bool(row["source_simulated"]), owner=row["owner"],
         status=row["status"], created_at=row["created_at"], derived_bytes=asset_derived_bytes(conn, row, totals),
-        original_url=original_url(row),
+        original_url=original_url(row), test_data=row["id"] in test_ids,
     )
+
+
+def unique_slides_info(row) -> dict | None:
+    """pipeline.unique_slides of the ingested manifest, or None if the pass has not run."""
+    if not row["pipeline_json"]:
+        return None
+    try:
+        return (json.loads(row["pipeline_json"]) or {}).get("unique_slides")
+    except ValueError:
+        return None
+
+
+def slide_numbers(frames) -> dict[str, int]:
+    """frame path -> unique slide number, in order of first appearance (same numbering as the pass)."""
+    out: dict[str, int] = {}
+    for f in sorted(frames, key=lambda f: (f["t_start"], f["id"])):
+        if f["path"] not in out:
+            out[f["path"]] = len(out) + 1
+    return out
 
 
 def metadata_of(row) -> AssetMetadata | None:
@@ -80,9 +106,10 @@ def provenance(row) -> Provenance:
                       owner=row["owner"], original_url=original_url(row))
 
 
-def frame_view(asset_id: str, f) -> FrameView:
+def frame_view(asset_id: str, f, slides: dict[str, int] | None = None) -> FrameView:
     return FrameView(id=f["id"], t_start=f["t_start"], t_end=f["t_end"], image_url=derived_url(asset_id, f["path"]),
-                     bytes=f["bytes"], phash=f["phash"], matched_slide=f["matched_slide_id"])
+                     bytes=f["bytes"], phash=f["phash"], matched_slide=f["matched_slide_id"],
+                     slide=slides.get(f["path"]) if slides else None)
 
 
 # ---------------------------------------------------------------------------------------------
@@ -91,11 +118,12 @@ def frame_view(asset_id: str, f) -> FrameView:
 def list_assets(owner: str | None = None) -> list[Asset]:
     with db.read() as conn:
         totals = _derived_totals(conn)
+        test_ids = test_data_ids(conn)
         if owner:
             rows = conn.execute("SELECT * FROM assets WHERE owner = ? ORDER BY created_at, id", (owner,)).fetchall()
         else:
             rows = conn.execute("SELECT * FROM assets ORDER BY created_at, id").fetchall()
-        return [to_asset(conn, r, totals) for r in rows]
+        return [to_asset(conn, r, totals, test_ids) for r in rows]
 
 
 def get_asset(asset_id: str) -> Asset:
@@ -118,10 +146,13 @@ def asset_detail(asset_id: str) -> AssetDetail:
                 by_kind[f["kind"]] = by_kind.get(f["kind"], 0) + f["bytes"]
             by_kind["manifest"] = row["manifest_bytes"]
             count = lambda t: conn.execute(f"SELECT COUNT(*) FROM {t} WHERE asset_id = ?", (asset_id,)).fetchone()[0]  # noqa: E731
+            us = unique_slides_info(row)
             derived = DerivedSummary(
                 derived_bytes=asset_derived_bytes(conn, row), manifest_bytes=row["manifest_bytes"],
                 file_count=len(files) + 1, segment_count=count("segments"), frame_count=count("frames"),
-                slide_count=count("slides"), bytes_by_kind=by_kind)
+                slide_count=count("slides"), bytes_by_kind=by_kind,
+                unique_slide_count=us.get("unique_slide_count") if us else None,
+                source_frame_count=us.get("source_frame_count") if us else None)
         job = latest_job_row(conn, asset_id)
         return AssetDetail(
             asset=to_asset(conn, row), metadata=metadata_of(row), derived=derived,
@@ -138,12 +169,13 @@ def timeline(asset_id: str) -> Timeline:
         meta = metadata_or_empty(row)
         segs = conn.execute('SELECT * FROM segments WHERE asset_id = ? ORDER BY "start", id', (asset_id,)).fetchall()
         frames = conn.execute("SELECT * FROM frames WHERE asset_id = ? ORDER BY t_start, id", (asset_id,)).fetchall()
+        nums = slide_numbers(frames) if unique_slides_info(row) else None
         return Timeline(
             asset_id=asset_id, language=meta.language, duration_seconds=meta.duration_seconds,
             original_url=original_url(row),
             segments=[Segment(id=s["id"], start=s["start"], end=s["end"], text=s["text"], frame_id=s["frame_id"],
                               speaker=s["speaker"]) for s in segs],
-            frames=[frame_view(asset_id, f) for f in frames])
+            frames=[frame_view(asset_id, f, nums) for f in frames])
 
 
 def _slide_matches_for(conn, asset_id: str) -> dict[str, list[SlideMatch]]:
@@ -216,7 +248,20 @@ def search(q: str, limit: int = 20) -> SearchResponse:
             common = dict(asset_id=aid, filename=a["filename"], kind=a["kind"], source_system=a["source_system"],
                           owner=a["owner"], text=r["text"], snippet=r["snip"], item_id=r["item_id"],
                           score=round(-r["rank"], 4))
-            if r["item_type"] == "segment":
+            if r["item_type"] == "asset":
+                if a["kind"] == "video":
+                    f = conn.execute("SELECT * FROM frames WHERE asset_id = ? ORDER BY t_start, id LIMIT 1", (aid,)).fetchone()
+                    media = MediaRef(type="frame", asset_id=aid, item_id=f["id"], url=derived_url(aid, f["path"]),
+                                     bytes=f["bytes"], t_start=f["t_start"], t_end=f["t_end"], page=None) if f else None
+                    page = None
+                else:
+                    sl = conn.execute("SELECT * FROM slides WHERE asset_id = ? ORDER BY page LIMIT 1", (aid,)).fetchone()
+                    media = MediaRef(type="slide", asset_id=aid, item_id=sl["id"], url=derived_url(aid, sl["path"]),
+                                     bytes=sl["bytes"], t_start=None, t_end=None, page=sl["page"]) if sl else None
+                    page = sl["page"] if sl else None
+                hits.append(SearchHit(hit_type="asset", start=None, end=None, page=page, frame_id=None, media=media,
+                                      **common))
+            elif r["item_type"] == "segment":
                 s = conn.execute('SELECT * FROM segments WHERE asset_id = ? AND id = ?', (aid, r["item_id"])).fetchone()
                 f = conn.execute("SELECT * FROM frames WHERE asset_id = ? AND id = ?",
                                  (aid, s["frame_id"])).fetchone() if s and s["frame_id"] else None
@@ -337,10 +382,14 @@ SCENARIO_TEXT = [
 ]
 
 
-def compute_storage(assets: list[dict], derived_bytes: int, index_bytes: int, generated_at: str) -> StorageReport:
+def compute_storage(assets: list[dict], derived_bytes: int, index_bytes: int, generated_at: str,
+                    scope: str = "real_files", excluded: dict | None = None,
+                    scope_note: str = "Scope: real uploaded files only (no generated test files in the library).",
+                    ) -> StorageReport:
     """Pure function (unit-tested against contracts/fixtures/storage_report.json).
 
-    assets: dicts with id, filename, kind, bytes, sha256, status, created_at."""
+    assets: dicts with id, filename, kind, bytes, sha256, status, created_at.
+    scope / excluded / scope_note: REC v1.1, which files are in O (generated test files are left out by default)."""
     O = sum(a["bytes"] for a in assets)
     D, I = derived_bytes, index_bytes
     ordered = sorted(assets, key=lambda a: (a["created_at"], a["id"]))
@@ -377,16 +426,42 @@ def compute_storage(assets: list[dict], derived_bytes: int, index_bytes: int, ge
         document_original_bytes=sum(a["bytes"] for a in assets if a["kind"] == "document"),
         derived_bytes=D, index_bytes=I, extra_exact_copy_bytes=sum(c["bytes"] for c, _ in extra))
     return StorageReport(generated_at=generated_at, formula=SAVINGS_FORMULA, totals=totals, scenarios=scenarios,
-                         not_counted=NOT_COUNTED, information_lost=INFORMATION_LOST, notes=NOTES)
+                         not_counted=NOT_COUNTED, information_lost=INFORMATION_LOST, notes=[scope_note, *NOTES],
+                         scope=scope, excluded_test_data=excluded or {"asset_count": 0, "original_bytes": 0,
+                                                                      "derived_bytes": 0, "asset_ids": []})
 
 
-def storage_report() -> StorageReport:
+def storage_report(include_test_data: bool = False) -> StorageReport:
+    """Measured storage report. Default scope = real files only: assets labelled as generated test data
+    (asset_labels.test_data = 1) are left out of O and D, so they are never presented as customer data.
+    I is always the WHOLE database (it cannot be split per file); that is conservative."""
     I = db.index_bytes()  # measure first (checkpoint), then read
     with db.read() as conn:
-        assets = [dict(r) for r in conn.execute("SELECT id, filename, kind, bytes, sha256, status, created_at FROM assets")]
-        files = conn.execute("SELECT COALESCE(SUM(bytes), 0) FROM derived_files").fetchone()[0]
-        manifests = conn.execute("SELECT COALESCE(SUM(manifest_bytes), 0) FROM assets").fetchone()[0]
-    return compute_storage(assets, int(files) + int(manifests), I, db.utc_now())
+        test_ids = test_data_ids(conn)
+        rows = [dict(r) for r in conn.execute(
+            "SELECT id, filename, kind, bytes, sha256, status, created_at, manifest_bytes FROM assets")]
+        per_asset = _derived_totals(conn)
+
+    def d_of(a: dict) -> int:
+        return int(per_asset.get(a["id"], 0) or 0) + int(a["manifest_bytes"] or 0)
+
+    in_scope = rows if include_test_data else [a for a in rows if a["id"] not in test_ids]
+    left_out = [] if include_test_data else [a for a in rows if a["id"] in test_ids]
+    excluded = {"asset_count": len(left_out), "original_bytes": sum(a["bytes"] for a in left_out),
+                "derived_bytes": sum(d_of(a) for a in left_out),
+                "asset_ids": sorted(a["id"] for a in left_out)}
+    if include_test_data:
+        scope_note = (f"Scope: all {len(rows)} files in the library, INCLUDING {len(test_ids & {a['id'] for a in rows})} "
+                      "generated test files (not customer data).")
+    elif left_out:
+        scope_note = (f"Scope: real uploaded files only. {len(left_out)} generated test files "
+                      f"({excluded['original_bytes']} B originals, {excluded['derived_bytes']} B derived) are left out. "
+                      "I is still the whole database, including their rows (conservative).")
+    else:
+        scope_note = "Scope: real uploaded files only (no generated test files in the library)."
+    return compute_storage(in_scope, sum(d_of(a) for a in in_scope), I, db.utc_now(),
+                           scope="all_files" if include_test_data else "real_files", excluded=excluded,
+                           scope_note=scope_note)
 
 
 # ---------------------------------------------------------------------------------------------
@@ -446,6 +521,7 @@ def export_asset(asset_id: str) -> ExportAsset:
     with db.read() as conn:
         row = get_asset_row(conn, asset_id)
         frames = conn.execute("SELECT * FROM frames WHERE asset_id = ? ORDER BY t_start, id", (asset_id,)).fetchall()
+        nums = slide_numbers(frames) if unique_slides_info(row) else None
         matches = conn.execute(
             "SELECT * FROM matches WHERE a_id = ? OR b_id = ? OR a_id GLOB ? OR b_id GLOB ? ORDER BY level, type, a_id, b_id",
             (asset_id, asset_id, f"{asset_id}:*", f"{asset_id}:*")).fetchall()
@@ -453,7 +529,8 @@ def export_asset(asset_id: str) -> ExportAsset:
             schema_version="1.0", exported_at=db.utc_now(), source=provenance(row), kind=row["kind"],
             metadata=metadata_or_empty(row),
             pipeline=PipelineInfo.model_validate_json(row["pipeline_json"]) if row["pipeline_json"] else None,
-            chunks=export_chunks(conn, row), frames=[frame_view(asset_id, f) for f in frames],
+            chunks=export_chunks(conn, row),
+            frames=[frame_view(asset_id, f, nums) for f in frames],
             slides=slide_views(conn, row),
             matches=[ExportMatch(level=m["level"], type=m["type"], a=m["a_id"], b=m["b_id"], score=m["score"],
                                  method=m["method"]) for m in matches])

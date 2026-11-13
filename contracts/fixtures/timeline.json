@@ -53,7 +53,8 @@
       "image_url": "/files/derived/a_01/frames/f1.webp",
       "bytes": 41200,
       "phash": "0aee4545785164b3",
-      "matched_slide": null
+      "matched_slide": null,
+      "slide": null
     },
     {
       "id": "f2",
@@ -62,7 +63,8 @@
       "image_url": "/files/derived/a_01/frames/f2.webp",
       "bytes": 48211,
       "phash": "1675d97329b01380",
-      "matched_slide": null
+      "matched_slide": null,
+      "slide": null
     },
     {
       "id": "f3",
@@ -71,7 +73,8 @@
       "image_url": "/files/derived/a_01/frames/f3.webp",
       "bytes": 52900,
       "phash": "bc5bea201b5e2001",
-      "matched_slide": null
+      "matched_slide": null,
+      "slide": null
     },
     {
       "id": "f4",
@@ -80,7 +83,8 @@
       "image_url": "/files/derived/a_01/frames/f4.webp",
       "bytes": 47050,
       "phash": "b67b772b94fc6752",
-      "matched_slide": null
+      "matched_slide": null,
+      "slide": null
     }
   ]
 }
