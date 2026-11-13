@@ -2,13 +2,13 @@ import { useEffect, useMemo, useRef, useState } from "react";
 import { useNavigate, useParams, useSearchParams } from "react-router-dom";
 import type { FrameView, Segment } from "@contracts/ts/dso-contracts";
 import { api } from "../api/client";
-import { USE_MOCKS, absUrl } from "../api/config";
+import { absUrl } from "../api/config";
 import { useAsync } from "../lib/useAsync";
 import { formatBytes, formatTime, SOURCE_LABEL } from "../lib/format";
 import { AssetPicker } from "../components/AssetPicker";
 import { MediaImage } from "../components/MediaImage";
 import { Snippet } from "../components/Snippet";
-import { Badge, Callout, Empty, ErrorBox, Loading, PageHeader, Stat } from "../components/ui";
+import { Badge, Empty, ErrorBox, Loading, PageHeader, Stat } from "../components/ui";
 import { Downloads } from "../components/Downloads";
 
 const frameAt = (frames: FrameView[], t: number) =>
@@ -102,7 +102,6 @@ export default function Recording() {
       ) : tl && segments.length === 0 && frames.length === 0 ? (
         <Empty>
           No transcript or key frames for this file yet. Process it first (status: {asset?.status ?? "unknown"}).
-          {USE_MOCKS && " In mock mode only the fixture recording has data."}
         </Empty>
       ) : tl ? (
         <>
@@ -194,14 +193,10 @@ export default function Recording() {
                 ))}
               </div>
 
-              {USE_MOCKS ? (
-                <Callout tone="info">Mock mode: frames are drawn placeholders. With the backend, real WebP key frames and the original video load here.</Callout>
-              ) : (
-                <details className="video-details">
-                  <summary>Play the original video (kept, never deleted)</summary>
-                  <video ref={videoRef} controls preload="metadata" src={absUrl(tl.original_url)} onTimeUpdate={(e) => setTime(e.currentTarget.currentTime)} />
-                </details>
-              )}
+              <details className="video-details">
+                <summary>Play the original video (kept, never deleted)</summary>
+                <video ref={videoRef} controls preload="metadata" src={absUrl(tl.original_url)} onTimeUpdate={(e) => setTime(e.currentTarget.currentTime)} />
+              </details>
             </div>
 
             <div className="card rec-side">

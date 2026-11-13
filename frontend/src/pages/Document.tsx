@@ -2,7 +2,6 @@ import { useEffect, useRef } from "react";
 import { Link, useNavigate, useParams, useSearchParams } from "react-router-dom";
 import type { AssetMetadata, SlideMatch } from "@contracts/ts/dso-contracts";
 import { api } from "../api/client";
-import { USE_MOCKS } from "../api/config";
 import { useAsync } from "../lib/useAsync";
 import { formatBytes, SOURCE_LABEL, shortHash } from "../lib/format";
 import { AssetPicker } from "../components/AssetPicker";
@@ -121,7 +120,6 @@ export default function DocumentView() {
           {list.length === 0 ? (
             <Empty>
               No pages for this file yet. Process it first (status: {asset?.status ?? "unknown"}).
-              {USE_MOCKS && " In mock mode, only the fixture PDFs have pages."}
             </Empty>
           ) : (
             <div className="slide-grid">

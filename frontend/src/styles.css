@@ -35,7 +35,6 @@ h4 { margin: 16px 0 8px; font-size: 13px; color: var(--muted); text-transform: u
 .nav-foot p { margin: 4px 0; }
 .disclaimer { border-top: 1px solid #243246; padding-top: 8px; }
 .mode { font-size: 11px; font-weight: 700; margin: 0; padding: 4px 8px; border-radius: 6px; display: inline-block; background: #1a2636; color: #c7d2de; }
-.mode.mock { color: #ffcf5a; }
 .mode.live { color: #6ee0a2; }
 .mode.down { color: #ff8f99; }
 .content { padding: 24px 32px 60px; max-width: 1400px; }
@@ -96,7 +95,6 @@ h4 { margin: 16px 0 8px; font-size: 13px; color: var(--muted); text-transform: u
 .stat-value .small-val { font-size: 14px; }
 .stat-sub { font-size: 12px; color: var(--muted); margin-top: 2px; }
 .safe-val { color: var(--green); }
-.mock-tag { color: var(--amber); font-weight: 600; }
 
 /* tables */
 .table-wrap { overflow-x: auto; }

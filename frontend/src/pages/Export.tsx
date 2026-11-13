@@ -2,7 +2,7 @@ import { useMemo, useState } from "react";
 import { Link } from "react-router-dom";
 import type { ExportChunk } from "@contracts/ts/dso-contracts";
 import { api } from "../api/client";
-import { USE_MOCKS, absUrl } from "../api/config";
+import { absUrl } from "../api/config";
 import { useAsync } from "../lib/useAsync";
 import { downloadText, formatTime } from "../lib/format";
 import { AssetPicker } from "../components/AssetPicker";
@@ -82,7 +82,6 @@ export default function Export() {
                   Download export.jsonl
                 </button>
               </div>
-              {USE_MOCKS && <Callout tone="info">Mock mode: this is the fixture file <code>contracts/fixtures/export.jsonl</code>, unchanged.</Callout>}
               <div className="table-wrap">
                 <table>
                   <thead>
@@ -111,13 +110,9 @@ export default function Export() {
                         </td>
                         <td>
                           <div>
-                            {USE_MOCKS ? (
-                              <span title={`${c.source.original_url} (served by the backend in live mode)`}>{c.source.filename}</span>
-                            ) : (
-                              <a href={absUrl(c.source.original_url)} target="_blank" rel="noreferrer" title="Original file (kept, read-only)">
-                                {c.source.filename}
-                              </a>
-                            )}
+                            <a href={absUrl(c.source.original_url)} target="_blank" rel="noreferrer" title="Original file (kept, read-only)">
+                              {c.source.filename}
+                            </a>
                           </div>
                           <SourceBadge source={c.source.source_system} />
                           <div className="muted small">

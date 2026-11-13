@@ -1,4 +1,4 @@
-// Real API (contracts/openapi.yaml). Used when VITE_USE_MOCKS=false.
+// Real API (contracts/openapi.yaml).
 import type { Api } from "./types";
 import { ApiError } from "./errors";
 import { absUrl } from "./config";

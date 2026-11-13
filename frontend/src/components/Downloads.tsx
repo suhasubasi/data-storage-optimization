@@ -1,17 +1,11 @@
 import type { AssetDetail } from "@contracts/ts/dso-contracts";
-import { USE_MOCKS, exportUrls } from "../api/config";
-import { Callout } from "./ui";
+import { exportUrls } from "../api/config";
 
 /** Download links for one processed file. Files are built by the backend on request from the real derived
  *  data (nothing extra is stored). Slide decks need the unique-slide pass (videos only). */
 export function Downloads({ detail, compact = false }: { detail: AssetDetail; compact?: boolean }) {
   const a = detail.asset;
   if (a.status !== "ready") return null;
-  if (USE_MOCKS) {
-    return compact ? null : (
-      <Callout tone="info">Mock mode: the .txt / .pptx / .pdf downloads are built by the backend and are only available in live mode.</Callout>
-    );
-  }
   const u = exportUrls(a.id);
   const unique = detail.derived?.unique_slide_count ?? null;
   const source = detail.derived?.source_frame_count ?? null;

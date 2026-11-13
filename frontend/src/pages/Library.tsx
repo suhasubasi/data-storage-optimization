@@ -2,7 +2,6 @@ import { useEffect, useRef, useState, type DragEvent, type FormEvent } from "rea
 import { Link } from "react-router-dom";
 import type { Asset, Job, SourceSystem } from "@contracts/ts/dso-contracts";
 import { api } from "../api/client";
-import { USE_MOCKS } from "../api/config";
 import { useAsync } from "../lib/useAsync";
 import { formatBytes, formatDate, KIND_LABEL, SOURCE_LABEL, shortHash } from "../lib/format";
 import { Badge, Callout, Empty, ErrorBox, Loading, PageHeader, SourceBadge } from "../components/ui";
@@ -30,7 +29,6 @@ function JobProgress({ job }: { job: Job }) {
       <div className="job-foot muted">
         {pct}% · {job.stage ?? "—"}
         {job.error && <span className="err-text"> · {job.error}</span>}
-        {USE_MOCKS && <span className="mock-tag"> simulated progress (mock mode)</span>}
       </div>
     </div>
   );
@@ -49,7 +47,7 @@ export default function Library() {
   const [confirmId, setConfirmId] = useState<string | null>(null);
   const fileInput = useRef<HTMLInputElement>(null);
 
-  // Poll running jobs (real job endpoint in live mode, simulated in mock mode).
+  // Poll running jobs (real job endpoint; progress comes from the pipeline, never simulated).
   const running = Object.values(jobs).filter((j) => j.status === "queued" || j.status === "running");
   useEffect(() => {
     if (!running.length) return;
@@ -157,7 +155,7 @@ export default function Library() {
             </label>
             <label className="field">
               <span>Owner</span>
-              <input value={owner} onChange={(e) => setOwner(e.target.value)} placeholder="e.g. carl" />
+              <input value={owner} onChange={(e) => setOwner(e.target.value)} placeholder="e.g. the person or team that owns the file" />
             </label>
           </div>
           <button className="btn primary" disabled={busy}>

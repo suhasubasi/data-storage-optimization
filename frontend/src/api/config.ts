@@ -1,5 +1,5 @@
-// The ONE switch between mock data and the real API (design Page: "switch by changing one base URL").
-export const USE_MOCKS = (import.meta.env.VITE_USE_MOCKS ?? "true") !== "false";
+// The app always talks to the real backend API. There is no mock mode: every number and image comes
+// from files measured on disk by the backend.
 export const API_BASE_URL = import.meta.env.VITE_API_BASE_URL ?? "";
 
 /** URLs in API bodies are relative ("/files/..."); prefix them with this. */

@@ -1,6 +1,5 @@
 // Stream 1 owns everything in frontend/. Eight screens from the design Page.
 import { NavLink, Navigate, Route, Routes } from "react-router-dom";
-import { USE_MOCKS } from "./api/config";
 import { api } from "./api/client";
 import { useAsync } from "./lib/useAsync";
 import Library from "./pages/Library";
@@ -25,7 +24,6 @@ const SCREENS = [
 
 function BackendStatus() {
   const h = useAsync(() => api.health(), []);
-  if (USE_MOCKS) return <p className="mode mock">MOCK DATA · fixtures</p>;
   if (h.loading) return <p className="mode">LIVE API · checking…</p>;
   return h.error ? (
     <p className="mode down" title={h.error.message}>
