@@ -121,7 +121,15 @@
     "Tone of voice (unless the optional audio track is kept)",
     "Speaker identity (not in MVP)"
   ],
+  "scope": "real_files",
+  "excluded_test_data": {
+    "asset_count": 0,
+    "original_bytes": 0,
+    "derived_bytes": 0,
+    "asset_ids": []
+  },
   "notes": [
+    "Scope: real uploaded files only (no generated test files in the library).",
     "O = all original bytes in scope, every copy on every simulated system. D = all derived files + manifests. I = measured SQLite/FTS index size.",
     "D and I are counted in every scenario (conservative).",
     "Scenarios 1-3 are hypothetical and require human approval. The tool never deletes anything.",

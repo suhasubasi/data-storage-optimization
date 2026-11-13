@@ -215,6 +215,10 @@
         "original_url": {
           "description": "e.g. '/files/originals/a_01/deck.pdf'",
           "type": "string"
+        },
+        "test_data": {
+          "description": "REC v1.1: true = generated sample/test file (not customer data). Kept for the duplicate demo; excluded from the default storage report.",
+          "type": "boolean"
         }
       }
     },
@@ -262,6 +266,22 @@
             "type": "integer",
             "minimum": 0
           }
+        },
+        "unique_slide_count": {
+          "description": "REC v1.1: unique slides after the unique-slide pass (videos); null if the pass has not run.",
+          "type": [
+            "integer",
+            "null"
+          ],
+          "minimum": 0
+        },
+        "source_frame_count": {
+          "description": "REC v1.1: key frames extracted before the unique-slide pass; null if the pass has not run.",
+          "type": [
+            "integer",
+            "null"
+          ],
+          "minimum": 0
         }
       }
     },
@@ -432,6 +452,14 @@
             "string",
             "null"
           ]
+        },
+        "slide": {
+          "description": "REC v1.1: unique slide number shown in this time range (null before the unique-slide pass).",
+          "type": [
+            "integer",
+            "null"
+          ],
+          "minimum": 1
         }
       }
     },
@@ -671,7 +699,7 @@
           "type": "string"
         },
         "text": {
-          "description": "Full segment or slide text.",
+          "description": "Full segment or slide text; for 'asset' hits the indexed title + file name + metadata.",
           "type": "string"
         },
         "snippet": {
@@ -699,7 +727,7 @@
           ]
         },
         "item_id": {
-          "description": "Local segment id ('s12') or slide id ('p4').",
+          "description": "Local segment id ('s12'), slide id ('p4'), or 'meta' for a hit on the file's title / file name / metadata (REC v1.1).",
           "type": "string"
         },
         "frame_id": {
@@ -1156,6 +1184,45 @@
           "items": {
             "type": "string"
           }
+        },
+        "scope": {
+          "description": "REC v1.1: 'real_files' (default) = generated test files excluded; 'all_files' = everything in the library.",
+          "type": "string",
+          "enum": [
+            "real_files",
+            "all_files"
+          ]
+        },
+        "excluded_test_data": {
+          "description": "REC v1.1: generated test files left out of this report (empty when scope = all_files).",
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "asset_count",
+            "original_bytes",
+            "derived_bytes",
+            "asset_ids"
+          ],
+          "properties": {
+            "asset_count": {
+              "type": "integer",
+              "minimum": 0
+            },
+            "original_bytes": {
+              "type": "integer",
+              "minimum": 0
+            },
+            "derived_bytes": {
+              "type": "integer",
+              "minimum": 0
+            },
+            "asset_ids": {
+              "type": "array",
+              "items": {
+                "$ref": "#/$defs/AssetId"
+              }
+            }
+          }
         }
       }
     },
@@ -1553,7 +1620,8 @@
       "type": "string",
       "enum": [
         "segment",
-        "slide"
+        "slide",
+        "asset"
       ]
     },
     "RemovalReason": {

@@ -10,5 +10,6 @@
   "status": "uploaded",
   "created_at": "2026-11-13T08:04:00Z",
   "derived_bytes": 0,
-  "original_url": "/files/originals/a_05/carl-notes.pdf"
+  "original_url": "/files/originals/a_05/carl-notes.pdf",
+  "test_data": false
 }

@@ -21,6 +21,14 @@ class AssetKind(StrEnum):
     document = "document"
 
 
+class LocalId(RootModel[str]):
+    root: str = Field(
+        ...,
+        description="Id unique only inside one asset: segments 's<n>', frames 'f<n>', slides 'p<page>'. Globally an item is '<asset_id>:<local_id>' (see ItemRef in api.schema.json).",
+        pattern="^[sfp][0-9]+$",
+    )
+
+
 class OriginalRef(BaseModel):
     model_config = ConfigDict(
         extra="forbid",
@@ -103,6 +111,16 @@ class Frame(BaseModel):
         ...,
         description="STRETCH (levels 3-4). Global slide ref '<asset_id>:p<page>' or null. Always null in P0.",
     )
+    slide: int | None = Field(
+        None,
+        description="REC v1.1 (unique-slide pass): 1-based number of the unique slide shown in this time range. Several ranges can show the same slide (the talk went back to it); they then share one image file. Absent on manifests made before the pass.",
+        ge=1,
+    )
+    source_frames: list[LocalId] | None = Field(
+        None,
+        description="REC v1.1: ids of the originally extracted key frames merged into this time range (audit trail). The first one is this frame's id.",
+        min_length=1,
+    )
 
 
 class Slide(BaseModel):
@@ -148,54 +166,48 @@ class DerivedFile(BaseModel):
     kind: DerivedFileKind
 
 
-class PipelineInfo(BaseModel):
+class AppliedAs(StrEnum):
+    pipeline = "pipeline"
+    post_pass = "post_pass"
+
+
+class BoxItem(RootModel[float]):
+    root: float = Field(..., ge=0.0, le=1.0)
+
+
+class OverlayMask(BaseModel):
     model_config = ConfigDict(
         extra="forbid",
     )
-    version: str
-    model: str | None = Field(
-        ..., description="e.g. 'faster-whisper small int8'; null for documents."
+    box: list[BoxItem] = Field(..., max_length=4, min_length=4)
+    area_fraction: float = Field(..., ge=0.0, le=1.0)
+
+
+class UniqueSlidesInfo(BaseModel):
+    model_config = ConfigDict(
+        extra="forbid",
     )
-    frame_threshold: int | None = Field(
-        ..., description="pHash distance used to keep a new frame; null for documents."
+    method: str
+    applied_as: AppliedAs = Field(
+        ...,
+        description="'pipeline' = during processing; 'post_pass' = later, on the already extracted frames (no re-transcription).",
     )
-    seconds: float = Field(..., description="Wall-clock processing time.", ge=0.0)
-    warnings: list[str] | None = Field(
+    applied_at: str | None = Field(
         None,
-        description="OUR RECOMMENDATION (not on the Page): non-fatal issues, e.g. 'no text layer on page 3'. Optional.",
+        description="ISO 8601 UTC time of a post-pass; null when applied during processing.",
     )
-
-
-class Manifest(BaseModel):
-    model_config = ConfigDict(
-        extra="forbid",
+    source_frame_count: int = Field(..., ge=0)
+    unique_slide_count: int = Field(..., ge=0)
+    run_count: int = Field(
+        ..., description="Number of time ranges in frames[] after the pass.", ge=0
     )
-    schema_version: Literal["1.0"] = Field(
-        "1.0",
-        description="OUR RECOMMENDATION (not on the Page): lets the backend reject old manifests. Optional; default '1.0'.",
-    )
-    asset_id: str = Field(
+    source_frame_bytes: int = Field(..., ge=0)
+    unique_slide_bytes: int = Field(..., ge=0)
+    overlay_mask: OverlayMask | None = Field(
         ...,
-        description="Backend-generated asset id, e.g. 'a_01' or 'a_7f3c9e21'.",
-        pattern="^a_[A-Za-z0-9]+$",
+        description="Ignored live-overlay area (e.g. webcam box) as [x0, y0, x1, y1] fractions of the picture, or null.",
     )
-    kind: AssetKind
-    original: OriginalRef
-    metadata: AssetMetadata
-    segments: list[Segment] = Field(
-        ..., description="Timed transcript segments. Empty for documents."
-    )
-    frames: list[Frame] = Field(
-        ..., description="Kept key frames. Empty for documents."
-    )
-    slides: list[Slide] = Field(
-        ..., description="One entry per PDF page. Empty for videos."
-    )
-    derived_files: list[DerivedFile] = Field(
-        ...,
-        description="EVERY derived file kept on disk for this asset (transcript, each frame, each page image, optional audio), with its real measured size. manifest.json itself is NOT listed (it cannot contain its own size); the backend measures it at ingest. Temporary files (e.g. extracted WAV) are deleted by the pipeline and never listed. The storage report sums ONLY this list + manifest bytes, so frames[].bytes / slides[].bytes are informational and must not be added again.",
-    )
-    pipeline: PipelineInfo
+    params: dict[str, float]
 
 
 class SourceSystem(StrEnum):
@@ -273,6 +285,10 @@ class Asset(BaseModel):
         ge=0,
     )
     original_url: str = Field(..., description="e.g. '/files/originals/a_01/deck.pdf'")
+    test_data: bool | None = Field(
+        None,
+        description="REC v1.1: true = generated sample/test file (not customer data). Kept for the duplicate demo; excluded from the default storage report.",
+    )
 
 
 class BytesByKind(RootModel[int]):
@@ -292,6 +308,16 @@ class DerivedSummary(BaseModel):
     frame_count: int = Field(..., ge=0)
     slide_count: int = Field(..., ge=0)
     bytes_by_kind: dict[str, BytesByKind]
+    unique_slide_count: int | None = Field(
+        None,
+        description="REC v1.1: unique slides after the unique-slide pass (videos); null if the pass has not run.",
+        ge=0,
+    )
+    source_frame_count: int | None = Field(
+        None,
+        description="REC v1.1: key frames extracted before the unique-slide pass; null if the pass has not run.",
+        ge=0,
+    )
 
 
 class AssetList(BaseModel):
@@ -333,6 +359,11 @@ class FrameView(BaseModel):
     bytes: int = Field(..., ge=0)
     phash: str
     matched_slide: str | None
+    slide: int | None = Field(
+        None,
+        description="REC v1.1: unique slide number shown in this time range (null before the unique-slide pass).",
+        ge=1,
+    )
 
 
 class Timeline(BaseModel):
@@ -473,6 +504,21 @@ class StorageTotals(BaseModel):
     )
 
 
+class Scope(StrEnum):
+    real_files = "real_files"
+    all_files = "all_files"
+
+
+class ExcludedTestData(BaseModel):
+    model_config = ConfigDict(
+        extra="forbid",
+    )
+    asset_count: int = Field(..., ge=0)
+    original_bytes: int = Field(..., ge=0)
+    derived_bytes: int = Field(..., ge=0)
+    asset_ids: list[AssetId]
+
+
 class OffboardingRecommendation(StrEnum):
     eligible_after_approval = "eligible_after_approval"
     keep = "keep"
@@ -593,6 +639,7 @@ class SlideMatchType(StrEnum):
 class HitType(StrEnum):
     segment = "segment"
     slide = "slide"
+    asset = "asset"
 
 
 class RemovalReason(StrEnum):
@@ -603,6 +650,60 @@ class RemovalReason(StrEnum):
 class ChunkKind(StrEnum):
     transcript_segment = "transcript_segment"
     slide_text = "slide_text"
+
+
+class PipelineInfo(BaseModel):
+    model_config = ConfigDict(
+        extra="forbid",
+    )
+    version: str
+    model: str | None = Field(
+        ..., description="e.g. 'faster-whisper small int8'; null for documents."
+    )
+    frame_threshold: int | None = Field(
+        ..., description="pHash distance used to keep a new frame; null for documents."
+    )
+    seconds: float = Field(..., description="Wall-clock processing time.", ge=0.0)
+    warnings: list[str] | None = Field(
+        None,
+        description="OUR RECOMMENDATION (not on the Page): non-fatal issues, e.g. 'no text layer on page 3'. Optional.",
+    )
+    unique_slides: UniqueSlidesInfo | None = Field(
+        None,
+        description="REC v1.1: unique-slide pass result (videos); absent or null if it has not run.",
+    )
+
+
+class Manifest(BaseModel):
+    model_config = ConfigDict(
+        extra="forbid",
+    )
+    schema_version: Literal["1.0"] = Field(
+        "1.0",
+        description="OUR RECOMMENDATION (not on the Page): lets the backend reject old manifests. Optional; default '1.0'.",
+    )
+    asset_id: str = Field(
+        ...,
+        description="Backend-generated asset id, e.g. 'a_01' or 'a_7f3c9e21'.",
+        pattern="^a_[A-Za-z0-9]+$",
+    )
+    kind: AssetKind
+    original: OriginalRef
+    metadata: AssetMetadata
+    segments: list[Segment] = Field(
+        ..., description="Timed transcript segments. Empty for documents."
+    )
+    frames: list[Frame] = Field(
+        ..., description="Kept key frames. Empty for documents."
+    )
+    slides: list[Slide] = Field(
+        ..., description="One entry per PDF page. Empty for videos."
+    )
+    derived_files: list[DerivedFile] = Field(
+        ...,
+        description="EVERY derived file kept on disk for this asset (transcript, each frame, each page image, optional audio), with its real measured size. manifest.json itself is NOT listed (it cannot contain its own size); the backend measures it at ingest. Temporary files (e.g. extracted WAV) are deleted by the pipeline and never listed. The storage report sums ONLY this list + manifest bytes, so frames[].bytes / slides[].bytes are informational and must not be added again.",
+    )
+    pipeline: PipelineInfo
 
 
 class MediaRef(BaseModel):
@@ -694,7 +795,10 @@ class SearchHit(BaseModel):
     kind: AssetKind
     source_system: SourceSystem
     owner: str
-    text: str = Field(..., description="Full segment or slide text.")
+    text: str = Field(
+        ...,
+        description="Full segment or slide text; for 'asset' hits the indexed title + file name + metadata.",
+    )
     snippet: str = Field(
         ...,
         description="FTS5 snippet() with matches wrapped in <mark>…</mark>. Only <mark> tags; frontend must escape everything else.",
@@ -703,7 +807,8 @@ class SearchHit(BaseModel):
     end: float | None
     page: int | None = Field(..., description="Page number (slides only).")
     item_id: str = Field(
-        ..., description="Local segment id ('s12') or slide id ('p4')."
+        ...,
+        description="Local segment id ('s12'), slide id ('p4'), or 'meta' for a hit on the file's title / file name / metadata (REC v1.1).",
     )
     frame_id: str | None = Field(
         ..., description="Frame on screen for a segment hit; null for slides."
@@ -782,6 +887,14 @@ class StorageReport(BaseModel):
     not_counted: list[str]
     information_lost: list[str]
     notes: list[str]
+    scope: Scope | None = Field(
+        None,
+        description="REC v1.1: 'real_files' (default) = generated test files excluded; 'all_files' = everything in the library.",
+    )
+    excluded_test_data: ExcludedTestData | None = Field(
+        None,
+        description="REC v1.1: generated test files left out of this report (empty when scope = all_files).",
+    )
 
 
 class ExportChunk(BaseModel):
@@ -851,6 +964,7 @@ class DsoContracts(BaseModel):
     DerivedFileKind_1: DerivedFileKind | None = Field(None, alias="DerivedFileKind")
     DerivedFile_1: DerivedFile | None = Field(None, alias="DerivedFile")
     PipelineInfo_1: PipelineInfo | None = Field(None, alias="PipelineInfo")
+    UniqueSlidesInfo_1: UniqueSlidesInfo | None = Field(None, alias="UniqueSlidesInfo")
     Manifest_1: Manifest | None = Field(None, alias="Manifest")
     ItemRef: str | None = Field(
         None,

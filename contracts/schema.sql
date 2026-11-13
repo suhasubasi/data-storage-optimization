@@ -105,7 +105,16 @@ CREATE TABLE IF NOT EXISTS matches (
 CREATE VIRTUAL TABLE IF NOT EXISTS search_fts USING fts5 (
     text,
     asset_id  UNINDEXED,
-    item_type UNINDEXED,                                   -- 'segment' | 'slide'
-    item_id   UNINDEXED,                                   -- local id 's12' / 'p4'
+    item_type UNINDEXED,                                   -- 'segment' | 'slide' | 'asset' (REC v1.1: title + file name + metadata)
+    item_id   UNINDEXED,                                   -- local id 's12' / 'p4' / 'meta'
     tokenize = 'unicode61 remove_diacritics 2'             -- REC: handles Swedish/English mix
+);
+
+-- REC v1.1: labels a library file as GENERATED test/sample data (e.g. made by pipeline/scripts/make_samples.py),
+-- so it is never presented as customer data. The default storage report leaves these files out.
+-- Separate table (not a new assets column) so existing databases pick it up with CREATE IF NOT EXISTS.
+CREATE TABLE IF NOT EXISTS asset_labels (
+    asset_id  TEXT PRIMARY KEY REFERENCES assets (id),
+    test_data INTEGER NOT NULL DEFAULT 0 CHECK (test_data IN (0, 1)),
+    note      TEXT
 );

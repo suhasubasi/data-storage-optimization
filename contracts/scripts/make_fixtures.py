@@ -136,7 +136,7 @@ def asset_row(aid: str) -> dict:
     a["derived_bytes"] = derived_bytes(aid)
     keys = ["id", "filename", "kind", "bytes", "sha256", "source_system", "source_simulated", "owner",
             "status", "created_at", "derived_bytes", "original_url"]
-    return {k: a[k] for k in keys}
+    return {**{k: a[k] for k in keys}, "test_data": False}  # REC v1.1
 
 
 def furl(aid: str, path: str) -> str:
@@ -163,18 +163,19 @@ def summary(aid: str) -> dict:
     by_kind["manifest"] = MANIFEST_BYTES[aid]
     return {"derived_bytes": derived_bytes(aid), "manifest_bytes": MANIFEST_BYTES[aid],
             "file_count": len(m["derived_files"]) + 1, "segment_count": len(m["segments"]),
-            "frame_count": len(m["frames"]), "slide_count": len(m["slides"]), "bytes_by_kind": by_kind}
+            "frame_count": len(m["frames"]), "slide_count": len(m["slides"]), "bytes_by_kind": by_kind,
+            "unique_slide_count": None, "source_frame_count": None}  # REC v1.1: unique-slide pass not run on fixtures
 
 
 dump("asset_detail_video.json", {"asset": asset_row("a_01"), "metadata": MANIFESTS["a_01"]["metadata"],
-                                 "derived": summary("a_01"), "pipeline": MANIFESTS["a_01"]["pipeline"], "latest_job": JOB})
+                                 "derived": summary("a_01"), "pipeline": {**MANIFESTS["a_01"]["pipeline"], "unique_slides": None}, "latest_job": JOB})
 dump("asset_detail_document.json", {"asset": asset_row("a_02"), "metadata": MANIFESTS["a_02"]["metadata"],
-                                    "derived": summary("a_02"), "pipeline": MANIFESTS["a_02"]["pipeline"], "latest_job": None})
+                                    "derived": summary("a_02"), "pipeline": {**MANIFESTS["a_02"]["pipeline"], "unique_slides": None}, "latest_job": None})
 
 
 def frame_view(aid: str, f: dict) -> dict:
     return {"id": f["id"], "t_start": f["t_start"], "t_end": f["t_end"], "image_url": furl(aid, f["path"]),
-            "bytes": f["bytes"], "phash": f["phash"], "matched_slide": f["matched_slide"]}
+            "bytes": f["bytes"], "phash": f["phash"], "matched_slide": f["matched_slide"], "slide": None}
 
 
 vm = MANIFESTS["a_01"]
@@ -324,7 +325,10 @@ dump("storage_report.json", {
     ],
     "not_counted": ["Backups", "Platform replication", "Archive tiers", "Compute cost", "Model weights", "Money"],
     "information_lost": ["Motion and live demos in video", "Gestures and body language", "Tone of voice (unless the optional audio track is kept)", "Speaker identity (not in MVP)"],
-    "notes": ["O = all original bytes in scope, every copy on every simulated system. D = all derived files + manifests. I = measured SQLite/FTS index size.",
+    "scope": "real_files",
+    "excluded_test_data": {"asset_count": 0, "original_bytes": 0, "derived_bytes": 0, "asset_ids": []},
+    "notes": ["Scope: real uploaded files only (no generated test files in the library).",
+              "O = all original bytes in scope, every copy on every simulated system. D = all derived files + manifests. I = measured SQLite/FTS index size.",
               "D and I are counted in every scenario (conservative).",
               "Scenarios 1-3 are hypothetical and require human approval. The tool never deletes anything.",
               "Ericsson's own example (PDF p.2: ~1 GB → ~50 KB text + ~2 MB frames, 'roughly 99%') is their illustration, not our measurement."],
@@ -356,7 +360,7 @@ def chunks(aid: str) -> list[dict]:
 exp_matches = [{"level": "file", "type": "exact", "a": "a_02", "b": "a_03", "score": 1.0, "method": "sha256"}] + \
     [{"level": "slide", "type": t, "a": ra, "b": rb, "score": sc, "method": me} for ra, rb, t, me, sc, _ in SLIDE_MATCHES]
 dump("export_asset.json", {"schema_version": "1.0", "exported_at": NOW, "source": prov("a_02"), "kind": "document",
-                           "metadata": MANIFESTS["a_02"]["metadata"], "pipeline": MANIFESTS["a_02"]["pipeline"],
+                           "metadata": MANIFESTS["a_02"]["metadata"], "pipeline": {**MANIFESTS["a_02"]["pipeline"], "unique_slides": None},
                            "chunks": chunks("a_02"), "frames": [], "slides": slide_views("a_02"), "matches": exp_matches})
 lines = [json.dumps(c, ensure_ascii=False) for aid in ("a_01", "a_02") for c in chunks(aid)]
 (FIX / "export.jsonl").write_text("\n".join(lines) + "\n", encoding="utf-8")
