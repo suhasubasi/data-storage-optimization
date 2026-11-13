@@ -86,8 +86,10 @@ def _read_json(path: Path, newer_than: float) -> dict | None:
 
 def _fail(job_id: str, asset_id: str, message: str) -> None:
     log.warning("job %s failed: %s", job_id, message)
-    _update_job(job_id, status="failed", error=message[:4000], finished_at=db.utc_now())
+    # One transaction: a poller never sees the job 'failed' while the asset still says 'processing'.
     with db.write() as conn:
+        conn.execute("UPDATE jobs SET status = 'failed', error = ?, finished_at = ? WHERE id = ?",
+                     (message[:4000], db.utc_now(), job_id))
         had = conn.execute("SELECT manifest_bytes FROM assets WHERE id = ?", (asset_id,)).fetchone()
         # REC: if an earlier run was ingested, its data stays valid -> asset stays 'ready'.
         conn.execute("UPDATE assets SET status = ? WHERE id = ?",
