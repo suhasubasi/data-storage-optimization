@@ -6,7 +6,7 @@ Local tool that turns long recordings and documents into compact, searchable, AI
 duplicates across (simulated) SharePoint / OneDrive / Ericsson Play — **without deleting anything**.
 
 - MP4 → timed local transcript (faster-whisper) + compressed key frames linked by time
-- PDF → per-page text, page image, three hashes (file SHA-256, normalised-text SHA-256, pHash)
+- PDF and PowerPoint `.pptx` → per-page/slide text, page image, three hashes (file SHA-256, normalised-text SHA-256, pHash)
 - Duplicates: exact file · shared slide · similar (needs review)
 - Search → text + frame/slide + timestamp
 - Offboarding review → recommends, never deletes
@@ -21,11 +21,11 @@ Out of scope: speaker ID, slide/video recreation, live SharePoint/OneDrive/Erics
 ## Layout and ownership
 
 ```
-contracts/   SHARED, FROZEN. API (openapi.yaml), manifest + API JSON Schemas, schema.sql, generated TS + Python types, fixtures
-frontend/    Stream 1 · React + Vite + TS           (starts on contracts/fixtures)
+contracts/   SHARED, FROZEN. API (openapi.yaml), manifest + API JSON Schemas, schema.sql, generated TS + Python types, test-only example fixtures
+frontend/    Stream 1 · React + Vite + TS           (always the real API, no mock mode)
 backend/     Stream 2 · FastAPI + SQLite FTS5       (implements contracts/openapi.yaml)
 pipeline/    Stream 3 · ffmpeg, faster-whisper, PyMuPDF, imagehash (writes derived files + manifest.json)
-data/        originals/ (read-only, never deleted) · derived/<asset_id>/ · samples/  — git-ignored
+data/        originals/ (read-only, never deleted) · derived/<asset_id>/  — git-ignored
 ```
 
 **Rule:** streams share ONLY `contracts/` and hand off via **one `manifest.json` per file**
@@ -48,10 +48,12 @@ cd pipeline && python3 -m venv .venv && . .venv/bin/activate \
   && pip install -r requirements.txt -e ../contracts/python -e .
 
 # Frontend – http://localhost:5173 (live API)
-cd frontend && echo "VITE_USE_MOCKS=false" > .env.local && npm install && npm run dev
+cd frontend && npm install && npm run dev
 ```
 
-Do not run `app.cli load-fixtures --reset` on a database you care about: it wipes it and loads generated demo data.
+**Real data only.** The app has no mock mode and no built-in demo data. You add real files (MP4, PDF, PPTX) through
+the Library page or `python -m app.cli add-file`. The synthetic examples in `contracts/fixtures/` and the decks/videos
+built inside `pipeline/tests/` are used **only by the automated tests**; they are never loaded into a real database.
 
 Contracts (only when all streams agree to change them):
 
@@ -64,7 +66,7 @@ contracts/scripts/generate.sh && python3 contracts/scripts/make_fixtures.py && .
 
 - Nothing deletes or modifies originals. No DELETE endpoint. Offboarding = recommendation only.
 - Processing alone saves no storage; scenario 0 (negative) is always shown. Formula in CONTRACTS.md §6.
-- All processing is local; sample files never leave the laptop.
+- All processing is local; sample files never leave the laptop and are never committed (see `.gitignore`).
 
 ## Ambiguities resolved at freeze (see CONTRACTS.md)
 

@@ -20,15 +20,15 @@ Exception: `thresholds.json` is tunable by Stream 3 (announce changes).
 | `thresholds.json` | pHash / similarity thresholds, frame sampling, whisper model (tunable) | S2 (duplicates), S3 |
 | `ts/dso-contracts.ts` | GENERATED TypeScript types | S1 |
 | `python/dso_contracts/models.py` | GENERATED Pydantic v2 models (`pip install -e contracts/python`) | S2, S3 |
-| `fixtures/*.json`, `fixtures/export.jsonl` | One coherent mock dataset, one file per API response | S1 (mocks), S2 (tests) |
-| `fixtures/manifests/a_0{1..4}.manifest.json` | Example manifests (1 video, 3 PDFs incl. `(1).pdf` copy) | S2 (ingest before S3 is ready), S3 (target shape) |
+| `fixtures/*.json`, `fixtures/export.jsonl` | Synthetic example per API response, **test-only** (contract check + backend tests; never shown to users) | contract check, S2 (tests) |
+| `fixtures/manifests/a_0{1..4}.manifest.json` | Synthetic example manifests (1 video, 3 PDFs incl. `(1).pdf` copy), test-only | S2 (tests), S3 (target shape) |
 | `scripts/` | `generate.sh`, `bundle_schemas.py`, `make_fixtures.py`, `check_contracts.py` | everyone |
 
 ## 2. Ownership (one folder per stream, nothing else is shared)
 
 | Stream | Folder | Builds | Starts on |
 |---|---|---|---|
-| **1 · Frontend** | `frontend/` | React + Vite + TS, 8 screens (Library, Recording, Document, Search, Duplicates, Storage report, Offboarding, Export) | `fixtures/` via `src/mocks/` from minute one; switches to the API with `VITE_USE_MOCKS=false` at checkpoint 1 |
+| **1 · Frontend** | `frontend/` | React + Vite + TS, 8 screens (Library, Recording, Document, Search, Duplicates, Storage report, Offboarding, Export) | the real API only (mock mode removed in v1.2) |
 | **2 · Backend** | `backend/` | FastAPI + SQLite FTS5: upload + SHA-256, job runner, manifest ingest, search, duplicate engine, storage report, offboarding, export, file serving | `openapi.yaml`, `schema.sql`, fixture manifests |
 | **3 · Pipeline** | `pipeline/` | ffmpeg + faster-whisper (local, small/base int8) + key frames + PyMuPDF + image hashing → derived files + `manifest.json` | nothing from the others |
 

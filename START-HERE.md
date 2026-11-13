@@ -23,14 +23,13 @@ python -m venv .venv
 .\.venv\Scripts\python.exe -m pip install -r requirements.txt -e ..\contracts\python -e .
 
 cd ..\frontend
-"VITE_USE_MOCKS=false" | Set-Content -NoNewline .env.local
 npm install
 ```
 
 The database is created automatically the first time the backend starts.
 
-> **Warning:** do not run `app.cli load-fixtures --reset`. It wipes the database,
-> including every file you have processed, and loads generated demo data instead.
+The app only shows real files that you add. There is no mock mode and no demo data.
+Never delete `data\dso.sqlite`: it holds everything you have processed.
 
 ## 2. Start the app (every time)
 
@@ -55,7 +54,8 @@ If a command says the port is already in use, that server is already running.
 
 ## 3. Use it with real files
 
-1. **Library** – upload a real MP4 or PDF. A 52-minute talk takes about 10 minutes on a laptop CPU.
+1. **Library** – upload a real MP4, PDF or PowerPoint `.pptx`. A 52-minute talk takes about 10 minutes on a laptop CPU.
+   Slide images for `.pptx` are made with Microsoft PowerPoint (or LibreOffice if PowerPoint is missing).
 2. **Recording** – click a sentence and the slide on screen at that time follows.
 3. **Search** – searches spoken text, slide text, titles and file names.
 4. **Duplicates** – exact copies (SHA-256), shared slides and similar slides.
