@@ -110,6 +110,10 @@ td.reason { max-width: 420px; }
 .job { border: 1px solid var(--line); border-radius: 8px; padding: 10px; margin-bottom: 10px; }
 .job-head { display: flex; justify-content: space-between; margin-bottom: 6px; }
 .job-foot { font-size: 12px; margin-top: 4px; }
+.job-big { display: flex; align-items: baseline; gap: 12px; margin: 4px 0 8px; }
+.job-pct { font-size: 32px; font-weight: 700; line-height: 1; color: var(--blue); font-variant-numeric: tabular-nums; }
+.job-stage { font-size: 14px; }
+.progress.progress-lg { height: 14px; }
 .progress { height: 8px; background: var(--grey-soft); border-radius: 99px; overflow: hidden; }
 .progress-bar { height: 100%; transition: width .5s; background: var(--blue); }
 .progress-bar.green { background: var(--green); }

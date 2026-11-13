@@ -62,3 +62,24 @@ export function downloadText(filename: string, text: string, mime = "application
   a.remove();
   setTimeout(() => URL.revokeObjectURL(url), 1000);
 }
+
+/** Elapsed time in plain words, e.g. "45 s", "3 min 05 s", "1 h 02 min". */
+export function formatDuration(sec: number | null | undefined): string {
+  if (sec === null || sec === undefined || Number.isNaN(sec)) return "—";
+  const s = Math.max(0, Math.round(sec));
+  if (s < 60) return `${s} s`;
+  const h = Math.floor(s / 3600);
+  const m = Math.floor((s % 3600) / 60);
+  if (h > 0) return `${h} h ${String(m).padStart(2, "0")} min`;
+  return `${m} min ${String(s % 60).padStart(2, "0")} s`;
+}
+
+/** Time left from the backend's estimate (eta_s). Always labelled as an estimate. */
+export function formatEta(sec: number | null | undefined): string | null {
+  if (sec === null || sec === undefined || Number.isNaN(sec)) return null;
+  if (sec < 60) return "less than 1 min left (estimate)";
+  const min = Math.round(sec / 60);
+  if (min < 90) return `about ${min} min left (estimate)`;
+  const h = Math.floor(min / 60);
+  return `about ${h} h ${String(min % 60).padStart(2, "0")} min left (estimate)`;
+}
