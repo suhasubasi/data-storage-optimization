@@ -263,7 +263,7 @@ export interface Segment {
    */
   frame_id: string | null;
   /**
-   * Always null in the MVP (speaker ID is out of scope).
+   * Recording-local voice label (Speaker 1, Speaker 2, ...), or null when unavailable or uncertain.
    */
   speaker: string | null;
 }

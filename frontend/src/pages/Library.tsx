@@ -21,6 +21,7 @@ const STAGE_LABEL: Record<string, string> = {
   "finding unique slides": "Finding unique slides",
   "extracting audio": "Extracting audio",
   transcribing: "Transcribing speech",
+  "identifying speakers": "Identifying speakers",
   "writing transcript": "Writing the transcript",
   "rendering pages": "Rendering pages",
   "reading slides": "Reading slides",

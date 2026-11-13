@@ -81,7 +81,7 @@ class Segment(BaseModel):
         description="The kept frame on screen when this segment STARTS (frame.t_start <= start < frame.t_end).",
     )
     speaker: str | None = Field(
-        ..., description="Always null in the MVP (speaker ID is out of scope)."
+        ..., description="Recording-local voice label (Speaker 1, Speaker 2, ...), or null when unavailable or uncertain."
     )
 
 

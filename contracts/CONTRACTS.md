@@ -55,7 +55,7 @@ Conventions:
 - `derived_files` lists **every** kept derived file (transcript, every frame, every page image, optional audio). Not `manifest.json` itself. Temp files are deleted, not listed.
 - Time link: frame covers `[t_start, t_end)`; a segment's `frame_id` = frame on screen when the segment **starts**.
 - Text hash: `NFKC → lowercase → collapse whitespace → strip → SHA-256 (UTF-8)`. pHash: `imagehash.phash(hash_size=8)` as 16 lowercase hex chars.
-- Metadata (`doc_number`, `revision`, …) only when really present in the file/name; otherwise `null`. `speaker` is always `null` (out of scope).
+- Metadata (`doc_number`, `revision`, …) only when really present in the file/name; otherwise `null`. `speaker` is a recording-local voice label (`Speaker 1`, `Speaker 2`, …), or `null` when unavailable or uncertain. Labels are not personal identities.
 - API URLs are relative: `/files/originals/<asset_id>/<filename>` and `/files/derived/<asset_id>/<path>`.
 
 ## 4. Pipeline invocation (REC — the Page only says "job runner, background thread")

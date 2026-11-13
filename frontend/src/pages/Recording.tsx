@@ -107,6 +107,9 @@ export default function Recording() {
       ) : tl ? (
         <>
           {detail.data && <Downloads detail={detail.data} compact />}
+          {detail.data?.pipeline?.warnings?.filter((warning) => warning.includes("speaker diarization")).map((warning) => (
+            <p key={warning} role="status" className="muted">{warning}</p>
+          ))}
           <div className="stats-row">
             <Stat label="Original (kept)" value={formatBytes(asset?.bytes)} sub={asset ? `${SOURCE_LABEL[asset.source_system]} · ${asset.owner}` : undefined} />
             <Stat
@@ -203,7 +206,9 @@ export default function Recording() {
             <div className="card rec-side">
               <div className="card-head">
                 <h3>Transcript</h3>
-                <Badge tone="grey" title="Speaker ID is out of scope">no speaker ID</Badge>
+                <Badge tone="grey" title="Automatic voice labels apply within this recording">
+                  {segments.some((s) => s.speaker) ? `${new Set(segments.map((s) => s.speaker).filter(Boolean)).size} speakers` : "speakers unavailable"}
+                </Badge>
               </div>
               <input
                 className="search-input small"
@@ -225,6 +230,7 @@ export default function Recording() {
                       >
                         <span className="seg-time">{formatTime(s.start)}</span>
                         <span className="seg-text">
+                          <strong>{s.speaker ?? "Unknown speaker"}</strong>{" · "}
                           <Snippet html={highlight(s.text, filter)} />
                         </span>
                         <span className="seg-frame">→ {s.frame_id ?? "no frame"}</span>

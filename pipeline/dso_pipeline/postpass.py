@@ -65,8 +65,9 @@ def run_unique_slides(asset_id: str, out_dir: Path, audit_dir: Path | None = Non
     m = _load(out_dir, asset_id)
     if m["kind"] != "video":
         raise PostPassError("unique-slide pass is for recordings (kind 'video') only")
-    if (m["pipeline"] or {}).get("unique_slides"):
-        raise PostPassError("unique-slide pass was already applied to this manifest")
+    previous=(m["pipeline"] or {}).get("unique_slides")
+    if previous and previous.get("method")==unique_slides.METHOD:
+        raise PostPassError("unique-slide pass was already applied with the current method")
     if not m["frames"]:
         raise PostPassError("this recording has no key frames")
     shas = _check_frame_files(out_dir, m)

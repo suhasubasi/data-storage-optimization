@@ -30,14 +30,16 @@ choice is auditable. A segment's frame_id = run on screen when the segment start
 from __future__ import annotations
 
 from pathlib import Path
+import hashlib
 from typing import Any
 
 import numpy as np
 from PIL import Image
 
 from .common import phash_hex
+from .slide_region import presentation_image,cursor_mask
 
-METHOD = "masked-block-diff+masked-phash v2 (representative verified)"
+METHOD = "presentation-region+masked-block-diff+masked-phash v3 (representative verified)"
 DEFAULTS: dict[str, Any] = {
     "enabled": True,
     "thumb_width": 320,
@@ -57,6 +59,7 @@ DEFAULTS: dict[str, Any] = {
 def config(thresholds: dict[str, Any]) -> dict[str, Any]:
     cfg = dict(DEFAULTS)
     cfg.update({k: v for k, v in (thresholds.get("unique_slides") or {}).items() if not k.startswith("_")})
+    cfg["presentation_region"]=(thresholds.get("video") or {}).get("presentation_region")
     return cfg
 
 
@@ -74,11 +77,11 @@ def frame_for(t: float, frames: list[dict[str, Any]]) -> str | None:
     return frames[-1]["id"] if t >= frames[-1]["t_start"] else frames[0]["id"]
 
 
-def _thumbs(paths: list[Path], w: int, h: int) -> np.ndarray:
+def _thumbs(paths: list[Path], w: int, h: int, region=None) -> np.ndarray:
     out = np.empty((len(paths), h, w), dtype=np.int16)
     for i, p in enumerate(paths):
         with Image.open(p) as im:
-            out[i] = np.asarray(im.convert("L").resize((w, h), Image.BILINEAR), dtype=np.int16)
+            out[i] = np.asarray(presentation_image(im,region).convert("L").resize((w,h),Image.BILINEAR),dtype=np.int16)
     return out
 
 
@@ -117,9 +120,9 @@ def detect_overlay(th: np.ndarray, cfg: dict[str, Any]) -> tuple[np.ndarray, dic
     }
 
 
-def _masked_phash(path: Path, box: list[float] | None, hash_size: int) -> str:
+def _masked_phash(path: Path, box: list[float] | None, hash_size: int, region=None) -> str:
     with Image.open(path) as im:
-        img = im.convert("RGB")
+        img = presentation_image(im,region).convert("RGB")
     if box:
         W, H = img.size
         a = np.asarray(img).copy()
@@ -129,7 +132,7 @@ def _masked_phash(path: Path, box: list[float] | None, hash_size: int) -> str:
 
 
 class _Comparer:
-    def __init__(self, th: np.ndarray, mask: np.ndarray, cfg: dict[str, Any]):
+    def __init__(self, th: np.ndarray, mask: np.ndarray, cfg: dict[str, Any], cursors=None):
         n, h, w = th.shape
         c = int(cfg["block_px"])
         if c < 1:
@@ -142,6 +145,7 @@ class _Comparer:
         kc = self.keep[: self.h, : self.w].reshape(self.gh, c, self.gw, c).sum((1, 3)).astype(np.float64)
         self.valid = kc > 0  # every unmasked pixel counts, including partial edge blocks
         self.kc = np.maximum(kc, 1)
+        self.cursors=np.pad(cursors,((0,0),(0,self.h-h),(0,self.w-w))) if cursors is not None else None
 
     def block_max(self, i: int, js: list[int]) -> np.ndarray:
         """Largest changed-pixel share over all valid blocks, frame i vs each frame in js."""
@@ -149,8 +153,14 @@ class _Comparer:
             return np.zeros(0)
         a = self.th[i, : self.h, : self.w]
         b = self.th[js, : self.h, : self.w]
-        d = (np.abs(b - a) > self.lvl) & self.keep[: self.h, : self.w]
-        s = d.reshape(len(js), self.gh, self.c, self.gw, self.c).sum((2, 4)) / self.kc
+        keep=np.broadcast_to(self.keep,(len(js),self.h,self.w)).copy()
+        if self.cursors is not None and self.cursors[i].any():
+            for offset,j in enumerate(js):
+                if self.cursors[j].any() and not np.array_equal(self.cursors[i],self.cursors[j]):
+                    keep[offset]&=~(self.cursors[i]|self.cursors[j])
+        d = (np.abs(b-a)>self.lvl)&keep
+        counts=keep.reshape(len(js),self.gh,self.c,self.gw,self.c).sum((2,4))
+        s=d.reshape(len(js),self.gh,self.c,self.gw,self.c).sum((2,4))/np.maximum(counts,1)
         s[:, ~self.valid] = 0
         return s.reshape(len(js), -1).max(axis=1)
 
@@ -162,10 +172,26 @@ def plan(frames: list[dict[str, Any]], base: Path, cfg: dict[str, Any], hash_siz
     if n == 0:
         return {"runs": [], "slides": [], "overlay": None}
     paths = [base / f["path"] for f in frames]
-    th = _thumbs(paths, int(cfg["thumb_width"]), int(cfg["thumb_height"]))
+    th = _thumbs(paths,int(cfg["thumb_width"]),int(cfg["thumb_height"]),cfg.get("presentation_region"))
     mask, overlay = detect_overlay(th, cfg)
-    mph = [_masked_phash(p, overlay["box"] if overlay else None, hash_size) for p in paths]
-    cmp = _Comparer(th, mask, cfg)
+    cursors=np.zeros(th.shape,dtype=bool)
+    cursor_cache={}
+    for i,path in enumerate(paths):
+        with Image.open(path) as image:
+            panel=presentation_image(image,cfg.get("presentation_region")).convert("RGB")
+            key=(panel.size,hashlib.sha256(panel.tobytes()).digest())
+            if key in cursor_cache:
+                cursors[i]=cursor_cache[key]
+                continue
+            detected=cursor_mask(panel)
+        # Include the resampling fringe, but never an entire comparison block.
+        from scipy.ndimage import binary_dilation
+        cursors[i]=binary_dilation(np.asarray(Image.fromarray(detected).resize((th.shape[2],th.shape[1]),Image.Resampling.NEAREST)),iterations=1) if detected.any() else False
+        if len(cursor_cache)>=64:
+            cursor_cache.pop(next(iter(cursor_cache)))
+        cursor_cache[key]=cursors[i].copy()
+    mph = [_masked_phash(p,overlay["box"] if overlay else None,hash_size,cfg.get("presentation_region")) for p in paths]
+    cmp = _Comparer(th,mask,cfg,cursors)
     max_blk, max_ph = float(cfg["max_block_change_fraction"]), int(cfg["max_phash_distance"])
 
     seeds: list[int] = []        # first frame of each unique slide (comparison anchor, avoids drift)
@@ -173,10 +199,14 @@ def plan(frames: list[dict[str, Any]], base: Path, cfg: dict[str, Any], hash_siz
     runs: list[dict[str, Any]] = []  # {"slide": k, "frames": [idx...]}
     cur: int | None = None
     for i in range(n):
+        contiguous = i > 0 and abs(frames[i - 1]["t_end"] - frames[i]["t_start"]) < .001
         if cur is not None:
             if _hd(mph[seeds[cur]], mph[i]) <= max_ph and cmp.block_max(seeds[cur], [i])[0] <= max_blk:
                 members[cur].append(i)
-                runs[-1]["frames"].append(i)
+                if contiguous:
+                    runs[-1]["frames"].append(i)
+                else:
+                    runs.append({"slide": cur, "frames": [i]})
                 continue
         cand = [k for k in range(len(seeds)) if k != cur and _hd(mph[seeds[k]], mph[i]) <= max_ph]
         hit = None
@@ -191,7 +221,7 @@ def plan(frames: list[dict[str, Any]], base: Path, cfg: dict[str, Any], hash_siz
             hit = len(seeds) - 1
         else:
             members[hit].append(i)
-        if runs and runs[-1]["slide"] == hit:
+        if runs and runs[-1]["slide"] == hit and contiguous:
             runs[-1]["frames"].append(i)
         else:
             runs.append({"slide": hit, "frames": [i]})

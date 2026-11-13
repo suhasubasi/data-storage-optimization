@@ -11,6 +11,7 @@ STARTS, so "as you see here" points at the right slide.
 from __future__ import annotations
 
 import json
+import os
 import subprocess
 import tempfile
 from pathlib import Path
@@ -21,7 +22,10 @@ from PIL import Image
 
 from . import unique_slides
 from .common import Status, phash_distance, phash_file, phash_hex, write_json_atomic
-from .transcribe import transcribe
+from .transcribe import transcribe, load_wav_16k_mono
+from .slide_region import presentation_image
+from .slide_content import has_slide_content
+from . import diarize
 
 
 _THUMB = (160, 90)
@@ -73,8 +77,8 @@ def _gray_thumb(img: Image.Image) -> np.ndarray:
 
 
 def _key_frames(input_path: Path, size: tuple[int, int], fps: float, min_dist: int, hash_size: int,
-                min_pixel_fraction: float, pixel_level: int) -> Iterator[tuple[float, Image.Image]]:
-    """Yield (t_seconds, image) for every kept frame. The first frame is always kept.
+                min_pixel_fraction: float, pixel_level: int, presentation_region=None, slides_only=True) -> Iterator[tuple[float, Image.Image | None]]:
+    """Yield (t_seconds, image) for every kept frame. Non-slide samples yield a boundary with no image.
 
     A frame counts as a NEW slide/scene if, compared with the last kept frame,
       pHash distance >= min_dist                                  (layout / picture changed), OR
@@ -99,6 +103,13 @@ def _key_frames(input_path: Path, size: tuple[int, int], fps: float, min_dist: i
             if len(buf) < frame_bytes:
                 break
             img = Image.frombytes("RGB", (w, h), buf)
+            # Detect changes in the presentation, not in the webcam/participant rail.
+            img = presentation_image(img,presentation_region)
+            if slides_only and not has_slide_content(img):
+                last, last_thumb = None, None
+                yield round(k / fps, 3), None
+                k += 1
+                continue
             hsh = phash_hex(img, hash_size)
             thumb = _gray_thumb(img)
             if (
@@ -134,7 +145,7 @@ def process_video(input_path: Path, out_dir: Path, thresholds: dict[str, Any], s
 
     # Whole-job progress is STAGE-WEIGHTED: each step reports its own real fraction and these fixed
     # weights place it in 0..1 (probing 0-5%, key frames 5-30%, unique slides + audio 30-35%,
-    # transcribing 35-95%, writing 97%, done 100%). The weights are a fixed choice, not a measurement,
+    # transcribing 35-85%, speakers 85-95%, writing 97%, done 100%). The weights are a fixed choice, not a measurement,
     # so the backend's time-left number is labelled an estimate.
     status.progress("probing", 0.0)
     info = probe(input_path)
@@ -154,21 +165,27 @@ def process_video(input_path: Path, out_dir: Path, thresholds: dict[str, Any], s
     size = _scaled_size(info, max_w) if has_video else None
     if size:
         status.progress("extracting key frames", 0.05)
-        kept: list[tuple[float, Path]] = []
-        for t, img in _key_frames(input_path, size, fps, min_dist, hash_size, min_pix, pix_level):
-            dest = frames_dir / f"f{len(kept) + 1}.{fmt}"
-            img.save(dest, format=fmt.upper(), quality=75, method=4)
+        kept: list[tuple[float, Path | None]] = []
+        saved_count = 0
+        for t, img in _key_frames(input_path, size, fps, min_dist, hash_size, min_pix, pix_level,vcfg.get("presentation_region"), vcfg.get("slides_only", True)):
+            dest = None
+            if img is not None:
+                saved_count += 1
+                dest = frames_dir / f"f{saved_count}.{fmt}"
+                img.save(dest, format=fmt.upper(), quality=75, method=4)
             kept.append((t, dest))
             if duration > 0:
                 f = min(t / duration, 1.0)  # real: video time of the last decoded frame / duration
                 status.progress("extracting key frames", 0.05 + 0.25 * f, stage_progress=f)
         end = duration if duration > 0 else (kept[-1][0] + 1.0 / fps if kept else 0.0)
         for i, (t, dest) in enumerate(kept):
+            if dest is None:
+                continue
             rel = f"frames/{dest.name}"
             nbytes = dest.stat().st_size
             t_end = kept[i + 1][0] if i + 1 < len(kept) else max(end, t)
             frames.append({
-                "id": f"f{i + 1}",
+                "id": dest.stem,
                 "t_start": t,
                 "t_end": round(t_end, 3),
                 "path": rel,
@@ -178,7 +195,7 @@ def process_video(input_path: Path, out_dir: Path, thresholds: dict[str, Any], s
             })
             derived.append({"path": rel, "bytes": nbytes, "kind": "frame"})
         if not frames:
-            warnings.append("video stream had no decodable frames")
+            warnings.append("no presentation frames with text detected" if vcfg.get("slides_only", True) else "video stream had no decodable frames")
     else:
         warnings.append("no video stream found; no key frames")
 
@@ -208,7 +225,19 @@ def process_video(input_path: Path, out_dir: Path, thresholds: dict[str, Any], s
             # p is real: end time of the last finished Whisper segment / media duration. Reporting
             # progress only reads the segments; it never changes what Whisper does or returns.
             result = transcribe(wav, duration, thresholds,
-                                lambda p: status.progress("transcribing", 0.35 + 0.6 * p, stage_progress=p))
+                                lambda p: status.progress("transcribing", 0.35 + 0.5 * p, stage_progress=p),
+                                with_words=diarize.enabled(thresholds))
+            if result.segments and diarize.enabled(thresholds) and os.environ.get("DSO_TRANSCRIBER", "whisper").lower() != "stub":
+                status.progress("identifying speakers", .85)
+                try:
+                    turns = diarize.speaker_turns(
+                        load_wav_16k_mono(wav),
+                        thresholds, lambda p: status.progress("identifying speakers", .85 + .1 * p, stage_progress=p))
+                    result.segments, result.speakers = diarize.assign_speakers(result.segments, result.words, turns)
+                    if not any(result.speakers):
+                        warnings.append("speaker diarization could not confidently assign voices; speaker labels are unavailable")
+                except Exception as exc:
+                    warnings.append(f"speaker diarization unavailable ({type(exc).__name__}: {exc}); transcript retained without speaker labels")
     else:
         warnings.append("no audio stream found; transcript is empty")
 
@@ -217,7 +246,8 @@ def process_video(input_path: Path, out_dir: Path, thresholds: dict[str, Any], s
         for i, (s, e, text) in enumerate(result.segments):
             segments.append({
                 "id": f"s{i + 1}", "start": s, "end": max(e, s), "text": text,
-                "frame_id": frame_for(s, frames), "speaker": None,
+                "frame_id": next((f["id"] for f in frames if f["t_start"] <= s < f["t_end"]), None),
+                "speaker": result.speakers[i] if i < len(result.speakers) else None,
             })
         if not segments:
             warnings.append("no speech detected")
