@@ -8,6 +8,8 @@
     python -m app.cli mark-test-data a_1 a_2 --note "why"   # label files that are generated test data
     python -m app.cli mark-test-data a_1 --unset                                      # remove that label
     python -m app.cli reindex-search           # title / file name / metadata rows in search (no pipeline run)
+    python -m app.cli attach-chat a_1234abcd "chat.msg" [--start 2024-01-05T09:15:03]
+                                               # same as POST /api/assets/{id}/chat (meeting chat of a recording)
     python -m app.cli unique-slides a_1234abcd [--dry-run]
                                                # unique-slide pass on an already processed recording:
                                                # existing key frames only, NO speech-to-text re-run
@@ -39,6 +41,10 @@ def main(argv: list[str] | None = None) -> int:
     mt.add_argument("--note", default=None)
     mt.add_argument("--unset", action="store_true")
     sub.add_parser("reindex-search")
+    ac = sub.add_parser("attach-chat")
+    ac.add_argument("asset_id")
+    ac.add_argument("path", type=Path)
+    ac.add_argument("--start", default=None, help="recording start, local time (default: from the file name)")
     us = sub.add_parser("unique-slides")
     us.add_argument("asset_id")
     us.add_argument("--dry-run", action="store_true")
@@ -67,6 +73,11 @@ def main(argv: list[str] | None = None) -> int:
     elif a.cmd == "reindex-search":
         db.init_db()
         print(f"Indexed title/file name/metadata for {ingest.reindex_asset_metadata()} processed assets")
+    elif a.cmd == "attach-chat":
+        db.init_db()
+        from . import chat
+        log = chat.attach(a.asset_id, a.path.name, a.path.read_bytes(), a.start)
+        print(f"Attached {len(log.messages)} chat messages to {a.asset_id}. {log.alignment.note if log.alignment else ''}")
     elif a.cmd == "unique-slides":
         db.init_db()
         from . import postpass

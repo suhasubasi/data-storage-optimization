@@ -274,6 +274,20 @@ def search(q: str, limit: int = 20) -> SearchResponse:
                                      page=None)
                 hits.append(SearchHit(hit_type="segment", start=s["start"] if s else None, end=s["end"] if s else None,
                                       page=None, frame_id=f["id"] if f is not None else None, media=media, **common))
+            elif r["item_type"] == "chat":  # REC v1.2: meeting chat message, time is an estimate
+                c = conn.execute("SELECT * FROM chat_messages WHERE asset_id = ? AND id = ?",
+                                 (aid, r["item_id"])).fetchone()
+                t = c["t"] if c else None
+                f = conn.execute("SELECT * FROM frames WHERE asset_id = ? AND t_start <= ? AND ? < t_end "
+                                 "ORDER BY t_start LIMIT 1", (aid, t, t)).fetchone() if t is not None else None
+                if f is not None:
+                    media = MediaRef(type="frame", asset_id=aid, item_id=f["id"], url=derived_url(aid, f["path"]),
+                                     bytes=f["bytes"], t_start=f["t_start"], t_end=f["t_end"], page=None)
+                else:
+                    media = MediaRef(type="original", asset_id=aid, item_id=None, url=original_url(a),
+                                     bytes=a["bytes"], t_start=t, t_end=t, page=None)
+                hits.append(SearchHit(hit_type="chat", start=t, end=t, page=None,
+                                      frame_id=f["id"] if f is not None else None, media=media, **common))
             else:
                 s = conn.execute("SELECT * FROM slides WHERE asset_id = ? AND id = ?", (aid, r["item_id"])).fetchone()
                 media = MediaRef(type="slide", asset_id=aid, item_id=s["id"], url=derived_url(aid, s["path"]),

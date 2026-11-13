@@ -18,11 +18,11 @@ from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import FileResponse, PlainTextResponse, Response, StreamingResponse
 
 from dso_contracts.models import (
-    Asset, AssetDetail, AssetList, DuplicateReport, DuplicateType, ExportAsset, Health, Job,
+    Asset, AssetDetail, AssetList, ChatLog, DuplicateReport, DuplicateType, ExportAsset, Health, Job,
     OffboardingReview, SearchResponse, SlideList, SourceSystem, StorageReport, Timeline,
 )
 
-from . import db, errors, exports, ingest, jobs, services, settings, uploads
+from . import chat, db, errors, exports, ingest, jobs, services, settings, uploads
 from .errors import not_found
 
 logging.basicConfig(level=os.environ.get("DSO_LOG_LEVEL", "INFO"))
@@ -92,6 +92,21 @@ def get_timeline(asset_id: AssetIdParam) -> Timeline:
 @app.get("/api/assets/{asset_id}/slides", response_model=SlideList)
 def get_slides(asset_id: AssetIdParam) -> SlideList:
     return services.slide_list(asset_id)
+
+
+@app.get("/api/assets/{asset_id}/chat", response_model=ChatLog)
+def get_chat(asset_id: AssetIdParam) -> ChatLog:
+    return chat.get_chat(asset_id)
+
+
+@app.post("/api/assets/{asset_id}/chat", response_model=ChatLog, status_code=201)
+def attach_chat(
+    asset_id: AssetIdParam,
+    file: Annotated[UploadFile, File()],
+    recording_start: Annotated[str | None, Form()] = None,
+) -> ChatLog:
+    data = file.file.read(chat.MAX_BYTES + 1)
+    return chat.attach(asset_id, file.filename, data, recording_start)
 
 
 # ---------------------------------------------------------------------------------------------
