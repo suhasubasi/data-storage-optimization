@@ -10,14 +10,16 @@ import { Badge, Empty, ErrorBox, Loading, PageHeader, SourceBadge } from "../com
 
 function hitLink(h: SearchHit) {
   if (h.hit_type === "segment") return `/recording/${h.asset_id}?seg=${h.item_id}`;
+  if (h.hit_type === "chat") return `/recording/${h.asset_id}?chat=${h.item_id}${h.start != null ? `&t=${h.start}` : ""}`;
   if (h.hit_type === "asset") return h.kind === "video" ? `/recording/${h.asset_id}` : `/document/${h.asset_id}?page=1`;
   return `/document/${h.asset_id}?page=${h.page}`;
 }
 
-const HIT_LABEL: Record<SearchHit["hit_type"], [string, "blue" | "purple" | "grey"]> = {
+const HIT_LABEL: Record<SearchHit["hit_type"], [string, "blue" | "purple" | "grey" | "green"]> = {
   segment: ["Recording", "blue"],
   slide: ["Slide", "purple"],
   asset: ["Title / file name", "grey"],
+  chat: ["Meeting chat", "green"],
 };
 
 export default function Search() {
@@ -113,10 +115,10 @@ export default function Search() {
                   <div className="hit-media">
                     <MediaImage
                       url={h.media?.url}
-                      kind={h.media?.type === "frame" || h.hit_type === "segment" ? "frame" : "slide"}
+                      kind={h.media?.type === "frame" || h.hit_type === "segment" || h.hit_type === "chat" ? "frame" : "slide"}
                       title={h.text}
-                      sub={h.hit_type === "segment" ? `${h.frame_id ?? ""} · ${formatTime(h.media?.t_start)}` : h.hit_type === "asset" ? h.filename : `page ${h.page}`}
-                      alt={h.hit_type === "segment" ? `Frame ${h.frame_id}` : h.hit_type === "asset" ? `First image of ${h.filename}` : `Page ${h.page}`}
+                      sub={h.hit_type === "segment" || h.hit_type === "chat" ? `${h.frame_id ?? ""} · ${formatTime(h.start)}` : h.hit_type === "asset" ? h.filename : `page ${h.page}`}
+                      alt={h.hit_type === "segment" || h.hit_type === "chat" ? `Frame ${h.frame_id ?? "near this time"}` : h.hit_type === "asset" ? `First image of ${h.filename}` : `Page ${h.page}`}
                     />
                   </div>
                   <div className="hit-body">
@@ -133,6 +135,10 @@ export default function Search() {
                       {h.hit_type === "segment" ? (
                         <>
                           ⏱ <b>{formatTime(h.start)}</b>–{formatTime(h.end)} · frame <code>{h.frame_id ?? "—"}</code> → jump to this moment
+                        </>
+                      ) : h.hit_type === "chat" ? (
+                        <>
+                          💬 meeting chat · {h.start != null ? <>about <b>{formatTime(h.start)}</b> into the recording (estimated from the chat clock, up to 59 s early)</> : "time in the recording unknown"} → open the recording
                         </>
                       ) : h.hit_type === "asset" ? (
                         <>matched the file's title / file name / metadata → open the {h.kind === "video" ? "recording" : "document"}</>

@@ -10,6 +10,7 @@ import { MediaImage } from "../components/MediaImage";
 import { Snippet } from "../components/Snippet";
 import { Badge, Empty, ErrorBox, Loading, PageHeader, Stat } from "../components/ui";
 import { Downloads } from "../components/Downloads";
+import { ChatPanel } from "../components/ChatPanel";
 
 const frameAt = (frames: FrameView[], t: number) =>
   frames.find((f) => f.t_start <= t && t < f.t_end) ?? frames[frames.length - 1] ?? null;
@@ -234,6 +235,8 @@ export default function Recording() {
               )}
             </div>
           </div>
+
+          {id && <ChatPanel assetId={id} focusId={params.get("chat")} onJump={(t) => jump(t)} />}
         </>
       ) : null}
     </section>
