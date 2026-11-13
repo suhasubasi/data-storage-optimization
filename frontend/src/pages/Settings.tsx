@@ -7,8 +7,8 @@ import { Badge, Callout, ErrorBox, Loading, PageHeader } from "../components/ui"
 
 const MODEL_HELP: Record<WhisperModelName, string> = {
   small: "Fast. Good on any computer, also without a GPU. Some small word mistakes.",
-  "large-v3-turbo": "Fast + accurate. Best choice with an NVIDIA GPU (about 2 GB of GPU memory). Slow on a CPU.",
-  "large-v3": "Most accurate, but slower. Needs an NVIDIA GPU (about 4 GB of GPU memory). Very slow on a CPU.",
+  "large-v3-turbo": "Fast + accurate. Best choice with an NVIDIA GPU (used about 1.3 GB of GPU memory in our test). Slow on a CPU.",
+  "large-v3": "Most accurate, but slower. Needs an NVIDIA GPU (used about 2.4 GB of GPU memory in our test). Very slow on a CPU.",
 };
 
 const DEVICES: { value: WhisperDevice; label: string; help: string }[] = [
