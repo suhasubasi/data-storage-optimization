@@ -46,3 +46,17 @@ def test_dedup_keeps_camera_gap(tmp_path):
     result = u.apply(frames, tmp_path, u.config({}))
     assert [(f['t_start'], f['t_end']) for f in result['frames']] == [(0, 1), (3, 4)]
     assert result['info']['unique_slide_count'] == 1
+
+
+def test_clean_text_slides_pass_and_noisy_blank_or_camera_do_not():
+    rng = np.random.default_rng(42)
+
+    def noisy(image):
+        rgb = np.asarray(image, dtype=np.int16)
+        noise = rng.integers(-25, 26, rgb.shape)
+        return Image.fromarray(np.clip(rgb + noise, 0, 255).astype(np.uint8))
+
+    for background, ink in [('white', 'black'), ('#171717', 'white'), ('#007359', 'white')]:
+        assert has_slide_content(slide(background, ink))
+        assert not has_slide_content(noisy(Image.new('RGB', (800, 450), background)))
+    assert not has_slide_content(noisy(camera()))

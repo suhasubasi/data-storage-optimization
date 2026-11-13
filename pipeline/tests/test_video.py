@@ -92,19 +92,33 @@ def test_video_real_local_whisper(samples, data_dir):
 
 
 @needs_ffmpeg
-def test_noisy_static_slide_gives_one_frame_and_no_audio_is_ok(samples, data_dir, tmp_path):
-    """Camera/compression noise must not create extra key frames; a video without audio still works."""
-    import pymupdf
+def test_noisy_static_slide_gives_one_frame_and_no_audio_is_ok(data_dir, tmp_path):
+    """General keyframe mode tolerates compression noise and videos without audio.
 
+    Slide-content filtering is tested separately in test_slide_content.py.
+    """
+    import pymupdf
+    from synthetic_samples import make_deck, SLIDES_A
+    from dso_pipeline.common import load_thresholds
+
+    # A silent-video test needs only the deck, not the speech/video fixture.
+    deck = tmp_path / "deck.pdf"
+    make_deck(deck, SLIDES_A, "Rev A")
     png = tmp_path / "s.png"
-    with pymupdf.open(samples / "deck.pdf") as d:
+    with pymupdf.open(deck) as d:
         d[1].get_pixmap(matrix=pymupdf.Matrix(1.333, 1.333)).save(png)
     src = tmp_path / "noisy.mp4"
     subprocess.run(["ffmpeg", "-v", "error", "-loop", "1", "-framerate", "25", "-i", str(png), "-t", "6",
                     "-vf", "noise=alls=25:allf=t,format=yuv420p", "-c:v", "libx264", "-crf", "30", str(src)], check=True)
     orig = place_original(data_dir, "a_v3", src)
     out = data_dir / "derived" / "a_v3"
-    p = run_cli("a_v3", orig, out, DSO_TRANSCRIBER="stub")
+    # Isolate keyframe change detection from the independent text-slide gate.
+    # The temporary configuration leaves application defaults unchanged.
+    thresholds = load_thresholds()
+    thresholds["video"]["slides_only"] = False
+    config = tmp_path / "thresholds.json"
+    config.write_text(json.dumps(thresholds), encoding="utf-8")
+    p = run_cli("a_v3", orig, out, DSO_TRANSCRIBER="stub", DSO_THRESHOLDS=str(config))
     assert p.returncode == 0, p.stderr
     m = check_manifest(out)
     assert len(m["frames"]) == 1 and m["segments"] == []
