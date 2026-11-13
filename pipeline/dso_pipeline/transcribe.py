@@ -4,7 +4,9 @@ Model: contracts/thresholds.json video.whisper_model (default "small") + whisper
 Device: video.whisper_device = cpu (default) | cuda | auto. auto = NVIDIA GPU if CTranslate2 sees one,
         else CPU. On the GPU the compute type is video.whisper_compute_type_cuda ("int8_float16").
         The CPU path (cpu + int8) is exactly what it was before; GPU text is close but NOT identical.
-Overrides (env):  DSO_WHISPER_MODEL=base|small|medium|large-v3|/path/to/ct2-model
+Model choice (v1.4): the app's Settings page saves small | large-v3-turbo | large-v3 and the backend passes it
+        as DSO_WHISPER_MODEL / DSO_WHISPER_DEVICE. With no setting saved, nothing changes (small on CPU).
+Overrides (env):  DSO_WHISPER_MODEL=small|large-v3-turbo|large-v3|/path/to/ct2-model (any faster-whisper name works)
                   DSO_WHISPER_DEVICE=cpu|cuda|auto
                   DSO_WHISPER_COMPUTE=int8|int8_float32|float32 (CPU) or int8_float16|float16 (GPU)
                   DSO_WHISPER_LANGUAGE=en|sv|...   (default: auto-detect)
@@ -36,6 +38,17 @@ class TranscriptResult:
 
 
 DEVICES = ("cpu", "cuda", "auto")
+# The models the UI offers (v1.4). 'medium' is deliberately left out. The env var may still name any
+# faster-whisper model or a local CTranslate2 folder (advanced use).
+UI_MODELS = ("small", "large-v3-turbo", "large-v3")
+
+
+def select_model(thresholds: dict[str, Any]) -> str:
+    """Model name: env DSO_WHISPER_MODEL, else thresholds video.whisper_model, else 'small'."""
+    name = (os.environ.get("DSO_WHISPER_MODEL") or thresholds.get("video", {}).get("whisper_model") or "small").strip()
+    if not name:
+        raise ValueError("whisper model name is empty")
+    return name
 
 
 def cuda_device_count() -> int:
@@ -117,8 +130,7 @@ def transcribe(wav: Path, duration: float, thresholds: dict[str, Any], on_progre
 
     from faster_whisper import WhisperModel  # heavy import only when really needed
 
-    vcfg = thresholds.get("video", {})
-    model_name = os.environ.get("DSO_WHISPER_MODEL") or vcfg.get("whisper_model", "small")
+    model_name = select_model(thresholds)
     device, compute = select_device(thresholds)
     if device == "cuda":
         add_nvidia_dll_dirs()
