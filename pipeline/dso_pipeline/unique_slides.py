@@ -38,6 +38,7 @@ from PIL import Image
 from .common import phash_hex
 
 METHOD = "masked-block-diff+masked-phash v2 (representative verified)"
+METHOD_V3 = "slides-only v3: content region + live-block mask + slide/camera test + strict block diff, zero duplicates"
 DEFAULTS: dict[str, Any] = {
     "enabled": True,
     "thumb_width": 320,
@@ -51,6 +52,18 @@ DEFAULTS: dict[str, Any] = {
     "overlay_max_area_fraction": 0.15,
     "overlay_margin_px": 8,
     "overlay_min_frames": 30,
+    # v3 "slides_only" (default). "v2" = the older pass that keeps every distinct picture (faces too).
+    "mode": "slides_only",
+    "v3_width": 640,
+    "v3_height": 360,
+    "v3_block_px": 16,
+    "v3_layout_edge_min_frames": 0.6,
+    "v3_live_window_s": 15.0,
+    "v3_live_min_pairs": 4,
+    "v3_live_min_change_freq": 0.5,
+    "v3_max_live_fraction": 0.3,
+    "v3_min_sharpness": 0.20,
+    "v3_return_max_phash_distance": 12,
 }
 
 
@@ -235,10 +248,189 @@ def plan(frames: list[dict[str, Any]], base: Path, cfg: dict[str, Any], hash_siz
     return {"runs": out_runs, "slides": slides, "overlay": overlay, "verification": verification}
 
 
+# ---------------------------------------------------------------------------------------------
+# v3 "slides only". Keeps ONLY slide/screen content; camera pictures (faces, stage, film) are not kept.
+#   1. Layout: long straight edges seen in >= 60 % of frames (Teams/Zoom tile borders, letterbox) cut the
+#      picture into cells; the biggest cell is the shared-content region. Everything else (participant
+#      strip, black bars) is ignored.
+#   2. Live blocks: a 16 px block of the content region that changes in >= 50 % of neighbouring frame
+#      pairs within +-15 s is "live" (a webcam tile or video inside the share). Live blocks are ignored.
+#   3. Slide test: a frame is slide content only if live blocks cover < 30 % of the region AND its
+#      edges are sharp (rendered text/graphics): strong edges / medium edges >= 0.20. Camera pictures
+#      are soft (measured: Jury webcams <= 0.18 at the 95th percentile, GraalVM slides >= 0.23).
+#   4. Same slide = EVERY non-live 16 px block has <= 5 % of pixels changed by > 24 (a changed bullet,
+#      number or highlight is a new slide). A frame is first compared with the slide on screen, then
+#      with every earlier slide (return to an old slide reuses its image; no second copy).
+#   5. Image kept = LAST frame of the slide's first run (bullet builds end finished), verified against
+#      every member; else the first frame. Then all kept images are compared pairwise; any duplicate
+#      pair is merged, so the kept set has zero duplicates under the same rule.
+#   6. Time not showing a slide (camera only) points at the slide shown last (the next one at the very
+#      start), so the timeline stays contiguous and no camera picture is stored.
+# ---------------------------------------------------------------------------------------------
+
+
+def _v3_load(paths: list[Path], w: int, h: int, edge_min: float):
+    g = np.empty((len(paths), h, w), dtype=np.uint8)
+    colacc = np.zeros(w - 1)
+    rowacc = np.zeros(h - 1)
+    for i, p in enumerate(paths):
+        with Image.open(p) as im:
+            a = np.asarray(im.convert("L").resize((w, h), Image.BILINEAR))
+        g[i] = a
+        f = a.astype(np.int16)
+        colacc += (np.abs(np.diff(f, axis=1)) > 20).mean(0) > 0.5
+        rowacc += (np.abs(np.diff(f, axis=0)) > 20).mean(1) > 0.5
+    n = max(1, len(paths))
+    cols = [i + 1 for i, c in enumerate(colacc / n) if c >= edge_min]
+    rows = [i + 1 for i, c in enumerate(rowacc / n) if c >= edge_min]
+
+    def cells(lines, size):
+        pts = sorted(set([0, size] + lines))
+        return [(a, b) for a, b in zip(pts, pts[1:]) if b - a > 4]
+    best = max(((x1 - x0) * (y1 - y0), (x0, y0, x1, y1)) for x0, x1 in cells(cols, w) for y0, y1 in cells(rows, h))[1]
+    return g, best
+
+
+def _v3_sharpness(g: np.ndarray) -> float:
+    f = g.astype(np.int16)
+    gm = np.maximum(np.abs(np.diff(f, axis=1))[:-1], np.abs(np.diff(f, axis=0))[:, :-1])
+    return float((gm > 60).sum() / max(1, int((gm > 12).sum())))
+
+
+def plan_v3(frames: list[dict[str, Any]], base: Path, cfg: dict[str, Any]) -> dict[str, Any]:
+    frames = sorted(frames, key=lambda f: (f["t_start"], f["id"]))
+    n = len(frames)
+    info: dict[str, Any] = {"content_region": None, "slide_like_frames": 0, "camera_or_live_frames": 0,
+                            "duplicate_pairs_merged_in_final_check": 0, "duplicates_in_kept_set": 0}
+    if n == 0:
+        return {"runs": [], "slides": [], "overlay": None, "verification": [], "v3": info}
+    W, H, B = int(cfg["v3_width"]), int(cfg["v3_height"]), int(cfg["v3_block_px"])
+    lvl, max_blk = int(cfg["pixel_level"]), float(cfg["max_block_change_fraction"])
+    g, (x0, y0, x1, y1) = _v3_load([base / f["path"] for f in frames], W, H, float(cfg["v3_layout_edge_min_frames"]))
+    info["content_region"] = [round(x0 / W, 4), round(y0 / H, 4), round(x1 / W, 4), round(y1 / H, 4)]
+    ins = 3
+    ch, cw = (y1 - y0 - 2 * ins) // B * B, (x1 - x0 - 2 * ins) // B * B
+    if ch < B or cw < B:
+        ch, cw, y0, x0, ins = H // B * B, W // B * B, 0, 0, 0
+    G = g[:, y0 + ins:y0 + ins + ch, x0 + ins:x0 + ins + cw]
+    gh, gw = ch // B, cw // B
+
+    def bfrac(i: int, j: int) -> np.ndarray:
+        d = np.abs(G[i].astype(np.int16) - G[j].astype(np.int16)) > lvl
+        return d.reshape(gh, B, gw, B).mean((1, 3))
+
+    T = [float(f["t_start"]) for f in frames]
+    C = [bfrac(i - 1, i) > 0.01 for i in range(1, n)]  # C[q]: pair (q, q+1); any visible change counts
+    tw, minp, thr = float(cfg["v3_live_window_s"]), int(cfg["v3_live_min_pairs"]), float(cfg["v3_live_min_change_freq"])
+    live = []
+    for i in range(n):
+        qs = [q for q in range(max(0, i - 60), min(n - 1, i + 60)) if abs(T[q] - T[i]) <= tw and abs(T[q + 1] - T[i]) <= tw]
+        live.append(np.mean([C[q] for q in qs], 0) >= thr if len(qs) >= minp else np.zeros((gh, gw), bool))
+    sharp = [_v3_sharpness(G[i]) for i in range(n)]
+    is_slide = [float(live[i].mean()) < float(cfg["v3_max_live_fraction"]) and sharp[i] >= float(cfg["v3_min_sharpness"])
+                for i in range(n)]
+    info["slide_like_frames"] = sum(is_slide)
+    info["camera_or_live_frames"] = n - sum(is_slide)
+    ph = [phash_hex(Image.fromarray(G[i]), 8) for i in range(n)]
+    ret_ph = int(cfg["v3_return_max_phash_distance"])
+
+    def same(i: int, j: int) -> tuple[bool, float]:
+        m = live[i] | live[j]
+        if m.all():
+            return False, 1.0
+        bm = float(bfrac(i, j)[~m].max())
+        return bm <= max_blk, bm
+
+    seeds: list[int] = []
+    members: list[list[int]] = []
+    owner = [-1] * n
+    cur = None
+    for i in range(n):
+        if not is_slide[i]:
+            continue
+        hit = None
+        if cur is not None and same(seeds[cur], i)[0]:
+            hit = cur
+        else:
+            for k in range(len(seeds) - 1, -1, -1):
+                if k != cur and _hd(ph[seeds[k]], ph[i]) <= ret_ph and same(seeds[k], i)[0]:
+                    hit = k
+                    break
+        if hit is None:
+            seeds.append(i)
+            members.append([])
+            hit = len(seeds) - 1
+        members[hit].append(i)
+        owner[i] = hit
+        cur = hit
+
+    def pick(k: int) -> int:
+        mem = members[k]
+        last = mem[0]
+        for i in range(mem[0] + 1, n):  # last frame of the first contiguous run (camera frames do not end it)
+            if owner[i] == k:
+                last = i
+            elif is_slide[i]:
+                break
+        return last if all(same(last, j)[0] for j in mem) else seeds[k]
+
+    rep = [pick(k) for k in range(len(seeds))]
+    # Final check: compare every kept image with every other one; merge any duplicate pair.
+    alias = list(range(len(seeds)))
+    merged = 0
+    for a in range(len(seeds)):
+        if alias[a] != a:
+            continue
+        for b in range(a + 1, len(seeds)):
+            if alias[b] == b and same(rep[a], rep[b])[0] and all(same(rep[a], j)[0] for j in members[b]):
+                alias[b] = a
+                members[a] += members[b]
+                merged += 1
+    info["duplicate_pairs_merged_in_final_check"] = merged
+    live_k = [k for k in range(len(seeds)) if alias[k] == k]
+    info["duplicates_in_kept_set"] = sum(1 for x, a in enumerate(live_k) for b in live_k[x + 1:] if same(rep[a], rep[b])[0])
+    newno = {k: x for x, k in enumerate(live_k)}
+    for i in range(n):
+        if owner[i] >= 0:
+            owner[i] = newno[alias[owner[i]]]
+    if not live_k:
+        return {"runs": [], "slides": [], "overlay": None, "verification": [], "v3": info}
+    # Timeline: camera-only time points at the slide shown last (or the first slide before any slide).
+    first = next(owner[i] for i in range(n) if owner[i] >= 0)
+    shown, runs = first, []
+    for i in range(n):
+        if owner[i] >= 0:
+            shown = owner[i]
+        if runs and runs[-1]["slide"] == shown:
+            runs[-1]["frames"].append(i)
+        else:
+            runs.append({"slide": shown, "frames": [i]})
+    dur = [max(0.0, float(f["t_end"]) - float(f["t_start"])) for f in frames]
+    slides, verification = [], []
+    for x, k in enumerate(live_k):
+        mem = sorted(members[k])
+        r = rep[k]
+        for j in mem:
+            ok, bm = same(r, j)
+            if not ok:
+                raise ValueError(f"unique slide {x + 1}: image {frames[r]['id']} does not cover {frames[j]['id']}")
+            verification.append({"frame_id": frames[j]["id"], "representative": frames[r]["id"],
+                                 "max_block_change_fraction": round(bm, 4), "phash_distance": _hd(ph[r], ph[j])})
+        slides.append({"slide": x + 1, "representative": frames[r]["id"], "path": frames[r]["path"],
+                       "seconds_on_screen": round(sum(dur[j] for j in mem), 3), "members": [frames[j]["id"] for j in mem]})
+    out_runs = []
+    for r in runs:
+        fs = [frames[j] for j in r["frames"]]
+        out_runs.append({"id": fs[0]["id"], "t_start": fs[0]["t_start"], "t_end": fs[-1]["t_end"], "slide": r["slide"] + 1,
+                         "source_frames": [f["id"] for f in fs]})
+    return {"runs": out_runs, "slides": slides, "overlay": None, "verification": verification, "v3": info}
+
+
 def apply(frames: list[dict[str, Any]], base: Path, cfg: dict[str, Any], hash_size: int = 8) -> dict[str, Any]:
     """Plan + build the new manifest frame list. Does not touch any file."""
     by_id = {f["id"]: f for f in frames}
-    p = plan(frames, base, cfg, hash_size)
+    v3 = cfg.get("mode", "slides_only") == "slides_only"
+    p = plan_v3(frames, base, cfg) if v3 else plan(frames, base, cfg, hash_size)
     slide = {s["slide"]: s for s in p["slides"]}
     new_frames = []
     for r in p["runs"]:
@@ -251,14 +443,14 @@ def apply(frames: list[dict[str, Any]], base: Path, cfg: dict[str, Any], hash_si
     keep_paths = sorted({s["path"] for s in p["slides"]})
     drop_paths = sorted({f["path"] for f in frames} - set(keep_paths))
     info = {
-        "method": METHOD,
+        "method": METHOD_V3 if v3 else METHOD,
         "source_frame_count": len(frames),
         "unique_slide_count": len(p["slides"]),
         "run_count": len(p["runs"]),
         "source_frame_bytes": sum(f["bytes"] for f in {f["path"]: f for f in frames}.values()),
         "unique_slide_bytes": sum(by_id[s["representative"]]["bytes"] for s in p["slides"]),
         "overlay_mask": p["overlay"],
-        "params": {k: cfg[k] for k in DEFAULTS if k != "enabled"},
+        "params": {k: cfg[k] for k in DEFAULTS if k not in ("enabled", "mode")},
     }
     return {"frames": new_frames, "slides": p["slides"], "keep_paths": keep_paths, "drop_paths": drop_paths,
-            "info": info, "verification": p.get("verification", [])}
+            "info": info, "verification": p.get("verification", []), "v3": p.get("v3")}

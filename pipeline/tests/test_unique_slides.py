@@ -62,7 +62,7 @@ def talk(n_cam=40):
 
 def test_merges_webcam_repeats_but_keeps_every_distinct_slide(tmp_path):
     d, frames, _ = build(tmp_path, talk())
-    r = U.apply(frames, d, U.config({}))
+    r = U.apply(frames, d, U.config({"unique_slides": {"mode": "v2"}}))
     info = r["info"]
     assert info["overlay_mask"] is not None and info["overlay_mask"]["area_fraction"] < 0.15
     # 4 distinct pictures: A, B (one word differs), B+highlight (short), D (one frame)
@@ -81,7 +81,7 @@ def test_merges_webcam_repeats_but_keeps_every_distinct_slide(tmp_path):
 def test_no_overlay_detected_when_nothing_moves(tmp_path):
     imgs = [slide(f"Slide {i}", ["a", "b"], cam_seed=None) for i in range(35)]
     d, frames, _ = build(tmp_path, imgs)
-    r = U.apply(frames, d, U.config({}))
+    r = U.apply(frames, d, U.config({"unique_slides": {"mode": "v2"}}))
     assert r["info"]["overlay_mask"] is None
     assert r["info"]["unique_slide_count"] == 35  # "Slide 1" vs "Slide 2": a real difference, never merged
 
@@ -93,7 +93,7 @@ def test_representative_is_the_longest_held_frame(tmp_path):
     frames[1]["t_end"] = frames[1]["t_start"] + 30
     frames[2]["t_start"] = frames[1]["t_end"]
     frames[2]["t_end"] = frames[2]["t_start"] + 3
-    r = U.apply(frames, d, U.config({"unique_slides": {"overlay_min_frames": 1}}))
+    r = U.apply(frames, d, U.config({"unique_slides": {"overlay_min_frames": 1, "mode": "v2"}}))
     assert r["info"]["unique_slide_count"] == 1 and r["frames"][0]["path"] == "frames/f2.webp"
 
 
@@ -178,3 +178,15 @@ def test_cli_unique_slides_and_prune(tmp_path):
     p = subprocess.run([sys.executable, "-m", "dso_pipeline", "prune-frames", "--asset-id", "a_t", "--out", str(d)],
                        capture_output=True, text=True)
     assert p.returncode == 0 and json.loads(p.stdout)["removed_files"] == len(frames) - 4
+
+
+def test_v3_slides_only_keeps_every_distinct_slide_and_no_duplicates(tmp_path):
+    """v3 (default): returning to slide A reuses A's image; the 1-frame highlight and D stay separate."""
+    d, frames, _ = build(tmp_path, talk())
+    r = U.apply(frames, d, U.config({}))
+    info = r["info"]
+    assert info["method"] == U.METHOD_V3
+    assert info["unique_slide_count"] == 4  # A, B, B+highlight, D
+    assert r["v3"]["duplicates_in_kept_set"] == 0
+    assert len(r["keep_paths"]) == 4
+    assert r["frames"][0]["t_start"] == frames[0]["t_start"] and r["frames"][-1]["t_end"] == frames[-1]["t_end"]

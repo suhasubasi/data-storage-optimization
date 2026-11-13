@@ -8,7 +8,7 @@ def test_comparer_checks_partial_bottom_and_right_blocks():
     th = np.zeros((3, 23, 23), dtype=np.int16)
     th[1, 22, 22] = 255
     th[2, 0, 22] = 255
-    cfg = U.config({})
+    cfg = U.config({"unique_slides": {"mode": "v2"}})
     cmp = U._Comparer(th, np.zeros((23, 23), dtype=bool), cfg)
     assert (cmp.block_max(0, [1, 2]) > 0).all()
 
@@ -19,7 +19,7 @@ def test_comparer_checks_unmasked_pixels_in_mostly_masked_blocks():
     th[1, 0, 0] = 255
     mask = np.ones((20, 20), dtype=bool)
     mask[0, 0] = False
-    cmp = U._Comparer(th, mask, U.config({}))
+    cmp = U._Comparer(th, mask, U.config({"unique_slides": {"mode": "v2"}}))
     assert cmp.block_max(0, [1])[0] == 1
 
 
@@ -36,7 +36,7 @@ def test_final_representative_covers_every_member(tmp_path):
     base, frames, _ = build(tmp_path, [Image.fromarray(x) for x in (a, b, c)])
     frames[1]['t_end'] = 30
     frames[2]['t_start'], frames[2]['t_end'] = 30, 33
-    cfg = U.config({})
+    cfg = U.config({"unique_slides": {"mode": "v2"}})
     cfg.update(max_phash_distance=64, max_block_change_fraction=0.06)
     result = U.apply(frames, base, cfg)
     th = U._thumbs([base / f['path'] for f in frames], 320, 180)
@@ -60,7 +60,7 @@ def test_longest_frame_is_kept_when_it_covers_every_member(tmp_path):
     b[1:5, 1:5] = 255
     base, frames, _ = build(tmp_path, [Image.fromarray(x) for x in (a, b)])
     frames[1]['t_end'] = 30
-    cfg = U.config({})
+    cfg = U.config({"unique_slides": {"mode": "v2"}})
     cfg.update(max_phash_distance=64, max_block_change_fraction=0.06)
     result = U.apply(frames, base, cfg)
     assert [(s['representative'], s['members']) for s in result['slides']] == [('f2', ['f1', 'f2'])]
