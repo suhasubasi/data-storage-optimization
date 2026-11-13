@@ -748,6 +748,64 @@ class ChatLog(BaseModel):
     messages: list[ChatMessage]
 
 
+class WhisperModelName(StrEnum):
+    small = "small"
+    large_v3_turbo = "large-v3-turbo"
+    large_v3 = "large-v3"
+
+
+class WhisperDevice(StrEnum):
+    auto = "auto"
+    cuda = "cuda"
+    cpu = "cpu"
+
+
+class WhisperModelInfo(BaseModel):
+    model_config = ConfigDict(
+        extra="forbid",
+    )
+    name: WhisperModelName
+    label: str = Field(
+        ..., description="Short simple-English label, e.g. 'Fast + accurate'."
+    )
+    installed: bool = Field(
+        ...,
+        description="true = the model weights are already in the local model cache (no download needed).",
+    )
+
+
+class SettingsUpdate(BaseModel):
+    model_config = ConfigDict(
+        extra="forbid",
+    )
+    whisper_model: WhisperModelName
+    whisper_device: WhisperDevice
+
+
+class Settings(BaseModel):
+    model_config = ConfigDict(
+        extra="forbid",
+    )
+    whisper_model: WhisperModelName
+    whisper_device: WhisperDevice
+    effective_model: str = Field(
+        ..., description="Model name the next job will use (after env overrides)."
+    )
+    effective_device: str = Field(
+        ...,
+        description="Device setting the next job will use (after env overrides): auto, cuda or cpu.",
+    )
+    env_overrides: list[str] = Field(
+        ...,
+        description="Names of the environment variables that override the saved setting, e.g. ['DSO_WHISPER_DEVICE'].",
+    )
+    models: list[WhisperModelInfo]
+    gpu_available: bool | None = Field(
+        ...,
+        description="true = an NVIDIA GPU is usable by the pipeline; null = could not be checked.",
+    )
+
+
 class PipelineInfo(BaseModel):
     model_config = ConfigDict(
         extra="forbid",
@@ -1124,3 +1182,8 @@ class DsoContracts(BaseModel):
     ChatSource_1: ChatSource | None = Field(None, alias="ChatSource")
     ChatAlignment_1: ChatAlignment | None = Field(None, alias="ChatAlignment")
     ChatLog_1: ChatLog | None = Field(None, alias="ChatLog")
+    WhisperModelName_1: WhisperModelName | None = Field(None, alias="WhisperModelName")
+    WhisperDevice_1: WhisperDevice | None = Field(None, alias="WhisperDevice")
+    WhisperModelInfo_1: WhisperModelInfo | None = Field(None, alias="WhisperModelInfo")
+    SettingsUpdate_1: SettingsUpdate | None = Field(None, alias="SettingsUpdate")
+    Settings_1: Settings | None = Field(None, alias="Settings")

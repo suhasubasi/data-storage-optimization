@@ -153,6 +153,11 @@ dump("job.json", JOB)
 dump("job_running.json", {"id": "j_02", "asset_id": "a_05", "status": "running", "progress": 0.4,
                           "stage": "rendering pages", "stage_progress": 0.4, "error": None,
                           "started_at": "2026-11-13T10:00:00Z", "finished_at": None, "elapsed_s": 120.0, "eta_s": 180.0})
+dump("settings.json", {"whisper_model": "large-v3-turbo", "whisper_device": "auto", "effective_model": "large-v3-turbo",
+                        "effective_device": "auto", "env_overrides": [], "gpu_available": True,
+                        "models": [{"name": "small", "label": "Fast", "installed": True},
+                                   {"name": "large-v3-turbo", "label": "Fast + accurate", "installed": True},
+                                   {"name": "large-v3", "label": "Most accurate", "installed": False}]})
 dump("error.json", {"error": {"code": "not_found", "message": "Asset a_99 was not found.", "details": None}})
 
 
