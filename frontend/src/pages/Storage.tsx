@@ -1,7 +1,6 @@
 import { useState } from "react";
 import type { StorageReport, StorageScenario } from "@contracts/ts/dso-contracts";
 import { api } from "../api/client";
-import { USE_MOCKS } from "../api/config";
 import { useAsync } from "../lib/useAsync";
 import { exactBytes, formatBytes, formatDate, formatPct } from "../lib/format";
 import { Badge, Callout, ErrorBox, Loading, PageHeader, Stat } from "../components/ui";
@@ -107,8 +106,8 @@ export default function Storage() {
     <section>
       <PageHeader title="Storage report" lead="How many bytes would really be freed, and under which decision. Processing alone saves nothing.">
         {r && (
-          <Badge tone={USE_MOCKS ? "amber" : "green"} title={formatDate(r.generated_at)}>
-            {USE_MOCKS ? "Mock fixture numbers (measured-style, not a real run)" : "Measured on disk by the backend"}
+          <Badge tone="green" title={formatDate(r.generated_at)}>
+            Measured on disk by the backend
           </Badge>
         )}
       </PageHeader>
@@ -200,7 +199,7 @@ export default function Storage() {
               </ul>
               <Callout tone="warn" title="Ericsson's illustration, not our measurement:">
                 The challenge PDF (p.2) gives an example of about 1 GB of video becoming about 50 KB of text plus about 2 MB of frames, “roughly 99%”.
-                We show it only for comparison. Every number above comes from {USE_MOCKS ? "the mock fixtures" : "files measured on disk"}.
+                We show it only for comparison. Every number above comes from files measured on disk.
               </Callout>
             </div>
           </div>

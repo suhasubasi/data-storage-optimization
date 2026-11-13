@@ -2,6 +2,7 @@ import json
 
 import pytest
 
+from fixture_data import FIXTURES_DIR
 from app import db, ingest, settings
 from conftest import fill_optional, fixture_json
 
@@ -25,9 +26,9 @@ def test_asset_detail_matches_fixtures(demo):
 def test_manifest_bytes_measured_and_counted_as_derived(demo):
     with db.read() as conn:
         row = conn.execute("SELECT manifest_bytes FROM assets WHERE id = 'a_01'").fetchone()
-    size = (settings.FIXTURES_DIR / "manifests" / "a_01.manifest.json").stat().st_size
+    size = (FIXTURES_DIR / "manifests" / "a_01.manifest.json").stat().st_size
     assert row["manifest_bytes"] == size
-    m = Manifest.model_validate_json((settings.FIXTURES_DIR / "manifests" / "a_01.manifest.json").read_bytes())
+    m = Manifest.model_validate_json((FIXTURES_DIR / "manifests" / "a_01.manifest.json").read_bytes())
     assert demo.get("/api/assets/a_01").json()["asset"]["derived_bytes"] == sum(f.bytes for f in m.derived_files) + size
 
 
@@ -47,7 +48,7 @@ def test_unprocessed_asset_detail(demo):
 
 
 def test_ingest_rejects_wrong_sha_and_wrong_id(demo, tmp_path):
-    m = json.loads((settings.FIXTURES_DIR / "manifests" / "a_02.manifest.json").read_text())
+    m = json.loads((FIXTURES_DIR / "manifests" / "a_02.manifest.json").read_text())
     bad = dict(m, original=dict(m["original"], sha256="0" * 64))
     p = tmp_path / "manifest.json"
     p.write_text(json.dumps(bad))
@@ -63,7 +64,7 @@ def test_ingest_rejects_wrong_sha_and_wrong_id(demo, tmp_path):
 
 def test_reingest_is_idempotent(demo):
     before = demo.get("/api/assets/a_02/slides").json()
-    ingest.ingest_manifest("a_02", settings.FIXTURES_DIR / "manifests" / "a_02.manifest.json")
+    ingest.ingest_manifest("a_02", FIXTURES_DIR / "manifests" / "a_02.manifest.json")
     assert demo.get("/api/assets/a_02/slides").json() == before
     hits = demo.get("/api/search", params={"q": "roadmap"}).json()["hits"]
     # page 1 of a_02 + a_03 (exact copies), plus each file's title row (v1.1) -- nothing doubled

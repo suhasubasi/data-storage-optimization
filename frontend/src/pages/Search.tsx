@@ -2,16 +2,11 @@ import { useEffect, useRef, useState, type FormEvent, type KeyboardEvent } from 
 import { useNavigate, useSearchParams } from "react-router-dom";
 import type { SearchHit } from "@contracts/ts/dso-contracts";
 import { api } from "../api/client";
-import { USE_MOCKS } from "../api/config";
 import { useAsync } from "../lib/useAsync";
 import { formatTime } from "../lib/format";
 import { MediaImage } from "../components/MediaImage";
 import { Snippet } from "../components/Snippet";
 import { Badge, Empty, ErrorBox, Loading, PageHeader, SourceBadge } from "../components/ui";
-
-// Example queries only match the MOCK fixture files, so they are shown in mock mode only (in live mode they
-// returned 0 hits and were misleading).
-const EXAMPLES = USE_MOCKS ? ["handover", "energy saving", "power per site", "dropped calls", "sleep modes"] : [];
 
 function hitLink(h: SearchHit) {
   if (h.hit_type === "segment") return `/recording/${h.asset_id}?seg=${h.item_id}`;
@@ -85,19 +80,13 @@ export default function Search() {
         <button className="btn primary">Search</button>
       </form>
       <div className="chips">
-        {EXAMPLES.length > 0 && <span className="muted small">Try (mock data):</span>}
-        {EXAMPLES.map((x) => (
-          <button key={x} className="chip" onClick={() => submit(undefined, x)}>
-            {x}
-          </button>
-        ))}
         <span className="muted small kbd-hint">
           <kbd>↑</kbd> <kbd>↓</kbd> to move, <kbd>Enter</kbd> to open
         </span>
       </div>
 
       {!q ? (
-        <Empty>Type a word or phrase and press Enter. {USE_MOCKS && "(Mock mode searches the fixture manifests in the browser; live mode uses SQLite FTS5.)"}</Empty>
+        <Empty>Type a word or phrase and press Enter.</Empty>
       ) : res.loading ? (
         <Loading label={`Searching for “${q}”…`} />
       ) : res.error ? (

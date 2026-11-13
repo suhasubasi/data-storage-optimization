@@ -2,6 +2,7 @@ import json
 
 from dso_contracts.models import ExportAsset, ExportChunk
 
+from fixture_data import FIXTURES_DIR
 from app import settings
 
 from conftest import fill_optional, fixture_json
@@ -37,7 +38,7 @@ def test_export_jsonl(demo):
     lines = [json.loads(x) for x in r.text.splitlines() if x.strip()]
     for line in lines:
         ExportChunk.model_validate(line)
-    fixture_lines = [fill_optional(json.loads(x)) for x in open(settings.FIXTURES_DIR / "export.jsonl", encoding="utf-8")]
+    fixture_lines = [fill_optional(json.loads(x)) for x in open(FIXTURES_DIR / "export.jsonl", encoding="utf-8")]
     by_id = {x["chunk_id"]: x for x in lines}
     for want in fixture_lines:  # fixture has a_01 + a_02; we export every ready asset
         assert by_id[want["chunk_id"]] == want

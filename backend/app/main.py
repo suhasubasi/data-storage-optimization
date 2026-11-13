@@ -178,7 +178,7 @@ def get_original_file(asset_id: str, filename: str) -> FileResponse:
         raise not_found(f"Original {asset_id}/{filename} was not found.")
     path = settings.DATA_DIR / row["original_path"]
     if not path.is_file() or not _inside(settings.ORIGINALS_DIR, path):
-        raise not_found(f"The original file for {asset_id} is not on this machine (demo data has no real file).")
+        raise not_found(f"The original file for {asset_id} is not on this machine.")
     return FileResponse(path, filename=filename, content_disposition_type="inline")
 
 

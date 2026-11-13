@@ -13,7 +13,6 @@ DERIVED_DIR = DATA_DIR / "derived"       # data/derived/<asset_id>/manifest.json
 DB_PATH = Path(os.environ.get("DSO_DB_PATH", DATA_DIR / "dso.sqlite"))
 SCHEMA_SQL = CONTRACTS_DIR / "schema.sql"
 THRESHOLDS = CONTRACTS_DIR / "thresholds.json"
-FIXTURES_DIR = CONTRACTS_DIR / "fixtures"
 # The job runner calls the pipeline as a subprocess using the pipeline's own venv (keeps heavy deps separate).
 def _default_pipeline_python() -> str:
     win = REPO_ROOT / "pipeline" / ".venv" / "Scripts" / "python.exe"

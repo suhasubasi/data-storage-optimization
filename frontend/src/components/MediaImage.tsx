@@ -1,28 +1,28 @@
 import { useState } from "react";
-import { USE_MOCKS, absUrl } from "../api/config";
-import { placeholderImage } from "../lib/placeholder";
+import { absUrl } from "../api/config";
+import { unavailableImage } from "../lib/placeholder";
 
 interface Props {
   url: string | null | undefined;
   kind: "frame" | "slide";
-  /** Text drawn on the MOCK-mode placeholder only (slide text or the transcript said on this frame). */
+  /** Tooltip text (slide text or the transcript said on this frame). */
   title: string;
   sub?: string;
   alt: string;
   className?: string;
 }
 
-/** Real image from /files/... in live mode (neutral "not available" card if it cannot load);
- *  labelled MOCK placeholder only in mock mode. */
+/** Real image from /files/... (neutral "not available" card if it is missing or cannot load). */
 export function MediaImage({ url, kind, title, sub, alt, className }: Props) {
   const [failed, setFailed] = useState(false);
-  const usePlaceholder = USE_MOCKS || !url || failed;
-  const src = usePlaceholder ? placeholderImage(kind, title, sub, USE_MOCKS) : absUrl(url!);
+  const missing = !url || failed;
+  const src = missing ? unavailableImage(kind, sub ?? "") : absUrl(url!);
   return (
     <img
       className={`media ${kind} ${className ?? ""}`}
       src={src}
       alt={alt}
+      title={title}
       loading="lazy"
       onError={() => setFailed(true)}
     />

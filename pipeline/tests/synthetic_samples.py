@@ -1,24 +1,21 @@
-"""Generate small SYNTHETIC test samples in data/samples/ (no Ericsson data, nothing downloaded).
+"""TEST-ONLY: small SYNTHETIC inputs for the automated pipeline tests (no Ericsson data, nothing downloaded).
+
+They are built fresh in a temporary folder for each test session (see conftest.py) and never put in data/.
+They are not shown to users and are not used for any reported number.
 
   deck.pdf            4-page slide deck with PDF metadata (title/author/date) and a doc number + "Rev A" on page 1
   deck (1).pdf        byte-identical copy of deck.pdf          -> backend: exact_file duplicate (sha256)
   deck-revB.pdf       same deck, "Rev B", page 3 text revised  -> backend: shared slides p2/p4, similar/changed p3
   talk.mp4            ~25 s "recording": the deck pages shown as slides + synthetic speech (ffmpeg flite)
                       incl. the phrase "as you see here" -> frames and transcript linked by time
-
-Usage:  .venv/bin/python scripts/make_samples.py [--out ../data/samples]
 """
 from __future__ import annotations
 
-import argparse
-import shutil
 import subprocess
 import tempfile
 from pathlib import Path
 
 import pymupdf
-
-ROOT = Path(__file__).resolve().parents[2]
 
 SLIDES_A = [
     ("RAN Evolution Roadmap 2027", "Doc. no. 1/221 02-FGB 101  Rev A\nSynthetic sample for the DSO hackathon"),
@@ -82,27 +79,3 @@ def make_video(deck: Path, out: Path) -> None:
         lst.write_text("".join(f"file '{p}'\n" for p in parts))
         run(["ffmpeg", "-y", "-v", "error", "-f", "concat", "-safe", "0", "-i", str(lst),
              "-c", "copy", "-metadata", "title=RAN evolution session (synthetic)", "-movflags", "+faststart", str(out)])
-
-
-def main() -> None:
-    ap = argparse.ArgumentParser()
-    ap.add_argument("--out", default=str(ROOT / "data" / "samples"))
-    ap.add_argument("--no-video", action="store_true")
-    a = ap.parse_args()
-    out = Path(a.out)
-    out.mkdir(parents=True, exist_ok=True)
-    make_deck(out / "deck.pdf", SLIDES_A, "Rev A")
-    shutil.copyfile(out / "deck.pdf", out / "deck (1).pdf")
-    slides_b = list(SLIDES_A)
-    slides_b[0] = (SLIDES_A[0][0], SLIDES_A[0][1].replace("Rev A", "Rev B"))
-    slides_b[2] = ("Energy saving", "Sleep modes for idle radio units\nFifteen percent lower power per site")
-    make_deck(out / "deck-revB.pdf", slides_b, "Rev B")
-    if not a.no_video:
-        make_video(out / "deck.pdf", out / "talk.mp4")
-    for p in sorted(out.iterdir()):
-        if p.is_file() and not p.name.startswith("."):
-            print(f"{p.stat().st_size:>9}  {p}")
-
-
-if __name__ == "__main__":
-    main()

@@ -3,7 +3,7 @@ import type {
   DuplicateType, StorageReport, OffboardingReview, ExportAsset, Health, SourceSystem,
 } from "@contracts/ts/dso-contracts";
 
-/** One method per endpoint in contracts/openapi.yaml. Mock and live both implement it. */
+/** One method per endpoint in contracts/openapi.yaml. */
 export interface Api {
   health(): Promise<Health>;
   listAssets(owner?: string): Promise<AssetList>;
