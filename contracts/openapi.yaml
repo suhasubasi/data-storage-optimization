@@ -71,6 +71,27 @@ paths:
         "404": { $ref: "#/components/responses/Error" }
         "409": { $ref: "#/components/responses/Error" }
 
+  /api/settings:
+    get:
+      summary: "REC v1.4: saved Whisper model + device, what the next job will use, which models are installed, and whether an NVIDIA GPU is usable."
+      operationId: getSettings
+      responses:
+        "200": { description: OK, content: { application/json: { schema: { $ref: "./schemas/api.schema.json#/$defs/Settings" } } } }
+    put:
+      summary: >
+        REC v1.4: save the Whisper model (small | large-v3-turbo | large-v3) and device (auto | cuda | cpu).
+        Only jobs started after this use it; nothing is re-processed automatically.
+        422 if the value is unknown (e.g. 'medium'), the model is not installed, or 'cuda' is asked for without a usable GPU.
+      operationId: putSettings
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: "./schemas/api.schema.json#/$defs/SettingsUpdate" }
+      responses:
+        "200": { description: Saved, content: { application/json: { schema: { $ref: "./schemas/api.schema.json#/$defs/Settings" } } } }
+        "422": { $ref: "#/components/responses/Error" }
+
   /api/jobs/{job_id}:
     get:
       summary: "Job progress and errors (never faked). v1.3: also stage_progress, elapsed_s and eta_s (an estimate from the measured rate). Poll every 1-2 s while running."

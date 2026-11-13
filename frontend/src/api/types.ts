@@ -1,6 +1,7 @@
 import type {
   AssetList, AssetDetail, Asset, Job, Timeline, SlideList, SearchResponse, DuplicateReport,
   DuplicateType, StorageReport, OffboardingReview, ExportAsset, Health, SourceSystem, ChatLog,
+  Settings, SettingsUpdate,
 } from "@contracts/ts/dso-contracts";
 
 /** One method per endpoint in contracts/openapi.yaml. */
@@ -23,4 +24,7 @@ export interface Api {
   /** REC v1.2: meeting chat of a recording (empty messages if none attached). */
   getChat(assetId: string): Promise<ChatLog>;
   attachChat(assetId: string, file: File, recordingStart?: string): Promise<ChatLog>;
+  /** REC v1.4: Whisper model + device for jobs started after a change (never re-processes on its own). */
+  getSettings(): Promise<Settings>;
+  putSettings(body: SettingsUpdate): Promise<Settings>;
 }

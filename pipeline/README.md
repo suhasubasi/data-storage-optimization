@@ -66,13 +66,16 @@ Temp files (16 kHz WAV) live in `.tmp-*` inside `--out` and are always deleted.
 ## Whisper model
 
 Default from `../contracts/thresholds.json`: `faster-whisper small int8` on CPU (VAD on, beam 5).
+The app's Settings page (v1.4) saves a model (`small` | `large-v3-turbo` | `large-v3`) and a device; the backend
+passes them to the pipeline as `DSO_WHISPER_MODEL` / `DSO_WHISPER_DEVICE`. Which model to pick, the download
+commands and measured times: [../README.md → Which Whisper model?](../README.md#which-whisper-model).
 Weights download once from Hugging Face into `~/.cache/huggingface` (outside git), then run offline
 (`HF_HUB_OFFLINE=1`). Switch with env vars:
 
 | Env | Default | Example |
 |---|---|---|
-| `DSO_WHISPER_MODEL` | `small` | `base` (≈2× faster), `medium`, `large-v3`, or a local CT2 model dir |
-| `DSO_WHISPER_DEVICE` | `cpu` | `cuda` (NVIDIA GPU, fails if none), `auto` (GPU if found, else CPU) |
+| `DSO_WHISPER_MODEL` | `small` (or the Settings page choice) | `large-v3-turbo`, `large-v3`, or a local CT2 model dir |
+| `DSO_WHISPER_DEVICE` | `cpu` (or the Settings page choice) | `cuda` (NVIDIA GPU, fails if none), `auto` (GPU if found, else CPU) |
 | `DSO_WHISPER_COMPUTE` | `int8` on CPU, `int8_float16` on GPU | `float32`, `float16` |
 | `DSO_WHISPER_LANGUAGE` | auto-detect | `en`, `sv` |
 | `DSO_WHISPER_BEAM` | `5` | `1` (fastest) |

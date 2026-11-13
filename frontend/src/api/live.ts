@@ -63,4 +63,7 @@ export const liveApi: Api = {
     if (recordingStart) form.append("recording_start", recordingStart);
     return json(`/api/assets/${enc(id)}/chat`, { method: "POST", body: form });
   },
+  getSettings: () => json("/api/settings"),
+  putSettings: (body) =>
+    json("/api/settings", { method: "PUT", headers: { "Content-Type": "application/json" }, body: JSON.stringify(body) }),
 };

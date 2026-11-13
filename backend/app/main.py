@@ -19,10 +19,10 @@ from fastapi.responses import FileResponse, PlainTextResponse, Response, Streami
 
 from dso_contracts.models import (
     Asset, AssetDetail, AssetList, ChatLog, DuplicateReport, DuplicateType, ExportAsset, Health, Job,
-    OffboardingReview, SearchResponse, SlideList, SourceSystem, StorageReport, Timeline,
+    OffboardingReview, SearchResponse, Settings, SettingsUpdate, SlideList, SourceSystem, StorageReport, Timeline,
 )
 
-from . import chat, db, errors, exports, ingest, jobs, services, settings, uploads
+from . import chat, db, errors, exports, ingest, jobs, services, settings, uploads, whisper_settings
 from .errors import not_found
 
 logging.basicConfig(level=os.environ.get("DSO_LOG_LEVEL", "INFO"))
@@ -41,7 +41,7 @@ async def lifespan(_: FastAPI):
 
 
 app = FastAPI(title="Ericsson DSO MVP API", version=settings.API_VERSION, lifespan=lifespan)
-app.add_middleware(CORSMiddleware, allow_origins=settings.CORS_ORIGINS, allow_methods=["GET", "POST"],
+app.add_middleware(CORSMiddleware, allow_origins=settings.CORS_ORIGINS, allow_methods=["GET", "POST", "PUT"],
                    allow_headers=["*"], expose_headers=["Content-Range", "Accept-Ranges", "Content-Length"])
 errors.install(app)
 
@@ -77,6 +77,18 @@ def get_asset(asset_id: AssetIdParam) -> AssetDetail:
 @app.post("/api/assets/{asset_id}/process", response_model=Job, status_code=202)
 def process_asset(asset_id: AssetIdParam) -> Job:
     return jobs.start_job(asset_id)
+
+
+@app.get("/api/settings", response_model=Settings)
+def get_settings() -> Settings:
+    """REC v1.4: Whisper model + device, installed models, GPU check."""
+    return whisper_settings.current()
+
+
+@app.put("/api/settings", response_model=Settings)
+def put_settings(body: SettingsUpdate) -> Settings:
+    """REC v1.4: only jobs started after this use the new choice; nothing is re-processed automatically."""
+    return whisper_settings.save(body)
 
 
 @app.get("/api/jobs/{job_id}", response_model=Job)

@@ -48,6 +48,9 @@ def test_offboarding_never_deletes_originals(empty):
 
 def test_there_is_no_delete_endpoint(demo):
     methods = {m for route in app.routes for m in (getattr(route, "methods", None) or set())}
-    assert "DELETE" not in methods and "PUT" not in methods and "PATCH" not in methods
+    assert "DELETE" not in methods and "PATCH" not in methods
+    # v1.4: the only PUT is the Whisper setting (a small settings file, never files or the database).
+    puts = {route.path for route in app.routes if "PUT" in (getattr(route, "methods", None) or set())}
+    assert puts == {"/api/settings"}
     r = demo.delete("/api/assets/a_02")
     assert r.status_code == 405 and "error" in r.json()

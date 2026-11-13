@@ -69,6 +69,7 @@ function JobProgress({ job }: { job: Job }) {
 
 export default function Library() {
   const assets = useAsync(() => api.listAssets(), []);
+  const whisper = useAsync(() => api.getSettings(), []);
   const [file, setFile] = useState<File | null>(null);
   const [source, setSource] = useState<SourceSystem>("sharepoint");
   const [owner, setOwner] = useState("");
@@ -228,6 +229,12 @@ export default function Library() {
 
         <div className="card">
           <h3>Processing jobs</h3>
+          {whisper.data && (
+            <p className="muted small">
+              Speech-to-text for new jobs: <code>{whisper.data.effective_model}</code> on{" "}
+              <code>{whisper.data.effective_device}</code> · <Link to="/settings">change in Settings</Link>
+            </p>
+          )}
           {Object.values(jobs).length === 0 ? (
             <Empty>No job started in this session. Press <b>Process</b> on a file with status "uploaded".</Empty>
           ) : (

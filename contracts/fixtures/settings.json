@@ -1,0 +1,25 @@
+{
+  "whisper_model": "large-v3-turbo",
+  "whisper_device": "auto",
+  "effective_model": "large-v3-turbo",
+  "effective_device": "auto",
+  "env_overrides": [],
+  "gpu_available": true,
+  "models": [
+    {
+      "name": "small",
+      "label": "Fast",
+      "installed": true
+    },
+    {
+      "name": "large-v3-turbo",
+      "label": "Fast + accurate",
+      "installed": true
+    },
+    {
+      "name": "large-v3",
+      "label": "Most accurate",
+      "installed": false
+    }
+  ]
+}

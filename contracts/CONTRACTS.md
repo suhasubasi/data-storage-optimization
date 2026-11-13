@@ -1,5 +1,7 @@
 # Shared contracts — FROZEN v1.0 (Thu 12 Nov 2026, 23:00 Stockholm)
 
+v1.4 (Fri 13 Nov 2026): `GET/PUT /api/settings` (Whisper model small | large-v3-turbo | large-v3, device auto | cuda | cpu) with `Settings`, `SettingsUpdate`, `WhisperModelInfo`. Additive only; defaults unchanged (small on CPU).
+
 v1.3 (Fri 13 Nov 2026): `Job` gains optional `stage_progress`, `elapsed_s`, `eta_s` (real progress bar). Additive only.
 
 Source of truth: the approved design Page "Data Storage Optimization — System Design & MVP Plan"

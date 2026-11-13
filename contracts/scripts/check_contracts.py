@@ -39,6 +39,7 @@ FIXTURES = {  # fixture file -> (schema def, pydantic model)
     "job.json": ("Job", M.Job),
     "job_running.json": ("Job", M.Job),
     "error.json": ("ErrorResponse", M.ErrorResponse),
+    "settings.json": ("Settings", M.Settings),
     "timeline.json": ("Timeline", M.Timeline),
     "slides.json": ("SlideList", M.SlideList),
     "search.json": ("SearchResponse", M.SearchResponse),

@@ -23,7 +23,7 @@ from pathlib import Path
 
 from dso_contracts.models import ErrorCode, Job
 
-from . import db, ingest, progress, settings
+from . import db, ingest, progress, settings, whisper_settings
 from .errors import ApiError
 from .services import get_asset_row, to_job
 
@@ -188,7 +188,7 @@ def _run_job(job_id: str, asset_id: str, kind: str, original_path: str) -> None:
     stage.mkdir(parents=True, exist_ok=True)
     try:
         cmd = pipeline_command(asset_id, kind, input_path, stage)
-        env = dict(os.environ)
+        env = whisper_settings.pipeline_env(dict(os.environ))  # saved model + device (env vars still win)
         env["PYTHONPATH"] = os.pathsep.join(p for p in (str(settings.PIPELINE_CWD), env.get("PYTHONPATH")) if p)
         with tempfile.TemporaryFile() as out:
             proc = subprocess.Popen(cmd, cwd=settings.PIPELINE_CWD if settings.PIPELINE_CWD.exists() else None,
