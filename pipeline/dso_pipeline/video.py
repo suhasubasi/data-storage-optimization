@@ -17,15 +17,13 @@ import tempfile
 from pathlib import Path
 from typing import Any, Iterator
 
+import cv2
 import numpy as np
 from PIL import Image
 
-from . import unique_slides
+from . import diarize, unique_slides
 from .common import Status, phash_distance, phash_file, phash_hex, write_json_atomic
-from .transcribe import transcribe, load_wav_16k_mono
-from .slide_region import presentation_image
-from .slide_content import has_slide_content
-from . import diarize
+from .transcribe import transcribe
 
 
 _THUMB = (160, 90)
@@ -76,15 +74,21 @@ def _gray_thumb(img: Image.Image) -> np.ndarray:
     return np.asarray(img.convert("L").resize(_THUMB, Image.BILINEAR), dtype=np.int16)
 
 
+def _frame_sharpness(img: Image.Image) -> float:
+    """OpenCV Laplacian variance sharpness score for settled-frame selection."""
+    gray = cv2.cvtColor(np.asarray(img), cv2.COLOR_RGB2GRAY)
+    return float(cv2.Laplacian(gray, cv2.CV_64F).var())
+
+
 def _key_frames(input_path: Path, size: tuple[int, int], fps: float, min_dist: int, hash_size: int,
-                min_pixel_fraction: float, pixel_level: int, presentation_region=None, slides_only=True) -> Iterator[tuple[float, Image.Image | None]]:
-    """Yield (t_seconds, image) for every kept frame. Non-slide samples yield a boundary with no image.
+                min_pixel_fraction: float, pixel_level: int) -> Iterator[tuple[float, Image.Image]]:
+    """Yield (t_seconds, image) for every kept frame. The first frame is always kept.
 
     A frame counts as a NEW slide/scene if, compared with the last kept frame,
       pHash distance >= min_dist                                  (layout / picture changed), OR
       share of pixels changed by > pixel_level (160x90 gray) >= min_pixel_fraction  (text changed).
-    The second rule exists because same-template slides (same background, different text) often have
-    a pHash distance below 12 and would otherwise be merged into one frame.
+    Within a stationary scene hold, the sharpest settled frame (highest OpenCV Laplacian variance)
+    is selected for that scene's start timestamp.
     """
     w, h = size
     frame_bytes = w * h * 3
@@ -95,6 +99,9 @@ def _key_frames(input_path: Path, size: tuple[int, int], fps: float, min_dist: i
     proc = subprocess.Popen(cmd, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
     last: str | None = None
     last_thumb: np.ndarray | None = None
+    pending_t: float = 0.0
+    best_img: Image.Image | None = None
+    best_sharp: float = -1.0
     k = 0
     try:
         assert proc.stdout is not None
@@ -103,13 +110,6 @@ def _key_frames(input_path: Path, size: tuple[int, int], fps: float, min_dist: i
             if len(buf) < frame_bytes:
                 break
             img = Image.frombytes("RGB", (w, h), buf)
-            # Detect changes in the presentation, not in the webcam/participant rail.
-            img = presentation_image(img,presentation_region)
-            if slides_only and not has_slide_content(img):
-                last, last_thumb = None, None
-                yield round(k / fps, 3), None
-                k += 1
-                continue
             hsh = phash_hex(img, hash_size)
             thumb = _gray_thumb(img)
             if (
@@ -117,9 +117,20 @@ def _key_frames(input_path: Path, size: tuple[int, int], fps: float, min_dist: i
                 or phash_distance(hsh, last) >= min_dist
                 or (min_pixel_fraction > 0 and float((np.abs(thumb - last_thumb) > pixel_level).mean()) >= min_pixel_fraction)
             ):
+                if best_img is not None:
+                    yield pending_t, best_img
                 last, last_thumb = hsh, thumb
-                yield round(k / fps, 3), img
+                pending_t = round(k / fps, 3)
+                best_img = img
+                best_sharp = _frame_sharpness(img)
+            else:
+                sh = _frame_sharpness(img)
+                if sh > best_sharp * 1.02:
+                    best_img = img
+                    best_sharp = sh
             k += 1
+        if best_img is not None:
+            yield pending_t, best_img
     finally:
         if proc.stdout:
             proc.stdout.close()
@@ -145,7 +156,7 @@ def process_video(input_path: Path, out_dir: Path, thresholds: dict[str, Any], s
 
     # Whole-job progress is STAGE-WEIGHTED: each step reports its own real fraction and these fixed
     # weights place it in 0..1 (probing 0-5%, key frames 5-30%, unique slides + audio 30-35%,
-    # transcribing 35-85%, speakers 85-95%, writing 97%, done 100%). The weights are a fixed choice, not a measurement,
+    # transcribing 35-95%, writing 97%, done 100%). The weights are a fixed choice, not a measurement,
     # so the backend's time-left number is labelled an estimate.
     status.progress("probing", 0.0)
     info = probe(input_path)
@@ -165,27 +176,21 @@ def process_video(input_path: Path, out_dir: Path, thresholds: dict[str, Any], s
     size = _scaled_size(info, max_w) if has_video else None
     if size:
         status.progress("extracting key frames", 0.05)
-        kept: list[tuple[float, Path | None]] = []
-        saved_count = 0
-        for t, img in _key_frames(input_path, size, fps, min_dist, hash_size, min_pix, pix_level,vcfg.get("presentation_region"), vcfg.get("slides_only", True)):
-            dest = None
-            if img is not None:
-                saved_count += 1
-                dest = frames_dir / f"f{saved_count}.{fmt}"
-                img.save(dest, format=fmt.upper(), quality=75, method=4)
+        kept: list[tuple[float, Path]] = []
+        for t, img in _key_frames(input_path, size, fps, min_dist, hash_size, min_pix, pix_level):
+            dest = frames_dir / f"f{len(kept) + 1}.{fmt}"
+            img.save(dest, format=fmt.upper(), quality=75, method=4)
             kept.append((t, dest))
             if duration > 0:
                 f = min(t / duration, 1.0)  # real: video time of the last decoded frame / duration
                 status.progress("extracting key frames", 0.05 + 0.25 * f, stage_progress=f)
         end = duration if duration > 0 else (kept[-1][0] + 1.0 / fps if kept else 0.0)
         for i, (t, dest) in enumerate(kept):
-            if dest is None:
-                continue
             rel = f"frames/{dest.name}"
             nbytes = dest.stat().st_size
             t_end = kept[i + 1][0] if i + 1 < len(kept) else max(end, t)
             frames.append({
-                "id": dest.stem,
+                "id": f"f{i + 1}",
                 "t_start": t,
                 "t_end": round(t_end, 3),
                 "path": rel,
@@ -195,25 +200,42 @@ def process_video(input_path: Path, out_dir: Path, thresholds: dict[str, Any], s
             })
             derived.append({"path": rel, "bytes": nbytes, "kind": "frame"})
         if not frames:
-            warnings.append("no presentation frames with text detected" if vcfg.get("slides_only", True) else "video stream had no decodable frames")
+            warnings.append("video stream had no decodable frames")
     else:
         warnings.append("no video stream found; no key frames")
 
-    # Unique-slide pass: one image per unique slide (webcam-only / cursor-only repeats merged). It works on
-    # the frames just written, never on the transcript, and only removes this run's own redundant frame files.
+    # Unique-slide pass: keep one image per slide, cropped to the shared screen. Camera frames are not
+    # kept. It works on the frames just written, never on the transcript, and only removes this run's
+    # own redundant frame files.
     us_info = None
     ucfg = unique_slides.config(thresholds)
     if frames and ucfg.get("enabled", True):
         status.progress("finding unique slides", 0.3)
         r = unique_slides.apply(frames, out_dir, ucfg, hash_size)
+        unique_slides.write_crops(r, out_dir, hash_size)
+        keep_rels = {f["path"] for f in r["frames"]}
         for rel in r["drop_paths"]:
-            (out_dir / rel).unlink()
-        keep = set(r["keep_paths"])
+            fp = out_dir / rel
+            if fp.is_file():
+                fp.unlink()
+        for fp in frames_dir.glob(f"*.{fmt}"):
+            if f"frames/{fp.name}" not in keep_rels:
+                fp.unlink()
         frames = r["frames"]
-        derived = [d for d in derived if d["kind"] != "frame" or d["path"] in keep]
+        for f in frames:
+            f["bytes"] = (out_dir / f["path"]).stat().st_size
+        derived = [d for d in derived if d["kind"] != "frame"]
+        seen: set[str] = set()
+        for f in frames:
+            if f["path"] not in seen:
+                derived.append({"path": f["path"], "bytes": f["bytes"], "kind": "frame"})
+                seen.add(f["path"])
         us_info = {**r["info"], "applied_as": "pipeline", "applied_at": None}
 
     result = None
+    segments: list[dict[str, Any]] = []
+    speaker_stats: list[dict[str, Any]] = []
+    diarization_meta: list[dict[str, Any]] | None = None
     if has_audio:
         # Temp WAV lives in a temp dir inside out_dir (same disk); always deleted, never listed.
         with tempfile.TemporaryDirectory(prefix=".tmp-", dir=out_dir) as tmpname:
@@ -225,44 +247,40 @@ def process_video(input_path: Path, out_dir: Path, thresholds: dict[str, Any], s
             # p is real: end time of the last finished Whisper segment / media duration. Reporting
             # progress only reads the segments; it never changes what Whisper does or returns.
             result = transcribe(wav, duration, thresholds,
-                                lambda p: status.progress("transcribing", 0.35 + 0.5 * p, stage_progress=p),
-                                with_words=diarize.enabled(thresholds))
-            if result.segments and diarize.enabled(thresholds) and os.environ.get("DSO_TRANSCRIBER", "whisper").lower() != "stub":
-                status.progress("identifying speakers", .85)
-                try:
-                    turns = diarize.speaker_turns(
-                        load_wav_16k_mono(wav),
-                        thresholds, lambda p: status.progress("identifying speakers", .85 + .1 * p, stage_progress=p))
-                    result.segments, result.speakers = diarize.assign_speakers(result.segments, result.words, turns)
-                    if not any(result.speakers):
-                        warnings.append("speaker diarization could not confidently assign voices; speaker labels are unavailable")
-                except Exception as exc:
-                    warnings.append(f"speaker diarization unavailable ({type(exc).__name__}: {exc}); transcript retained without speaker labels")
+                                lambda p: status.progress("transcribing", 0.35 + 0.58 * p, stage_progress=p))
+            for i, (s, e, text) in enumerate(result.segments):
+                segments.append({
+                    "id": f"s{i + 1}", "start": s, "end": max(e, s), "text": text,
+                    "frame_id": frame_for(s, frames), "speaker": None,
+                })
+            if not segments:
+                warnings.append("no speech detected")
+            elif os.environ.get("DSO_TRANSCRIBER") != "stub" and duration >= 35.0 and len(segments) >= 8:
+                status.progress("identifying speakers", 0.94)
+                diar = diarize.diarize_wav(
+                    wav, segments, video_path=input_path, include_roles=True
+                )
+                speaker_stats = diar["speakers"]
+                diarization_meta = diar.get("diarization")
     else:
         warnings.append("no audio stream found; transcript is empty")
-
-    segments: list[dict[str, Any]] = []
-    if result is not None:
-        for i, (s, e, text) in enumerate(result.segments):
-            segments.append({
-                "id": f"s{i + 1}", "start": s, "end": max(e, s), "text": text,
-                "frame_id": next((f["id"] for f in frames if f["t_start"] <= s < f["t_end"]), None),
-                "speaker": result.speakers[i] if i < len(result.speakers) else None,
-            })
-        if not segments:
-            warnings.append("no speech detected")
 
     language = result.language if result else None
     model_label = result.model_label if result else None
 
     status.progress("writing transcript", 0.97)
     transcript_rel = "transcript.json"
-    write_json_atomic(out_dir / transcript_rel, {
+    transcript_payload: dict[str, Any] = {
         "language": language,
         "model": model_label,
         "duration_seconds": round(duration, 3),
         "segments": segments,
-    })
+    }
+    if speaker_stats:
+        transcript_payload["speakers"] = speaker_stats
+    if diarization_meta is not None:
+        transcript_payload["diarization"] = diarization_meta
+    write_json_atomic(out_dir / transcript_rel, transcript_payload)
     derived.insert(0, {"path": transcript_rel, "bytes": (out_dir / transcript_rel).stat().st_size, "kind": "transcript"})
 
     metadata = {

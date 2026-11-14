@@ -271,3 +271,385 @@ def test_reprocess_keeps_old_files_while_running_and_after_failure(empty, fake2)
     assert empty.get("/api/search", params={"q": "bravo"}).json()["total"] >= 1
     assert empty.get("/api/search", params={"q": "alpha"}).json()["total"] == 0
     _no_leftovers()
+
+
+def test_speaker_labels_in_exports_and_matched_slide_recompute(empty):
+    """Speaker labels render in transcript/PPTX exports; video frames link to matching PDF slides."""
+    import hashlib
+    from pptx import Presentation
+    from PIL import Image
+    from app import duplicates
+
+    # 1) Ingest a document with one slide (non-uniform phash)
+    doc_bytes = b"%PDF-1.4 dummy deck"
+    d_asset = upload(empty, "deck.pdf", doc_bytes, owner="anna", src="sharepoint").json()
+    did = d_asset["id"]
+    dbase = settings.DERIVED_DIR / did
+    (dbase / "pages").mkdir(parents=True, exist_ok=True)
+    Image.new("RGB", (320, 180), (240, 240, 240)).save(dbase / "pages" / "p1.webp", "WEBP")
+    pb = (dbase / "pages" / "p1.webp").stat().st_size
+    dm = {
+        "schema_version": "1.0", "asset_id": did, "kind": "document",
+        "original": {"path": f"originals/{did}/deck.pdf", "bytes": len(doc_bytes),
+                     "sha256": hashlib.sha256(doc_bytes).hexdigest()},
+        "metadata": {"title": "Deck", "author": None, "doc_number": None, "revision": None, "date": None, "language": None},
+        "segments": [], "frames": [],
+        "slides": [{"id": "p1", "page": 1, "text": "Matching deck slide", "text_sha256": hashlib.sha256(b"matching deck slide").hexdigest(),
+                    "phash": "0f0f0f0f0f0f0f0f", "path": "pages/p1.webp", "bytes": pb}],
+        "derived_files": [{"path": "pages/p1.webp", "bytes": pb, "kind": "page_image"}],
+        "pipeline": {"version": "test", "model": None, "frame_threshold": None, "seconds": 0.1},
+    }
+    write_file(dbase / "manifest.json", json.dumps(dm).encode())
+    ingest.ingest_manifest(did, recompute=False)
+
+    # 2) Ingest a video whose frame shares phash with p1 and whose segments have text speaker labels (no audio files)
+    vid_bytes = b"\x00\x00\x00\x18ftypmp42 talk"
+    v_asset = upload(empty, "meeting.mp4", vid_bytes, owner="erik", src="ericsson_play").json()
+    vid = v_asset["id"]
+    vbase = settings.DERIVED_DIR / vid
+    (vbase / "frames").mkdir(parents=True, exist_ok=True)
+    Image.new("RGB", (320, 180), (240, 240, 240)).save(vbase / "frames" / "f1.webp", "WEBP")
+    fb = (vbase / "frames" / "f1.webp").stat().st_size
+    segs = [
+        {"id": "s1", "start": 0.0, "end": 3.0, "text": "Hello from speaker one.", "frame_id": "f1", "speaker": "Speaker 1"},
+        {"id": "s2", "start": 3.0, "end": 6.0, "text": "Reply from speaker two.", "frame_id": "f1", "speaker": "Speaker 2"},
+        {"id": "s3", "start": 6.0, "end": 9.0, "text": "Follow-up from speaker three.", "frame_id": "f1", "speaker": "Speaker 3"},
+    ]
+    write_file(vbase / "transcript.json", json.dumps({"segments": segs}).encode())
+    vm = {
+        "schema_version": "1.0", "asset_id": vid, "kind": "video",
+        "original": {"path": f"originals/{vid}/meeting.mp4", "bytes": len(vid_bytes),
+                     "sha256": hashlib.sha256(vid_bytes).hexdigest()},
+        "metadata": {"title": "Meeting", "author": None, "doc_number": None, "revision": None, "date": None,
+                     "language": "en", "duration_seconds": 10.0},
+        "segments": segs,
+        "frames": [{"id": "f1", "t_start": 0.0, "t_end": 10.0, "path": "frames/f1.webp", "bytes": fb,
+                    "phash": "0f0f0f0f0f0f0f0e", "matched_slide": None, "slide": 1, "source_frames": ["f1"]}],
+        "slides": [],
+        "derived_files": [
+            {"path": "transcript.json", "bytes": (vbase / "transcript.json").stat().st_size, "kind": "transcript"},
+            {"path": "frames/f1.webp", "bytes": fb, "kind": "frame"},
+        ],
+        "pipeline": {
+            "version": "test", "model": "test", "frame_threshold": 12, "seconds": 0.2,
+            "unique_slides": {"method": "test", "applied_as": "post_pass", "applied_at": None,
+                              "source_frame_count": 1, "unique_slide_count": 1, "run_count": 1,
+                              "source_frame_bytes": fb, "unique_slide_bytes": fb, "overlay_mask": None, "params": {}},
+        },
+    }
+    write_file(vbase / "manifest.json", json.dumps(vm).encode())
+    ingest.ingest_manifest(vid)
+
+    # Check matched_slide populated via duplicates.recompute_matches()
+    tl = empty.get(f"/api/assets/{vid}/timeline").json()
+    assert tl["frames"][0]["matched_slide"] == f"{did}:p1"
+    assert [s["speaker"] for s in tl["segments"]] == ["Speaker 1", "Speaker 2", "Speaker 3"]
+
+    # Check no audio derived files tracked (text-only speaker separation)
+    detail = empty.get(f"/api/assets/{vid}").json()
+    assert detail["derived"]["bytes_by_kind"].get("audio", 0) == 0
+
+    # Check exports include speaker labels
+    txt = empty.get(f"/api/assets/{vid}/transcript.txt").text
+    assert "Speaker 1: Hello from speaker one." in txt
+    assert "Speaker 2: Reply from speaker two." in txt
+    assert "Speaker 3: Follow-up from speaker three." in txt
+    prs = Presentation(io.BytesIO(empty.get(f"/api/assets/{vid}/slides.pptx").content))
+    note = prs.slides[1].notes_slide.notes_text_frame.text
+    assert "Speaker 1: Hello from speaker one." in note and "Speaker 3: Follow-up from speaker three." in note
+
+    # Check AI-ready JSON & JSONL exports carry speaker labels on transcript chunks and null on slides
+    v_exp = empty.get(f"/api/assets/{vid}/export").json()
+    assert [c["speaker"] for c in v_exp["chunks"]] == ["Speaker 1", "Speaker 2", "Speaker 3"]
+    d_exp = empty.get(f"/api/assets/{did}/export").json()
+    assert [c["speaker"] for c in d_exp["chunks"]] == [None]
+    jsonl_chunks = {c["chunk_id"]: c for c in (json.loads(x) for x in empty.get("/api/export.jsonl").text.splitlines() if x.strip())}
+    assert jsonl_chunks[f"{vid}:s1"]["speaker"] == "Speaker 1"
+    assert jsonl_chunks[f"{vid}:s2"]["speaker"] == "Speaker 2"
+    assert jsonl_chunks[f"{did}:p1"]["speaker"] is None
+
+
+def _validate_api_schema(checks: list[tuple[str, object]]) -> None:
+    """Validate `(defname, payload)` pairs against api.schema.json using Draft202012Validator."""
+    script = textwrap.dedent("""
+        import json, sys
+        from pathlib import Path
+        from jsonschema import Draft202012Validator
+        from referencing import Registry, Resource
+
+        contracts = Path(sys.argv[1])
+        man = json.loads((contracts / "schemas/manifest.schema.json").read_text(encoding="utf-8"))
+        api = json.loads((contracts / "schemas/api.schema.json").read_text(encoding="utf-8"))
+        reg = Registry().with_resources([
+            (man["$id"], Resource.from_contents(man)),
+            ("manifest.schema.json", Resource.from_contents(man)),
+            (api["$id"], Resource.from_contents(api)),
+        ])
+        for defname, payload in json.load(sys.stdin):
+            v = Draft202012Validator({"$ref": f"{api['$id']}#/$defs/{defname}"}, registry=reg)
+            errs = list(v.iter_errors(payload))
+            assert not errs, f"{defname}: {errs[0].message}"
+    """)
+    try:
+        from jsonschema import Draft202012Validator
+        from referencing import Registry, Resource
+    except ImportError:
+        import subprocess
+        from pathlib import Path
+
+        py = Path(settings.PIPELINE_PYTHON)
+        assert py.is_file(), f"jsonschema missing and pipeline python not found at {py}"
+        proc = subprocess.run(
+            [str(py), "-c", script, str(settings.CONTRACTS_DIR)],
+            input=json.dumps(checks),
+            text=True,
+            capture_output=True,
+            check=False,
+        )
+        assert proc.returncode == 0, f"JSON Schema validation failed:\n{proc.stderr}\n{proc.stdout}"
+        return
+
+    man = json.loads((settings.CONTRACTS_DIR / "schemas/manifest.schema.json").read_text(encoding="utf-8"))
+    api = json.loads((settings.CONTRACTS_DIR / "schemas/api.schema.json").read_text(encoding="utf-8"))
+    reg = Registry().with_resources([
+        (man["$id"], Resource.from_contents(man)),
+        ("manifest.schema.json", Resource.from_contents(man)),
+        (api["$id"], Resource.from_contents(api)),
+    ])
+    for defname, payload in checks:
+        errs = list(Draft202012Validator({"$ref": f"{api['$id']}#/$defs/{defname}"}, registry=reg).iter_errors(payload))
+        assert not errs, f"{defname}: {errs[0].message}"
+
+
+def test_rich_diarization_export_roundtrip_and_fallbacks(empty):
+    """Rich transcript.json diarization, overlap, and null-confidence round-trip + legacy/missing graceful fallbacks."""
+    import hashlib
+    from PIL import Image
+    from dso_contracts.models import ExportAsset, ExportChunk
+
+    # 1) Document asset (slide_text chunks must remain null for all speaker/diarization fields)
+    doc_bytes = b"%PDF-1.4 slides"
+    did = upload(empty, "slides.pdf", doc_bytes, owner="anna", src="sharepoint").json()["id"]
+    dbase = settings.DERIVED_DIR / did
+    (dbase / "pages").mkdir(parents=True, exist_ok=True)
+    Image.new("RGB", (320, 180), (220, 220, 220)).save(dbase / "pages" / "p1.webp", "WEBP")
+    pb = (dbase / "pages" / "p1.webp").stat().st_size
+    dm = {
+        "schema_version": "1.0", "asset_id": did, "kind": "document",
+        "original": {"path": f"originals/{did}/slides.pdf", "bytes": len(doc_bytes),
+                     "sha256": hashlib.sha256(doc_bytes).hexdigest()},
+        "metadata": {"title": "Slides", "author": None, "doc_number": None, "revision": None, "date": None, "language": None},
+        "segments": [], "frames": [],
+        "slides": [{"id": "p1", "page": 1, "text": "Slide one text",
+                    "text_sha256": hashlib.sha256(b"slide one text").hexdigest(),
+                    "phash": "1111222233334444", "path": "pages/p1.webp", "bytes": pb}],
+        "derived_files": [{"path": "pages/p1.webp", "bytes": pb, "kind": "page_image"}],
+        "pipeline": {"version": "test", "model": None, "frame_threshold": None, "seconds": 0.1, "warnings": []},
+    }
+    write_file(dbase / "manifest.json", json.dumps(dm).encode())
+    ingest.ingest_manifest(did, recompute=False)
+
+    # 2) Video with rich neural diarization metadata: PRESENTER, DOCUMENTARY, UNKNOWN, overlap, and null confidence
+    vid_bytes = b"\x00\x00\x00\x18ftypmp42 rich-diar"
+    vid = upload(empty, "keynote.mp4", vid_bytes, owner="erik", src="ericsson_play").json()["id"]
+    vbase = settings.DERIVED_DIR / vid
+    (vbase / "frames").mkdir(parents=True, exist_ok=True)
+    Image.new("RGB", (320, 180), (40, 80, 120)).save(vbase / "frames" / "f1.webp", "WEBP")
+    fb = (vbase / "frames" / "f1.webp").stat().st_size
+    segs = [
+        {"id": "s1", "start": 0.0, "end": 4.0, "text": "Welcome to the keynote.",
+         "frame_id": "f1", "speaker": "Speaker 1 (Presenter)"},
+        {"id": "s2", "start": 4.0, "end": 8.0, "text": "Video clip narrator line.",
+         "frame_id": "f1", "speaker": "Speaker 2 (Documentary)"},
+        {"id": "s3", "start": 8.0, "end": 11.5, "text": "Overlapping discussion turn.",
+         "frame_id": "f1", "speaker": "Speaker 1 + Speaker 2 (Overlap)"},
+        {"id": "s4", "start": 11.5, "end": 12.0, "text": "Quick question.",
+         "frame_id": "f1", "speaker": "Speaker 3 (Unknown)"},
+    ]
+    speakers_meta = [
+        {
+            "speaker": "Speaker 1 (Presenter)",
+            "speaker_id": "Speaker 1",
+            "role": "PRESENTER",
+            "segment_count": 2,
+            "seconds_spoken": 7.5,
+            "video_churn_ratio": 0.125,
+            "overlap_seconds": 1.2,
+            "overlap_segment_count": 1,
+            "role_cues": {
+                "static_seconds": 6.5, "video_seconds": 1.0,
+                "static_blocks": 2, "static_share": 0.72, "active_span_seconds": 11.5,
+            },
+        },
+        {
+            "speaker": "Speaker 2 (Documentary)",
+            "speaker_id": "Speaker 2",
+            "role": "DOCUMENTARY",
+            "segment_count": 1,
+            "seconds_spoken": 4.0,
+            "video_churn_ratio": 0.95,
+            "overlap_seconds": 0.0,
+            "overlap_segment_count": 0,
+            "role_cues": {
+                "static_seconds": 0.2, "video_seconds": 3.8,
+                "static_blocks": 0, "static_share": 0.02, "active_span_seconds": 4.0,
+            },
+        },
+        {
+            "speaker": "Speaker 3 (Unknown)",
+            "speaker_id": "Speaker 3",
+            "role": "UNKNOWN",
+            "segment_count": 1,
+            "seconds_spoken": 0.5,
+            "video_churn_ratio": 0.0,
+            "overlap_seconds": 0.0,
+            "overlap_segment_count": 0,
+            "role_cues": {
+                "static_seconds": 0.5, "video_seconds": 0.0,
+                "static_blocks": 1, "static_share": 0.05, "active_span_seconds": 0.5,
+            },
+        },
+    ]
+    diar_meta = [
+        {
+            "segment_id": "s1", "speaker_id": "Speaker 1", "speaker_category": "PRESENTER",
+            "speaker_confidence": 0.8412, "overlap": False, "overlap_seconds": 0.0,
+            "overlap_ratio": 0.0, "overlap_speakers": [],
+            "sub_turns": [{"start": 0.0, "end": 4.0, "speaker_id": "Speaker 1", "role": "PRESENTER", "overlap": False}],
+        },
+        {
+            "segment_id": "s2", "speaker_id": "Speaker 2", "speaker_category": "DOCUMENTARY",
+            "speaker_confidence": 0.625, "overlap": False, "overlap_seconds": 0.0,
+            "overlap_ratio": 0.0, "overlap_speakers": [],
+            "sub_turns": [{"start": 4.0, "end": 8.0, "speaker_id": "Speaker 2", "role": "DOCUMENTARY", "overlap": False}],
+        },
+        {
+            "segment_id": "s3", "speaker_id": "Speaker 1", "speaker_category": "PRESENTER",
+            "speaker_confidence": 0.41, "overlap": True, "overlap_seconds": 1.2,
+            "overlap_ratio": 0.3429, "overlap_speakers": ["Speaker 1", "Speaker 2"],
+            "sub_turns": [
+                {"start": 8.0, "end": 9.8, "speaker_id": "Speaker 1", "role": "PRESENTER", "overlap": True},
+                {"start": 9.8, "end": 11.5, "speaker_id": "Speaker 2", "role": "DOCUMENTARY", "overlap": True},
+            ],
+        },
+        {
+            "segment_id": "s4", "speaker_id": "Speaker 3", "speaker_category": "UNKNOWN",
+            "speaker_confidence": None, "overlap": False, "overlap_seconds": 0.0,
+            "overlap_ratio": 0.0, "overlap_speakers": [],
+            "sub_turns": [{"start": 11.5, "end": 12.0, "speaker_id": "Speaker 3", "role": "UNKNOWN", "overlap": False}],
+        },
+    ]
+    write_file(
+        vbase / "transcript.json",
+        json.dumps({"segments": segs, "speakers": speakers_meta, "diarization": diar_meta}).encode(),
+    )
+    vm = {
+        "schema_version": "1.0", "asset_id": vid, "kind": "video",
+        "original": {"path": f"originals/{vid}/keynote.mp4", "bytes": len(vid_bytes),
+                     "sha256": hashlib.sha256(vid_bytes).hexdigest()},
+        "metadata": {"title": "Keynote", "author": None, "doc_number": None, "revision": None, "date": None,
+                     "language": "en", "duration_seconds": 12.0},
+        "segments": segs,
+        "frames": [{"id": "f1", "t_start": 0.0, "t_end": 12.0, "path": "frames/f1.webp", "bytes": fb,
+                    "phash": "aaaa1111bbbb2222", "matched_slide": None}],
+        "slides": [],
+        "derived_files": [
+            {"path": "transcript.json", "bytes": (vbase / "transcript.json").stat().st_size, "kind": "transcript"},
+            {"path": "frames/f1.webp", "bytes": fb, "kind": "frame"},
+        ],
+        "pipeline": {"version": "test", "model": "test", "frame_threshold": 12, "seconds": 0.2, "warnings": []},
+    }
+    write_file(vbase / "manifest.json", json.dumps(vm).encode())
+    ingest.ingest_manifest(vid, recompute=False)
+
+    # 3) Verify /api/assets/{id}/export for video and document
+    v_exp = empty.get(f"/api/assets/{vid}/export").json()
+    d_exp = empty.get(f"/api/assets/{did}/export").json()
+    ExportAsset.model_validate(v_exp)
+    ExportAsset.model_validate(d_exp)
+
+    assert v_exp["speakers"] == speakers_meta
+    assert d_exp["speakers"] is None
+
+    by_cid = {c["chunk_id"]: c for c in v_exp["chunks"]}
+    assert by_cid[f"{vid}:s1"]["speaker_id"] == "Speaker 1"
+    assert by_cid[f"{vid}:s1"]["speaker_category"] == "PRESENTER"
+    assert by_cid[f"{vid}:s1"]["speaker_confidence"] == pytest.approx(0.8412)
+    assert by_cid[f"{vid}:s1"]["overlap"] is False
+    assert by_cid[f"{vid}:s1"]["overlap_speakers"] == []
+
+    assert by_cid[f"{vid}:s2"]["speaker_id"] == "Speaker 2"
+    assert by_cid[f"{vid}:s2"]["speaker_category"] == "DOCUMENTARY"
+    assert by_cid[f"{vid}:s2"]["speaker_confidence"] == pytest.approx(0.625)
+
+    assert by_cid[f"{vid}:s3"]["overlap"] is True
+    assert by_cid[f"{vid}:s3"]["overlap_speakers"] == ["Speaker 1", "Speaker 2"]
+
+    # Null confidence must stay null — never fabricated
+    assert by_cid[f"{vid}:s4"]["speaker_id"] == "Speaker 3"
+    assert by_cid[f"{vid}:s4"]["speaker_category"] == "UNKNOWN"
+    assert by_cid[f"{vid}:s4"]["speaker_confidence"] is None
+    assert by_cid[f"{vid}:s4"]["overlap"] is False
+
+    # Slide chunks stay null for all speaker/diarization fields
+    doc_chunk = d_exp["chunks"][0]
+    for k in ("speaker", "speaker_id", "speaker_category", "speaker_confidence", "overlap", "overlap_speakers"):
+        assert doc_chunk[k] is None
+
+    # 4) Verify /api/export.jsonl round-trip + Pydantic + JSON Schema validation
+    jsonl_resp = empty.get("/api/export.jsonl")
+    assert jsonl_resp.status_code == 200
+    jsonl_lines = [json.loads(ln) for ln in jsonl_resp.text.splitlines() if ln.strip()]
+    for ln in jsonl_lines:
+        ExportChunk.model_validate(ln)
+    j_by_cid = {ln["chunk_id"]: ln for ln in jsonl_lines}
+    assert j_by_cid[f"{vid}:s3"]["overlap"] is True
+    assert j_by_cid[f"{vid}:s3"]["overlap_speakers"] == ["Speaker 1", "Speaker 2"]
+    assert j_by_cid[f"{vid}:s4"]["speaker_confidence"] is None
+    assert j_by_cid[f"{did}:p1"]["speaker_id"] is None
+
+    schema_checks: list[tuple[str, object]] = [("ExportAsset", v_exp), ("ExportAsset", d_exp)] + [
+        ("ExportChunk", ln) for ln in jsonl_lines
+    ]
+
+    # 5) Legacy transcript.json (with extra legacy keys and no diarization[]) and missing/corrupt transcript.json
+    write_file(
+        vbase / "transcript.json",
+        json.dumps({
+            "segments": segs,
+            "speakers": [{"speaker": "Speaker 1", "path": "audio/speaker-1.wav", "bytes": 123,
+                          "kind": "audio", "clip_start": 0.0, "clip_end": 4.0,
+                          "segment_count": 2, "seconds_spoken": 7.5}],
+        }).encode(),
+    )
+    legacy_exp = empty.get(f"/api/assets/{vid}/export").json()
+    ExportAsset.model_validate(legacy_exp)
+    assert legacy_exp["speakers"] == [{
+        "speaker": "Speaker 1", "speaker_id": None, "role": None,
+        "segment_count": 2, "seconds_spoken": 7.5,
+        "video_churn_ratio": None, "overlap_seconds": None,
+        "overlap_segment_count": None, "role_cues": None,
+    }]
+    for c in legacy_exp["chunks"]:
+        for k in ("speaker_id", "speaker_category", "speaker_confidence", "overlap", "overlap_speakers"):
+            assert c[k] is None
+
+    (vbase / "transcript.json").unlink()
+    missing_exp = empty.get(f"/api/assets/{vid}/export").json()
+    ExportAsset.model_validate(missing_exp)
+    assert missing_exp["speakers"] is None
+    for c in missing_exp["chunks"]:
+        for k in ("speaker_id", "speaker_category", "speaker_confidence", "overlap", "overlap_speakers"):
+            assert c[k] is None
+
+    write_file(vbase / "transcript.json", b"{not valid json")
+    corrupt_exp = empty.get(f"/api/assets/{vid}/export").json()
+    ExportAsset.model_validate(corrupt_exp)
+    assert corrupt_exp["speakers"] is None
+
+    schema_checks.extend([
+        ("ExportAsset", legacy_exp),
+        ("ExportAsset", missing_exp),
+        ("ExportAsset", corrupt_exp),
+    ])
+    _validate_api_schema(schema_checks)

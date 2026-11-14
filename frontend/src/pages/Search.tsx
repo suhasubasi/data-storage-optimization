@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState, type FormEvent, type KeyboardEvent } from "react";
+import { useEffect, useMemo, useRef, useState, type FormEvent, type KeyboardEvent } from "react";
 import { useNavigate, useSearchParams } from "react-router-dom";
 import type { SearchHit } from "@contracts/ts/dso-contracts";
 import { api } from "../api/client";
@@ -7,6 +7,7 @@ import { formatTime } from "../lib/format";
 import { MediaImage } from "../components/MediaImage";
 import { Snippet } from "../components/Snippet";
 import { Badge, Empty, ErrorBox, Loading, PageHeader, SourceBadge } from "../components/ui";
+import { IconSearch } from "../components/Icons";
 
 function hitLink(h: SearchHit) {
   if (h.hit_type === "segment") return `/recording/${h.asset_id}?seg=${h.item_id}`;
@@ -15,35 +16,29 @@ function hitLink(h: SearchHit) {
   return `/document/${h.asset_id}?page=${h.page}`;
 }
 
-const HIT_LABEL: Record<SearchHit["hit_type"], [string, "blue" | "purple" | "grey" | "green"]> = {
-  segment: ["Recording", "blue"],
-  slide: ["Slide", "purple"],
-  asset: ["Title / file name", "grey"],
-  chat: ["Meeting chat", "green"],
+const HIT_META: Record<SearchHit["hit_type"], { label: string; tone: "blue" | "purple" | "grey" | "green" }> = {
+  segment: { label: "Speech", tone: "blue" },
+  slide: { label: "Slide text", tone: "purple" },
+  chat: { label: "Meeting chat", tone: "green" },
+  asset: { label: "Title / file", tone: "grey" },
 };
 
 export default function Search() {
   const [params, setParams] = useSearchParams();
   const q = params.get("q") ?? "";
   const [text, setText] = useState(q);
+  const [typeFilter, setTypeFilter] = useState<SearchHit["hit_type"] | "all">("all");
   const [sel, setSel] = useState(0);
   const input = useRef<HTMLInputElement>(null);
   const list = useRef<HTMLOListElement>(null);
   const navigate = useNavigate();
-  const res = useAsync(() => api.search(q, 20), [q], q.trim().length > 0);
+
+  const res = useAsync(() => api.search(q, 50), [q], q.trim().length > 0);
 
   useEffect(() => setText(q), [q]);
-  useEffect(() => setSel(0), [res.data]);
+  useEffect(() => setSel(0), [res.data, typeFilter]);
   useEffect(() => {
     input.current?.focus();
-    const onKey = (e: globalThis.KeyboardEvent) => {
-      if (e.key === "/" && document.activeElement !== input.current) {
-        e.preventDefault();
-        input.current?.focus();
-      }
-    };
-    window.addEventListener("keydown", onKey);
-    return () => window.removeEventListener("keydown", onKey);
   }, []);
 
   function submit(e?: FormEvent, value = text) {
@@ -52,7 +47,18 @@ export default function Search() {
     setParams(v ? { q: v } : {});
   }
 
-  const hits = res.data?.hits ?? [];
+  const rawHits = res.data?.hits ?? [];
+  const counts = useMemo(() => {
+    const c: Record<string, number> = { all: rawHits.length, segment: 0, slide: 0, chat: 0, asset: 0 };
+    for (const h of rawHits) c[h.hit_type] = (c[h.hit_type] ?? 0) + 1;
+    return c;
+  }, [rawHits]);
+
+  const hits = useMemo(
+    () => (typeFilter === "all" ? rawHits : rawHits.filter((h) => h.hit_type === typeFilter)),
+    [rawHits, typeFilter],
+  );
+
   function onKeyDown(e: KeyboardEvent) {
     if (!hits.length || (e.key !== "ArrowDown" && e.key !== "ArrowUp")) return;
     e.preventDefault();
@@ -60,101 +66,115 @@ export default function Search() {
     const next = e.key === "ArrowDown" ? (inInput ? 0 : Math.min(hits.length - 1, sel + 1)) : sel - 1;
     if (next < 0) return input.current?.focus();
     setSel(next);
-    list.current?.querySelectorAll<HTMLAnchorElement>("a.hit")[next]?.focus();
+    list.current?.querySelectorAll<HTMLAnchorElement>("a.hit-card")[next]?.focus();
   }
 
   return (
-    <section onKeyDown={onKeyDown}>
+    <section className="page-stack page-search" onKeyDown={onKeyDown}>
       <PageHeader
-        title="Search"
-        lead="One box over every transcript sentence, every slide, and each file's title, file name and metadata. Each result shows the text, the frame or slide it belongs to, and the timestamp or page. Words are matched as spoken/written: no spelling fixes are applied."
+        title="Unified knowledge search"
+        lead="Find the moment, slide, or conversation you need. Search across all your recordings and documents."
       />
-      <form className="search-bar" onSubmit={submit} role="search">
-        <input
-          ref={input}
-          className="search-input"
-          type="search"
-          value={text}
-          onChange={(e) => setText(e.target.value)}
-          placeholder="Search recordings and documents…  (press / to focus)"
-          aria-label="Search recordings and documents"
-        />
-        <button className="btn primary">Search</button>
-      </form>
-      <div className="chips">
-        <span className="muted small kbd-hint">
-          <kbd>↑</kbd> <kbd>↓</kbd> to move, <kbd>Enter</kbd> to open
-        </span>
+
+      <div className="card search-panel">
+        <form className="search-hero" onSubmit={submit} role="search">
+          <div className="search-field-wrap">
+            <IconSearch size={18} />
+            <input
+              ref={input}
+              type="search"
+              value={text}
+              onChange={(e) => setText(e.target.value)}
+              placeholder="Search spoken phrases, topics, slide bullets, chat questions, or document titles…"
+              aria-label="Search query"
+            />
+          </div>
+          <button className="btn btn-primary">Search</button>
+        </form>
+
+        <div className="search-subbar">
+          <div className="pill-tabs" role="tablist">
+            {(["all", "segment", "slide", "chat", "asset"] as const).map((k) => (
+              <button
+                key={k}
+                type="button"
+                role="tab"
+                aria-selected={typeFilter === k}
+                className={`pill-tab ${typeFilter === k ? "on" : ""}`}
+                onClick={() => setTypeFilter(k)}
+              >
+                {k === "all" ? "All matches" : HIT_META[k].label}
+                {res.data ? ` (${counts[k] ?? 0})` : ""}
+              </button>
+            ))}
+          </div>
+          <span className="muted small">
+            <kbd>↑</kbd> <kbd>↓</kbd> navigate · <kbd>Enter</kbd> jump to exact frame/page
+          </span>
+        </div>
       </div>
 
       {!q ? (
-        <Empty>Type a word or phrase and press Enter.</Empty>
+        <Empty>Enter a keyword above (for example: “disaster”, “school”, “GraalVM”, or “connectivity”).</Empty>
       ) : res.loading ? (
-        <Loading label={`Searching for “${q}”…`} />
+        <Loading label={`Searching index for “${q}”…`} />
       ) : res.error ? (
         <ErrorBox error={res.error} onRetry={res.reload} />
       ) : hits.length === 0 ? (
-        <Empty>No results for “{q}”. Try a shorter word, or check that the files are processed.</Empty>
+        <Empty>No matches found in this category for “{q}”.</Empty>
       ) : (
-        <>
-          <p className="muted">
-            {res.data!.total} result{res.data!.total === 1 ? "" : "s"} for “{res.data!.query}”
+        <div className="search-results">
+          <p className="muted small">
+            Showing {hits.length} of {res.data!.total} matches for <b>“{res.data!.query}”</b>
           </p>
-          <ol className="hits" ref={list}>
-            {hits.map((h, i) => (
-              <li key={`${h.asset_id}:${h.item_id}`}>
-                <a
-                  href={hitLink(h)}
-                  className={`hit card ${i === sel ? "sel" : ""}`}
-                  onClick={(e) => {
-                    e.preventDefault();
-                    navigate(hitLink(h));
-                  }}
-                  onFocus={() => setSel(i)}
-                >
-                  <div className="hit-media">
-                    <MediaImage
-                      url={h.media?.url}
-                      kind={h.media?.type === "frame" || h.hit_type === "segment" || h.hit_type === "chat" ? "frame" : "slide"}
-                      title={h.text}
-                      sub={h.hit_type === "segment" || h.hit_type === "chat" ? `${h.frame_id ?? ""} · ${formatTime(h.start)}` : h.hit_type === "asset" ? h.filename : `page ${h.page}`}
-                      alt={h.hit_type === "segment" || h.hit_type === "chat" ? `Frame ${h.frame_id ?? "near this time"}` : h.hit_type === "asset" ? `First image of ${h.filename}` : `Page ${h.page}`}
-                    />
-                  </div>
-                  <div className="hit-body">
-                    <div className="hit-meta">
-                      <Badge tone={HIT_LABEL[h.hit_type][1]}>{HIT_LABEL[h.hit_type][0]}</Badge>
-                      <b>{h.filename}</b>
-                      <SourceBadge source={h.source_system} />
-                      <span className="muted small">owner {h.owner}</span>
+          <ol className="hits-grid" ref={list}>
+            {hits.map((h, i) => {
+              const meta = HIT_META[h.hit_type];
+              return (
+                <li key={`${h.asset_id}:${h.item_id}`}>
+                  <a
+                    href={hitLink(h)}
+                    className={`hit-card card ${i === sel ? "selected" : ""}`}
+                    onClick={(e) => {
+                      e.preventDefault();
+                      navigate(hitLink(h));
+                    }}
+                    onFocus={() => setSel(i)}
+                  >
+                    <div className="hit-thumb">
+                      <MediaImage
+                        url={h.media?.url}
+                        kind={h.media?.type === "frame" || h.hit_type === "segment" || h.hit_type === "chat" ? "frame" : "slide"}
+                        title={h.text}
+                        sub={h.hit_type === "segment" || h.hit_type === "chat" ? `${h.frame_id ?? ""} · ${formatTime(h.start)}` : h.hit_type === "asset" ? h.filename : `page ${h.page}`}
+                        alt={`Match preview for ${h.filename}`}
+                      />
                     </div>
-                    <p className="hit-text">
-                      <Snippet html={h.snippet} />
-                    </p>
-                    <div className="hit-where">
-                      {h.hit_type === "segment" ? (
-                        <>
-                          ⏱ <b>{formatTime(h.start)}</b>–{formatTime(h.end)} · frame <code>{h.frame_id ?? "—"}</code> → jump to this moment
-                        </>
-                      ) : h.hit_type === "chat" ? (
-                        <>
-                          💬 meeting chat · {h.start != null ? <>about <b>{formatTime(h.start)}</b> into the recording (estimated from the chat clock, up to 59 s early)</> : "time in the recording unknown"} → open the recording
-                        </>
-                      ) : h.hit_type === "asset" ? (
-                        <>matched the file's title / file name / metadata → open the {h.kind === "video" ? "recording" : "document"}</>
-                      ) : (
-                        <>
-                          📄 page <b>{h.page}</b> → open this page
-                        </>
-                      )}
-                      <span className="muted small"> · score {h.score}</span>
+                    <div className="hit-content">
+                      <div className="hit-meta">
+                        <Badge tone={meta.tone}>{meta.label}</Badge>
+                        <SourceBadge source={h.source_system} />
+                        <strong className="hit-file">{h.filename}</strong>
+                        <span className="muted small">
+                          {h.hit_type === "segment"
+                            ? `${formatTime(h.start)} – ${formatTime(h.end)} (${h.frame_id ?? "no frame"})`
+                            : h.hit_type === "chat"
+                              ? `${h.start != null ? `≈ ${formatTime(h.start)}` : "chat"}`
+                              : h.hit_type === "slide"
+                                ? `page ${h.page}`
+                                : "metadata"}
+                        </span>
+                      </div>
+                      <div className="hit-snippet">
+                        <Snippet html={h.snippet || h.text} />
+                      </div>
                     </div>
-                  </div>
-                </a>
-              </li>
-            ))}
+                  </a>
+                </li>
+              );
+            })}
           </ol>
-        </>
+        </div>
       )}
     </section>
   );

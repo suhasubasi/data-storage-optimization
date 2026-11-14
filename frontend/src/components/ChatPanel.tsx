@@ -5,8 +5,17 @@ import { useAsync } from "../lib/useAsync";
 import { formatBytes, formatTime } from "../lib/format";
 import { Badge, Callout, Empty, ErrorBox, Loading } from "./ui";
 
-/** REC v1.2: the meeting chat attached to a recording. Times are ESTIMATES (chat clock minus recording start). */
-export function ChatPanel({ assetId, focusId, onJump }: { assetId: string; focusId?: string | null; onJump: (t: number) => void }) {
+export function ChatPanel({
+  assetId,
+  focusId,
+  onJump,
+  embedded = false,
+}: {
+  assetId: string;
+  focusId?: string | null;
+  onJump: (t: number) => void;
+  embedded?: boolean;
+}) {
   const chat = useAsync(() => api.getChat(assetId), [assetId]);
   const [file, setFile] = useState<File | null>(null);
   const [start, setStart] = useState("");
@@ -20,7 +29,7 @@ export function ChatPanel({ assetId, focusId, onJump }: { assetId: string; focus
 
   async function attach(e: FormEvent) {
     e.preventDefault();
-    if (!file) return setErr(new Error("Choose the chat file (.msg or .txt) first."));
+    if (!file) return setErr(new Error("Choose a .msg or .txt chat file first."));
     setBusy(true);
     setErr(null);
     try {
@@ -37,17 +46,18 @@ export function ChatPanel({ assetId, focusId, onJump }: { assetId: string; focus
   const log = chat.data;
   const msgs: ChatMessage[] = log?.messages ?? [];
   return (
-    <div className="card chat-card">
-      <div className="card-head">
-        <h3>Meeting chat {msgs.length > 0 && <span className="muted small">({msgs.length} messages)</span>}</h3>
+    <div className={embedded ? "chat-embedded" : "card chat-panel"}>
+      <div className="panel-head-inline">
+        <span className="small muted">{msgs.length} {msgs.length === 1 ? "message" : "messages"}</span>
         {log?.alignment && (
           <Badge tone={log.alignment.status === "estimated" ? "amber" : "grey"} title={log.alignment.note}>
             {log.alignment.status === "estimated" ? "times estimated (±1 min)" : "times unknown"}
           </Badge>
         )}
       </div>
+
       {chat.loading ? (
-        <Loading label="Loading chat…" />
+        <Loading label="Loading meeting chat…" />
       ) : chat.error ? (
         <ErrorBox error={chat.error} onRetry={chat.reload} />
       ) : (
@@ -58,22 +68,26 @@ export function ChatPanel({ assetId, focusId, onJump }: { assetId: string; focus
             </Callout>
           )}
           {msgs.length === 0 ? (
-            <Empty>No meeting chat attached to this recording.</Empty>
+            <Empty>No meeting chat attached to this recording yet.</Empty>
           ) : (
-            <ol className="chat-list">
+            <ol className="chat-feed">
               {msgs.map((m) => (
-                <li key={m.id} ref={(el) => (refs.current[m.id] = el)} className={focusId === m.id ? "on" : ""}>
-                  <button className="seg" disabled={m.t === null} onClick={() => m.t !== null && onJump(m.t)} title={m.t === null ? "No place in the recording" : "Jump to about this moment"}>
-                    <span className="seg-time">
-                      {m.clock}
-                      <br />
+                <li key={m.id} ref={(el) => (refs.current[m.id] = el)} className={focusId === m.id ? "active" : ""}>
+                  <button
+                    type="button"
+                    className="chat-row"
+                    disabled={m.t === null}
+                    onClick={() => m.t !== null && onJump(m.t)}
+                    title={m.t === null ? "No estimated timestamp in recording" : "Jump video & slide to this chat moment"}
+                  >
+                    <span className="chat-time">
+                      <span>{m.clock}</span>
                       <span className="muted small">{m.t === null ? "—" : `≈ ${formatTime(m.t)}`}</span>
                     </span>
-                    <span className="seg-text">
-                      <b>{m.author}</b>
-                      <br />
-                      {m.text ? m.text : <span className="muted">(no text)</span>}
-                      {m.has_image && <span className="muted small"> · contained a picture (not stored)</span>}
+                    <span className="chat-body">
+                      <strong>{m.author}</strong>
+                      <span>{m.text ? m.text : <span className="muted">(no text)</span>}</span>
+                      {m.has_image && <span className="muted small">contained image (not stored)</span>}
                     </span>
                   </button>
                 </li>
@@ -82,19 +96,20 @@ export function ChatPanel({ assetId, focusId, onJump }: { assetId: string; focus
           )}
         </>
       )}
-      <form className="chat-attach" onSubmit={attach}>
-        <label>
-          {msgs.length > 0 ? "Replace chat" : "Attach chat"} (.msg or .txt with “[HH:MM] Name” lines)
+
+      <form className="chat-upload-form" onSubmit={attach}>
+        <label className="field">
+          <span>{msgs.length > 0 ? "Replace meeting chat" : "Attach meeting chat"} (.msg or .txt)</span>
           <input type="file" accept=".msg,.txt" onChange={(e) => setFile(e.target.files?.[0] ?? null)} />
         </label>
-        <label>
-          Recording start (optional, local time)
-          <input value={start} onChange={(e) => setStart(e.target.value)} placeholder="read from the file name, e.g. 2024-01-05T09:15:03" />
+        <label className="field">
+          <span>Recording start (optional local ISO)</span>
+          <input value={start} onChange={(e) => setStart(e.target.value)} placeholder="e.g. 2023-03-29T15:35:03" />
         </label>
-        <button className="btn small" disabled={busy}>
-          {busy ? "Attaching…" : "Attach"}
+        <button className="btn btn-secondary btn-sm" disabled={busy}>
+          {busy ? "Attaching…" : "Attach chat"}
         </button>
-        {err && <span className="err-text">{err.message}</span>}
+        {err && <span className="err-inline">{err.message}</span>}
       </form>
     </div>
   );

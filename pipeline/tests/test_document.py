@@ -119,3 +119,32 @@ def test_rerun_replaces_old_outputs(samples, data_dir):
     assert run_cli("a_t4", "document", orig, out).returncode == 0
     check_manifest(out)  # p99 gone, error.json gone
     assert not (out / "error.json").exists()
+
+
+def test_trim_letterbox_and_underscore_rev_extraction():
+    """Trims US-Letter 16:9 letterbox (keeping 16:9 slides uncropped) and parses Hackathon_RevB."""
+    from PIL import Image, ImageDraw
+    from dso_pipeline import document as D
+
+    # US Letter 800x618 with 16:9 inner slide (800x450) -> pad_y = 84
+    letter_dark = Image.new("RGB", (800, 618), (255, 255, 255))
+    dr = ImageDraw.Draw(letter_dark)
+    dr.rectangle([0, 84, 799, 533], fill=(24, 30, 52))
+    trimmed1, box1 = D._trim_letterbox(letter_dark, None)
+    assert box1 == (0, 84, 800, 534)
+    assert trimmed1.size == (800, 450)
+
+    # Subsequent white-background 16:9 slide on US Letter inherits deck_box
+    letter_white = Image.new("RGB", (800, 618), (255, 255, 255))
+    ImageDraw.Draw(letter_white).text((80, 200), "White slide body", fill=(20, 20, 20), font_size=32)
+    trimmed2, _ = D._trim_letterbox(letter_white, box1)
+    assert trimmed2.size == (800, 450)
+
+    # Native 16:9 white slide (800x450) must NEVER have white slide margins cropped
+    native_white = Image.new("RGB", (800, 450), (255, 255, 255))
+    ImageDraw.Draw(native_white).text((120, 140), "Clean 16:9 Slide", fill=(20, 20, 20), font_size=36)
+    trimmed3, _ = D._trim_letterbox(native_white, None)
+    assert trimmed3.size == (800, 450)
+
+    m = D._REV.search("C2L_Presentation_Hackathon_RevB.pdf")
+    assert m is not None and m.group(1).upper() == "B"

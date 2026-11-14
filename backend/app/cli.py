@@ -48,6 +48,10 @@ def main(argv: list[str] | None = None) -> int:
     us = sub.add_parser("unique-slides")
     us.add_argument("asset_id")
     us.add_argument("--dry-run", action="store_true")
+    us.add_argument("--force", action="store_true")
+    sp = sub.add_parser("speakers")
+    sp.add_argument("asset_id")
+    sp.add_argument("--dry-run", action="store_true")
     a = p.parse_args(argv)
 
     if a.cmd == "init-db":
@@ -81,7 +85,13 @@ def main(argv: list[str] | None = None) -> int:
     elif a.cmd == "unique-slides":
         db.init_db()
         from . import postpass
-        res = postpass.apply_unique_slides(a.asset_id, dry_run=a.dry_run)
+        res = postpass.apply_unique_slides(a.asset_id, dry_run=a.dry_run, force=a.force)
+        import json
+        print(json.dumps(res, indent=2))
+    elif a.cmd == "speakers":
+        db.init_db()
+        from . import postpass
+        res = postpass.apply_speakers(a.asset_id, dry_run=a.dry_run)
         import json
         print(json.dumps(res, indent=2))
     elif a.cmd == "add-file":

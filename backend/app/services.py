@@ -2,6 +2,7 @@
 from __future__ import annotations
 
 import json
+import math
 import re
 import sqlite3
 from typing import Iterator
@@ -9,12 +10,13 @@ from typing import Iterator
 from dso_contracts import SAVINGS_FORMULA
 from dso_contracts.models import (
     Asset, AssetDetail, AssetMetadata, DerivedSummary, DuplicateEvidence, DuplicateGroup, DuplicateLocation,
-    DuplicateMember, DuplicateReport, ExportAsset, ExportChunk, ExportMatch, FrameView, HashRecord, Job, MediaRef,
-    OffboardingReview, OffboardingRow, PipelineInfo, Provenance, RemovedItem, SearchHit, SearchResponse, Segment,
-    SlideList, SlideMatch, SlideView, StorageReport, StorageScenario, StorageTotals, Timeline,
+    DuplicateMember, DuplicateReport, ExportAsset, ExportChunk, ExportMatch, ExportSpeaker, FrameView, HashRecord,
+    Job, MediaRef, OffboardingReview, OffboardingRow, PipelineInfo, Provenance, RemovedItem, SearchHit,
+    SearchResponse, Segment, SlideList, SlideMatch, SlideView, SpeakerCategory, SpeakerRoleCues, StorageReport,
+    StorageScenario, StorageTotals, Timeline,
 )
 
-from . import db, duplicates, progress
+from . import db, duplicates, progress, settings
 from .errors import not_found
 
 EMPTY_META = {"title": None, "author": None, "doc_number": None, "revision": None, "date": None, "language": None}
@@ -76,10 +78,16 @@ def unique_slides_info(row) -> dict | None:
         return None
 
 
+def _frame_sort_key(f) -> tuple[float, int, str]:
+    fid = str(f["id"])
+    num = int(fid[1:]) if len(fid) > 1 and fid[1:].isdigit() else 0
+    return (float(f["t_start"]), num, fid)
+
+
 def slide_numbers(frames) -> dict[str, int]:
     """frame path -> unique slide number, in order of first appearance (same numbering as the pass)."""
     out: dict[str, int] = {}
-    for f in sorted(frames, key=lambda f: (f["t_start"], f["id"])):
+    for f in sorted(frames, key=_frame_sort_key):
         if f["path"] not in out:
             out[f["path"]] = len(out) + 1
     return out
@@ -149,11 +157,16 @@ def asset_detail(asset_id: str) -> AssetDetail:
             by_kind["manifest"] = row["manifest_bytes"]
             count = lambda t: conn.execute(f"SELECT COUNT(*) FROM {t} WHERE asset_id = ?", (asset_id,)).fetchone()[0]  # noqa: E731
             us = unique_slides_info(row)
+            unique_cnt = us.get("unique_slide_count") if us else None
+            if us:
+                f_rows = conn.execute("SELECT id, t_start, path FROM frames WHERE asset_id = ?", (asset_id,)).fetchall()
+                if f_rows:
+                    unique_cnt = len(slide_numbers(f_rows))
             derived = DerivedSummary(
                 derived_bytes=asset_derived_bytes(conn, row), manifest_bytes=row["manifest_bytes"],
                 file_count=len(files) + 1, segment_count=count("segments"), frame_count=count("frames"),
                 slide_count=count("slides"), bytes_by_kind=by_kind,
-                unique_slide_count=us.get("unique_slide_count") if us else None,
+                unique_slide_count=unique_cnt,
                 source_frame_count=us.get("source_frame_count") if us else None)
         job = latest_job_row(conn, asset_id)
         return AssetDetail(
@@ -375,6 +388,12 @@ def duplicate_report(type_filter: str | None = None) -> DuplicateReport:
 NOT_COUNTED = ["Backups", "Platform replication", "Archive tiers", "Compute cost", "Model weights", "Money"]
 INFORMATION_LOST = ["Motion and live demos in video", "Gestures and body language",
                     "Tone of voice (unless the optional audio track is kept)", "Speaker identity (not in MVP)"]
+LIVE_INFORMATION_LOST = [
+    "Motion and live demos in video",
+    "Gestures and body language",
+    "Tone of voice (unless the optional audio track is kept)",
+    "Real-world speaker names (anonymous Speaker 1..N + Presenter/Documentary roles are preserved)",
+]
 NOTES = [
     "O = all original bytes in scope, every copy on every simulated system. D = all derived files + manifests. "
     "I = measured SQLite/FTS index size.",
@@ -401,6 +420,7 @@ SCENARIO_TEXT = [
 def compute_storage(assets: list[dict], derived_bytes: int, index_bytes: int, generated_at: str,
                     scope: str = "real_files", excluded: dict | None = None,
                     scope_note: str = "Scope: real uploaded files only (no generated test files in the library).",
+                    information_lost: list[str] | None = None,
                     ) -> StorageReport:
     """Pure function (unit-tested against contracts/fixtures/storage_report.json).
 
@@ -442,9 +462,10 @@ def compute_storage(assets: list[dict], derived_bytes: int, index_bytes: int, ge
         document_original_bytes=sum(a["bytes"] for a in assets if a["kind"] == "document"),
         derived_bytes=D, index_bytes=I, extra_exact_copy_bytes=sum(c["bytes"] for c, _ in extra))
     return StorageReport(generated_at=generated_at, formula=SAVINGS_FORMULA, totals=totals, scenarios=scenarios,
-                         not_counted=NOT_COUNTED, information_lost=INFORMATION_LOST, notes=[scope_note, *NOTES],
-                         scope=scope, excluded_test_data=excluded or {"asset_count": 0, "original_bytes": 0,
-                                                                      "derived_bytes": 0, "asset_ids": []})
+                         not_counted=NOT_COUNTED, information_lost=information_lost or INFORMATION_LOST,
+                         notes=[scope_note, *NOTES], scope=scope,
+                         excluded_test_data=excluded or {"asset_count": 0, "original_bytes": 0,
+                                                         "derived_bytes": 0, "asset_ids": []})
 
 
 def storage_report(include_test_data: bool = False) -> StorageReport:
@@ -477,7 +498,7 @@ def storage_report(include_test_data: bool = False) -> StorageReport:
         scope_note = "Scope: real uploaded files only (no generated test files in the library)."
     return compute_storage(in_scope, sum(d_of(a) for a in in_scope), I, db.utc_now(),
                            scope="all_files" if include_test_data else "real_files", excluded=excluded,
-                           scope_note=scope_note)
+                           scope_note=scope_note, information_lost=LIVE_INFORMATION_LOST)
 
 
 # ---------------------------------------------------------------------------------------------
@@ -513,23 +534,149 @@ def offboarding(owner: str) -> OffboardingReview:
 # ---------------------------------------------------------------------------------------------
 # export (AI-ready JSON / JSONL with provenance)
 # ---------------------------------------------------------------------------------------------
-def export_chunks(conn, row) -> list[ExportChunk]:
+_VALID_CATEGORIES = {c.value for c in SpeakerCategory}
+_UNSET = object()
+
+
+def _opt_str(v) -> str | None:
+    return v if isinstance(v, str) else None
+
+
+def _opt_float(v) -> float | None:
+    if isinstance(v, (int, float)) and not isinstance(v, bool) and math.isfinite(v):
+        return float(v)
+    return None
+
+
+def _opt_nonneg_int(v) -> int | None:
+    if isinstance(v, int) and not isinstance(v, bool) and v >= 0:
+        return v
+    return None
+
+
+def _opt_nonneg_float(v) -> float | None:
+    f = _opt_float(v)
+    return f if f is not None and f >= 0.0 else None
+
+
+def _read_transcript_json(asset_id: str) -> dict | None:
+    """Safely read <DERIVED_DIR>/<asset_id>/transcript.json when present; return None otherwise."""
+    path = settings.DERIVED_DIR / asset_id / "transcript.json"
+    if not path.is_file():
+        return None
+    try:
+        data = json.loads(path.read_text(encoding="utf-8"))
+    except (OSError, ValueError):
+        return None
+    return data if isinstance(data, dict) else None
+
+
+def _diarization_by_segment(transcript: dict | None) -> dict[str, dict]:
+    """Index per-segment diarization metadata from transcript.json by segment_id."""
+    if not transcript:
+        return {}
+    entries = transcript.get("diarization")
+    if not isinstance(entries, list):
+        return {}
+    out: dict[str, dict] = {}
+    for entry in entries:
+        if not isinstance(entry, dict):
+            continue
+        seg_id = entry.get("segment_id")
+        if not isinstance(seg_id, str) or not seg_id:
+            continue
+        cat = entry.get("speaker_category")
+        ov = entry.get("overlap")
+        ov_spks = entry.get("overlap_speakers")
+        out[seg_id] = {
+            "speaker_id": _opt_str(entry.get("speaker_id")),
+            "speaker_category": cat if isinstance(cat, str) and cat in _VALID_CATEGORIES else None,
+            "speaker_confidence": _opt_float(entry.get("speaker_confidence")),
+            "overlap": ov if isinstance(ov, bool) else None,
+            "overlap_speakers": [x for x in ov_spks if isinstance(x, str)] if isinstance(ov_spks, list) else None,
+        }
+    return out
+
+
+def _export_speakers(transcript: dict | None) -> list[ExportSpeaker] | None:
+    """Extract structured speaker summaries from transcript.json when present, else None."""
+    if not transcript:
+        return None
+    raw = transcript.get("speakers")
+    if not isinstance(raw, list):
+        return None
+    out: list[ExportSpeaker] = []
+    for item in raw:
+        if not isinstance(item, dict):
+            continue
+        spk = _opt_str(item.get("speaker"))
+        seg_count = _opt_nonneg_int(item.get("segment_count"))
+        sec_spoken = _opt_nonneg_float(item.get("seconds_spoken"))
+        if spk is None or seg_count is None or sec_spoken is None:
+            continue
+        role = item.get("role")
+        cues_raw = item.get("role_cues")
+        role_cues = None
+        if isinstance(cues_raw, dict):
+            ss = _opt_nonneg_float(cues_raw.get("static_seconds"))
+            vs = _opt_nonneg_float(cues_raw.get("video_seconds"))
+            sb = _opt_nonneg_int(cues_raw.get("static_blocks"))
+            shr = _opt_nonneg_float(cues_raw.get("static_share"))
+            span = _opt_nonneg_float(cues_raw.get("active_span_seconds"))
+            if None not in (ss, vs, sb, shr, span):
+                role_cues = SpeakerRoleCues(
+                    static_seconds=ss,
+                    video_seconds=vs,
+                    static_blocks=sb,
+                    static_share=shr,
+                    active_span_seconds=span,
+                )
+        out.append(ExportSpeaker(
+            speaker=spk,
+            speaker_id=_opt_str(item.get("speaker_id")),
+            role=role if isinstance(role, str) and role in _VALID_CATEGORIES else None,
+            segment_count=seg_count,
+            seconds_spoken=sec_spoken,
+            video_churn_ratio=_opt_nonneg_float(item.get("video_churn_ratio")),
+            overlap_seconds=_opt_nonneg_float(item.get("overlap_seconds")),
+            overlap_segment_count=_opt_nonneg_int(item.get("overlap_segment_count")),
+            role_cues=role_cues,
+        ))
+    return out
+
+
+def export_chunks(conn, row, *, _transcript: dict | None | object = _UNSET) -> list[ExportChunk]:
     aid = row["id"]
     meta = metadata_or_empty(row)
     prov = provenance(row)
-    frames = {f["id"]: f for f in conn.execute("SELECT * FROM frames WHERE asset_id = ?", (aid,))}
+    segs = conn.execute('SELECT * FROM segments WHERE asset_id = ? ORDER BY "start", id', (aid,)).fetchall()
+    frames = {f["id"]: f for f in conn.execute("SELECT * FROM frames WHERE asset_id = ?", (aid,))} if segs else {}
+    if segs:
+        transcript = _read_transcript_json(aid) if _transcript is _UNSET else _transcript
+        diar = _diarization_by_segment(transcript if isinstance(transcript, dict) else None)
+    else:
+        diar = {}
     out = []
-    for s in conn.execute('SELECT * FROM segments WHERE asset_id = ? ORDER BY "start", id', (aid,)):
+    for s in segs:
         f = frames.get(s["frame_id"]) if s["frame_id"] else None
-        out.append(ExportChunk(schema_version="1.0", chunk_id=f"{aid}:{s['id']}", kind="transcript_segment",
-                               text=s["text"], start=s["start"], end=s["end"], page=None, frame_id=s["frame_id"],
-                               slide_id=None, image_url=derived_url(aid, f["path"]) if f else None,
-                               language=meta.language, metadata=meta, source=prov))
+        d = diar.get(s["id"], {})
+        out.append(ExportChunk(
+            schema_version="1.0", chunk_id=f"{aid}:{s['id']}", kind="transcript_segment",
+            text=s["text"], start=s["start"], end=s["end"], page=None, frame_id=s["frame_id"],
+            slide_id=None, image_url=derived_url(aid, f["path"]) if f else None,
+            language=meta.language, speaker=s["speaker"],
+            speaker_id=d.get("speaker_id"), speaker_category=d.get("speaker_category"),
+            speaker_confidence=d.get("speaker_confidence"), overlap=d.get("overlap"),
+            overlap_speakers=d.get("overlap_speakers"),
+            metadata=meta, source=prov,
+        ))
     for s in conn.execute("SELECT * FROM slides WHERE asset_id = ? ORDER BY page", (aid,)):
-        out.append(ExportChunk(schema_version="1.0", chunk_id=f"{aid}:{s['id']}", kind="slide_text", text=s["text"],
-                               start=None, end=None, page=s["page"], frame_id=None, slide_id=s["id"],
-                               image_url=derived_url(aid, s["path"]), language=meta.language, metadata=meta,
-                               source=prov))
+        out.append(ExportChunk(
+            schema_version="1.0", chunk_id=f"{aid}:{s['id']}", kind="slide_text", text=s["text"],
+            start=None, end=None, page=s["page"], frame_id=None, slide_id=s["id"],
+            image_url=derived_url(aid, s["path"]), language=meta.language, speaker=None,
+            metadata=meta, source=prov,
+        ))
     return out
 
 
@@ -541,15 +688,17 @@ def export_asset(asset_id: str) -> ExportAsset:
         matches = conn.execute(
             "SELECT * FROM matches WHERE a_id = ? OR b_id = ? OR a_id GLOB ? OR b_id GLOB ? ORDER BY level, type, a_id, b_id",
             (asset_id, asset_id, f"{asset_id}:*", f"{asset_id}:*")).fetchall()
+        transcript = _read_transcript_json(asset_id) if row["kind"] == "video" else None
         return ExportAsset(
             schema_version="1.0", exported_at=db.utc_now(), source=provenance(row), kind=row["kind"],
             metadata=metadata_or_empty(row),
             pipeline=PipelineInfo.model_validate_json(row["pipeline_json"]) if row["pipeline_json"] else None,
-            chunks=export_chunks(conn, row),
+            chunks=export_chunks(conn, row, _transcript=transcript),
             frames=[frame_view(asset_id, f, nums) for f in frames],
             slides=slide_views(conn, row),
             matches=[ExportMatch(level=m["level"], type=m["type"], a=m["a_id"], b=m["b_id"], score=m["score"],
-                                 method=m["method"]) for m in matches])
+                                 method=m["method"]) for m in matches],
+            speakers=_export_speakers(transcript))
 
 
 def export_jsonl() -> Iterator[str]:

@@ -57,6 +57,9 @@ cd backend
 
 Terminal 2 – frontend (UI on port 5173):
 
+The redesigned workspace is now the main app in `frontend/`. Use this folder;
+`frontend-prototype/` is kept as a design reference.
+
 ```powershell
 cd frontend
 npm run dev

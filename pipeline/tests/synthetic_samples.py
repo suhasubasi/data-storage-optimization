@@ -12,6 +12,7 @@ They are not shown to users and are not used for any reported number.
 from __future__ import annotations
 
 import subprocess
+import sys
 import tempfile
 from pathlib import Path
 
@@ -55,19 +56,74 @@ def run(cmd):
     subprocess.run(cmd, check=True, stdout=subprocess.DEVNULL, stderr=subprocess.PIPE)
 
 
+def _has_ffmpeg_flite() -> bool:
+    try:
+        p = subprocess.run(
+            ["ffmpeg", "-v", "error", "-filters"],
+            stdout=subprocess.PIPE,
+            stderr=subprocess.DEVNULL,
+            text=True,
+            check=False,
+        )
+        return " flite " in (p.stdout or "")
+    except OSError:
+        return False
+
+
+def _synthesize_wavs(tmp: Path, texts: list[str]) -> list[Path]:
+    wavs = [tmp / f"say{i}.wav" for i in range(len(texts))]
+    if _has_ffmpeg_flite():
+        for i, text in enumerate(texts):
+            txt = tmp / f"say{i}.txt"
+            txt.write_text(text, encoding="utf-8")
+            esc = str(txt).replace("\\", "/").replace(":", "\\:")
+            run(["ffmpeg", "-y", "-v", "error", "-f", "lavfi", "-i", f"flite=textfile='{esc}':voice=slt",
+                 "-ar", "16000", "-ac", "1", str(wavs[i])])
+        return wavs
+
+    if sys.platform == "win32":
+        script_lines = [
+            "Add-Type -AssemblyName System.Speech;",
+            "$s = New-Object System.Speech.Synthesis.SpeechSynthesizer;",
+        ]
+        raw_wavs = []
+        for i, text in enumerate(texts):
+            txt = tmp / f"say{i}.txt"
+            txt.write_text(text, encoding="utf-8")
+            raw = tmp / f"say{i}.sapi.wav"
+            raw_wavs.append(raw)
+            raw_esc = str(raw).replace("'", "''")
+            txt_esc = str(txt).replace("'", "''")
+            script_lines.append(f"$s.SetOutputToWaveFile('{raw_esc}');")
+            script_lines.append(f"$s.Speak([System.IO.File]::ReadAllText('{txt_esc}'));")
+        script_lines.append("$s.Dispose();")
+        p = subprocess.run(
+            ["powershell", "-NoProfile", "-Command", " ".join(script_lines)],
+            stdout=subprocess.DEVNULL,
+            stderr=subprocess.PIPE,
+            check=False,
+        )
+        if p.returncode == 0 and all(r.is_file() and r.stat().st_size > 0 for r in raw_wavs):
+            for raw, wav in zip(raw_wavs, wavs):
+                run(["ffmpeg", "-y", "-v", "error", "-i", str(raw), "-ar", "16000", "-ac", "1", str(wav)])
+            return wavs
+
+    for wav in wavs:
+        run(["ffmpeg", "-y", "-v", "error", "-f", "lavfi", "-i", "sine=frequency=440:duration=4",
+             "-ar", "16000", "-ac", "1", str(wav)])
+    return wavs
+
+
 def make_video(deck: Path, out: Path) -> None:
     with tempfile.TemporaryDirectory() as t:
         tmp = Path(t)
         parts = []
+        wavs = _synthesize_wavs(tmp, list(SPEECH))
         with pymupdf.open(deck) as doc:
             for i, page in enumerate(doc):
                 png = tmp / f"slide{i}.png"
                 page.get_pixmap(matrix=pymupdf.Matrix(1280 / 960, 1280 / 960)).save(png)
-                wav = tmp / f"say{i}.wav"
-                txt = tmp / f"say{i}.txt"
-                txt.write_text(SPEECH[i])
-                run(["ffmpeg", "-y", "-v", "error", "-f", "lavfi", "-i", f"flite=textfile={txt}:voice=slt",
-                     "-ar", "16000", "-ac", "1", str(wav)])
+                wav = wavs[i]
                 part = tmp / f"part{i}.mp4"
                 # slide image + its speech + 1 s of silence padding
                 run(["ffmpeg", "-y", "-v", "error", "-loop", "1", "-framerate", "10", "-i", str(png), "-i", str(wav),

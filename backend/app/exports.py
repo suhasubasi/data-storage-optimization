@@ -7,7 +7,8 @@ files add no stored bytes):
   * slides.pdf     : the same pictures, one page each, with a one-line caption
 
 Only real data: the images are the kept derived frames / page images, the text is the stored
-transcript / page text. Speaker names are not identified (out of scope) and nothing is rewritten.
+transcript / page text. Speaker names are not identified (speakers are differentiated as anonymous
+Speaker 1..N with Presenter / DocumentaryAudio roles) and nothing is rewritten.
 """
 from __future__ import annotations
 
@@ -61,7 +62,10 @@ def _header(row, meta, pipeline_model: str | None) -> list[str]:
         if pipeline_model:
             bits.append(f"speech-to-text: {pipeline_model} (local)")
         lines.append(" · ".join(bits))
-        lines.append("Automatic transcript, unedited. Speaker names are not identified (out of scope).")
+        lines.append(
+            "Automatic transcript, unedited. Speaker names are not identified "
+            "(speakers differentiated as anonymous Speaker 1..N with Presenter / DocumentaryAudio roles)."
+        )
     else:
         lines.append("Text layer of each page, unedited.")
     lines.append(f"Original (kept): /files/originals/{row['id']}/{row['filename']}")
@@ -84,17 +88,24 @@ def transcript_text(asset_id: str, timestamps: bool = True) -> tuple[str, str]:
             if not segs:
                 out.append("(no speech detected)")
             elif timestamps:
-                out += [f"[{hms(s['start'])} - {hms(s['end'])}] {_clean(s['text']).strip()}" for s in segs]
-            else:  # flowing text; a new paragraph whenever the picture on screen changes to another slide
+                for s in segs:
+                    prefix = f"{s['speaker']}: " if s["speaker"] else ""
+                    out.append(f"[{hms(s['start'])} - {hms(s['end'])}] {prefix}{_clean(s['text']).strip()}")
+            else:  # flowing text; a new paragraph whenever the picture or speaker changes
                 para: list[str] = []
-                last = object()
+                last_pic = object()
+                last_spk = None
                 for s in segs:
                     pic = frames.get(s["frame_id"]) if s["frame_id"] else None
-                    if para and pic != last:
+                    spk = s["speaker"]
+                    if para and (pic != last_pic or spk != last_spk):
                         out += [" ".join(para), ""]
                         para = []
-                    para.append(_clean(s["text"]).strip())
-                    last = pic
+                    txt = _clean(s["text"]).strip()
+                    if spk and not para:
+                        txt = f"[{spk}] {txt}"
+                    para.append(txt)
+                    last_pic, last_spk = pic, spk
                 if para:
                     out.append(" ".join(para))
         else:
@@ -116,6 +127,7 @@ class DeckSlide:
     page: int | None = None
     said: list[str] = field(default_factory=list)
     source_frames: int = 0
+    matched_source: str | None = None
 
 
 @dataclass
@@ -149,17 +161,45 @@ def load_deck(asset_id: str) -> Deck:
                                f"{asset_id}).")
             raw = us.get("source_frame_count")
             frames = conn.execute("SELECT * FROM frames WHERE asset_id = ? ORDER BY t_start, id", (asset_id,)).fetchall()
+            doc_cache: dict[str, tuple[str, str | None, str | None]] = {}
+
+            def _format_matched_slide(ref: str | None) -> str | None:
+                if not ref or ":" not in ref:
+                    return None
+                doc_id, slide_id = ref.split(":", 1)
+                page_num = slide_id.lstrip("pP") or slide_id
+                if doc_id not in doc_cache:
+                    drow = conn.execute(
+                        "SELECT filename, metadata_json FROM assets WHERE id = ?", (doc_id,)
+                    ).fetchone()
+                    if drow is None:
+                        return None
+                    dmeta = metadata_or_empty({"manifest_bytes": 1, "metadata_json": drow["metadata_json"] or "{}"})
+                    doc_cache[doc_id] = (drow["filename"], dmeta.doc_number, dmeta.revision)
+                fname, doc_no, rev = doc_cache[doc_id]
+                bracket_parts = []
+                if doc_no:
+                    bracket_parts.append(f"Doc {doc_no}")
+                if rev:
+                    bracket_parts.append(f"Rev {rev}")
+                bracket = f" [{' '.join(bracket_parts)}]" if bracket_parts else ""
+                return f"{fname}{bracket} Slide {page_num}"
+
             by_path: dict[str, DeckSlide] = {}
             by_frame: dict[str, DeckSlide] = {}
             for f in frames:
                 d = by_path.get(f["path"])
                 if d is None:
                     d = by_path[f["path"]] = DeckSlide(number=len(by_path) + 1, path=base / f["path"])
+                if d.matched_source is None and f["matched_slide_id"]:
+                    d.matched_source = _format_matched_slide(f["matched_slide_id"])
                 d.ranges.append((f["t_start"], f["t_end"]))
                 by_frame[f["id"]] = d
-            for s in conn.execute('SELECT frame_id, text FROM segments WHERE asset_id = ? ORDER BY "start", id', (asset_id,)):
+            for s in conn.execute('SELECT frame_id, text, speaker FROM segments WHERE asset_id = ? ORDER BY "start", id',
+                                  (asset_id,)):
                 if s["frame_id"] in by_frame:
-                    by_frame[s["frame_id"]].said.append(_clean(s["text"]).strip())
+                    txt = _clean(s["text"]).strip()
+                    by_frame[s["frame_id"]].said.append(f"{s['speaker']}: {txt}" if s["speaker"] else txt)
             slides = list(by_path.values())
         else:
             for p in conn.execute("SELECT page, text, path FROM slides WHERE asset_id = ? ORDER BY page", (asset_id,)):
@@ -195,7 +235,8 @@ def _deck_intro(deck: Deck) -> list[str]:
     return [deck.title, f"{deck.filename}", f"{what} · asset {deck.asset_id} · SHA-256 {deck.sha256[:16]}...",
             f"Source: {deck.source} (simulated source label) · owner {deck.owner}",
             "Built from the stored derived files; the original is kept. Slide notes = when the slide was on screen "
-            "and the automatic transcript said meanwhile (unedited, no speaker names)."]
+            "and the automatic transcript said meanwhile (unedited; speakers differentiated as anonymous Speaker 1..N "
+            "with Presenter / DocumentaryAudio roles)."]
 
 
 # ---------------------------------------------------------------------------------------------
@@ -232,7 +273,10 @@ def slides_pptx(asset_id: str) -> tuple[str, bytes]:
         s.shapes.add_picture(io.BytesIO(data), int((W - w) / 2), int((H - h) / 2), w, h)
         label = f"Slide {d.number}/{len(deck.slides)} · " + (
             f"on screen {_ranges_text(d)}" if d.page is None else _ranges_text(d))
-        notes = [label, f"Source: {deck.filename} ({deck.asset_id})", ""]
+        notes = [label, f"Source: {deck.filename} ({deck.asset_id})"]
+        if d.matched_source:
+            notes.append(f"Source slide: {d.matched_source}")
+        notes.append("")
         notes.append(("Said while on screen: " if d.page is None else "Page text: ") + (" ".join(d.said) or "(nothing)"))
         s.notes_slide.notes_text_frame.text = "\n".join(notes)
     buf = io.BytesIO()
@@ -315,6 +359,8 @@ def slides_pdf(asset_id: str) -> tuple[str, bytes]:
         w, h = iw * scale, ih * scale
         x, y = (PW - w) / 2, CAP + (PH - h) / 2
         cap = f"Slide {d.number}/{len(deck.slides)} · {_ranges_text(d)} · {deck.filename}"
+        if d.matched_source:
+            cap += f" · Source: {d.matched_source}"
         content = f"q {w:.2f} 0 0 {h:.2f} {x:.2f} {y:.2f} cm /Im{img} Do Q\n".encode() + _text_ops([(12, 9, 9, cap[:190])])
         pdf.page(PW, PH + CAP, content, {f"Im{img}": img})
     return f"{safe_stem(deck.filename)}.slides.pdf", pdf.finish()

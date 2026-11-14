@@ -1423,6 +1423,122 @@
         }
       }
     },
+    "SpeakerCategory": {
+      "description": "Speaker role category from diarization: PRESENTER, DOCUMENTARY, or UNKNOWN.",
+      "type": "string",
+      "enum": [
+        "PRESENTER",
+        "DOCUMENTARY",
+        "UNKNOWN"
+      ]
+    },
+    "SpeakerRoleCues": {
+      "description": "Visual/temporal cues used to classify a speaker's role (PRESENTER vs DOCUMENTARY vs UNKNOWN).",
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "static_seconds",
+        "video_seconds",
+        "static_blocks",
+        "static_share",
+        "active_span_seconds"
+      ],
+      "properties": {
+        "static_seconds": {
+          "type": "number",
+          "minimum": 0
+        },
+        "video_seconds": {
+          "type": "number",
+          "minimum": 0
+        },
+        "static_blocks": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "static_share": {
+          "type": "number",
+          "minimum": 0
+        },
+        "active_span_seconds": {
+          "type": "number",
+          "minimum": 0
+        }
+      }
+    },
+    "ExportSpeaker": {
+      "description": "Per-speaker summary and role cues from diarization.",
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "speaker",
+        "segment_count",
+        "seconds_spoken"
+      ],
+      "properties": {
+        "speaker": {
+          "description": "Display speaker label (e.g. 'Speaker 1 (Presenter)' or 'Speaker 1').",
+          "type": "string"
+        },
+        "speaker_id": {
+          "description": "Canonical speaker identifier (e.g. 'Speaker 1'), or null when unavailable.",
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "role": {
+          "description": "Classified speaker role category, or null when unavailable.",
+          "anyOf": [
+            {
+              "$ref": "#/$defs/SpeakerCategory"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "segment_count": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "seconds_spoken": {
+          "type": "number",
+          "minimum": 0
+        },
+        "video_churn_ratio": {
+          "type": [
+            "number",
+            "null"
+          ],
+          "minimum": 0
+        },
+        "overlap_seconds": {
+          "type": [
+            "number",
+            "null"
+          ],
+          "minimum": 0
+        },
+        "overlap_segment_count": {
+          "type": [
+            "integer",
+            "null"
+          ],
+          "minimum": 0
+        },
+        "role_cues": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/SpeakerRoleCues"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        }
+      }
+    },
     "ExportChunk": {
       "description": "One AI-ready text chunk. GET /api/export.jsonl returns one ExportChunk per line. 'metadata' repeats the asset's doc_number / revision / title for revision tracking.",
       "type": "object",
@@ -1496,6 +1612,59 @@
           "type": [
             "string",
             "null"
+          ]
+        },
+        "speaker": {
+          "description": "Speaker label for transcript_segment chunks (e.g. 'Speaker 1' or 'Speaker 1 (Presenter)'), or null.",
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "speaker_id": {
+          "description": "Canonical speaker identifier for transcript_segment chunks (e.g. 'Speaker 1'), or null.",
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "speaker_category": {
+          "description": "Classified speaker role category for transcript_segment chunks, or null.",
+          "anyOf": [
+            {
+              "$ref": "#/$defs/SpeakerCategory"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "speaker_confidence": {
+          "description": "Real speaker assignment confidence/margin when available, or null (never fabricated).",
+          "type": [
+            "number",
+            "null"
+          ]
+        },
+        "overlap": {
+          "description": "True when overlapping speech was detected in this transcript_segment chunk, false when single-speaker, or null when unavailable.",
+          "type": [
+            "boolean",
+            "null"
+          ]
+        },
+        "overlap_speakers": {
+          "description": "Speaker IDs involved when overlap was detected (or [] when none), or null when unavailable.",
+          "anyOf": [
+            {
+              "type": "array",
+              "items": {
+                "type": "string"
+              }
+            },
+            {
+              "type": "null"
+            }
           ]
         },
         "metadata": {
@@ -1606,6 +1775,20 @@
           "items": {
             "$ref": "#/$defs/ExportMatch"
           }
+        },
+        "speakers": {
+          "description": "Structured per-speaker diarization summary from transcript.json when available, or null.",
+          "anyOf": [
+            {
+              "type": "array",
+              "items": {
+                "$ref": "#/$defs/ExportSpeaker"
+              }
+            },
+            {
+              "type": "null"
+            }
+          ]
         }
       }
     },

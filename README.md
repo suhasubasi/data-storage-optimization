@@ -5,9 +5,9 @@
 Local tool that turns long recordings and documents into compact, searchable, AI-ready data and finds
 duplicates across (simulated) SharePoint / OneDrive / Ericsson Play — **without deleting anything**.
 
-- MP4 → timed local transcript (faster-whisper) + compressed key frames linked by time
+- MP4 → timed local transcript (faster-whisper) + local speaker diarization & role classification (`Speaker 1..N`, `Presenter` / `Documentary` / `Overlap`) + compressed key frames linked by time
 - PDF and PowerPoint `.pptx` → per-page/slide text, page image, three hashes (file SHA-256, normalised-text SHA-256, pHash)
-- Duplicates: exact file · shared slide · similar (needs review)
+- Duplicates: exact file · shared slide · similar (needs review), plus video frame → source-of-truth slide matching
 - Search → text + frame/slide + timestamp (spoken text, slide text, titles, and an attached meeting chat)
 - Meeting chat (Outlook `.msg` or `.txt`) attached to a recording, shown on the Recording page with estimated times
 - Offboarding review → recommends, never deletes
@@ -15,7 +15,7 @@ duplicates across (simulated) SharePoint / OneDrive / Ericsson Play — **withou
 - Unique-slide pass: near-duplicate frames are merged, the transcript is not re-run
 - Storage report from **measured bytes** with four scenarios (0 today/real, 1 replace videos, 2 remove exact copies, 3 both)
 
-Out of scope: speaker ID, slide/video recreation, live SharePoint/OneDrive/Ericsson Play, chatbot, real deletion, cloud AI.
+Out of scope: real-world speaker name identification (anonymous `Speaker 1..N` + `Presenter`/`Documentary` roles are included), slide/video recreation, live SharePoint/OneDrive/Ericsson Play, chatbot, real deletion, cloud AI.
 
 **How to run it:** see [`START-HERE.md`](START-HERE.md) (Windows, step by step).
 

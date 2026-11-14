@@ -9,6 +9,7 @@ import re
 from pathlib import Path
 from typing import Any
 
+import numpy as np
 import pymupdf
 from PIL import Image
 
@@ -17,9 +18,71 @@ from .common import Status, phash_file, text_sha256
 # Ericsson-style document number, e.g. "1/221 02-FGB 101" or "EN/LZT 123 4567". Heuristic: only
 # reported when literally present in the file name, PDF metadata or first-page text.
 _DOC_NO = re.compile(r"\b(\d{1,4}/\d{3}\s?\d{2}-[A-Z]{2,5}\s?\d{2,6}(?:\s?[A-Z]{1,3})?|[A-Z]{2,4}/[A-Z]{3}\s?\d{3}\s?\d{3,4})\b")
-# Revision only with an explicit label ("Rev A", "Revision: PA1", "rev. B").
-_REV = re.compile(r"\b(?:rev(?:ision)?)\.?\s*[:\-]?\s*([A-Z]{1,2}\d{0,2})\b", re.IGNORECASE)
+# Revision only with an explicit label ("Rev A", "Revision: PA1", "rev. B", "Hackathon_RevB").
+_REV = re.compile(r"(?:^|\b|(?<=[_\-\s]))(?:rev(?:ision)?)\.?\s*[:\-]?\s*([A-Z]{1,2}\d{0,2})\b", re.IGNORECASE)
 _PDF_DATE = re.compile(r"^D:(\d{4})(\d{2})?(\d{2})?")
+
+
+def _trim_letterbox(
+    img: Image.Image, deck_box: tuple[int, int, int, int] | None = None
+) -> tuple[Image.Image, tuple[int, int, int, int] | None]:
+    """Trim uniform top/bottom or left/right letterbox margin bars before computing pHash."""
+    w, h = img.size
+    if w < 32 or h < 32:
+        return img, deck_box
+    a = np.asarray(img.convert("L"))
+    row_mean, row_std = a.mean(axis=1), a.std(axis=1)
+    col_mean, col_std = a.mean(axis=0), a.std(axis=0)
+
+    # 1. Check symmetric 16:9 slide letterbox inside a taller page (e.g. 11x8.5 Letter landscape).
+    target_h = int(round(w * 9.0 / 16.0))
+    pad_y = (h - target_h) // 2
+    if int(0.04 * h) <= pad_y <= int(0.22 * h):
+        top_bar, bot_bar = a[:pad_y], a[h - pad_y :]
+        if top_bar.std() <= 2.5 and bot_bar.std() <= 2.5 and (
+            (top_bar.mean() >= 248 and bot_bar.mean() >= 248) or (top_bar.mean() <= 10 and bot_bar.mean() <= 10)
+        ):
+            inner_edge = (
+                abs(float(row_mean[pad_y : pad_y + 4].mean()) - float(top_bar.mean())) > 6.0
+                or abs(float(row_mean[h - pad_y - 4 : h - pad_y].mean()) - float(bot_bar.mean())) > 6.0
+                or float(row_std[pad_y : pad_y + 4].max()) > 4.0
+                or float(row_std[h - pad_y - 4 : h - pad_y].max()) > 4.0
+            )
+            if inner_edge or deck_box == (0, pad_y, w, h - pad_y):
+                box = (0, pad_y, w, h - pad_y)
+                return img.crop(box), box
+
+    # 2. General uniform black outer bars with a crisp boundary step (never trim white slide margins).
+    y0, y1, x0, x1 = 0, h, 0, w
+    max_my = int(0.22 * h)
+    for y in range(int(0.03 * h), max_my):
+        if row_std[:y].max() <= 2.5 and float(row_mean[:y].mean()) <= 10.0 and (
+            abs(float(row_mean[y]) - float(row_mean[:y].mean())) > 12.0 or row_std[y] > 6.0
+        ):
+            y0 = y
+            break
+    for y in range(h - int(0.03 * h), h - max_my, -1):
+        if row_std[y:].max() <= 2.5 and float(row_mean[y:].mean()) <= 10.0 and (
+            abs(float(row_mean[y - 1]) - float(row_mean[y:].mean())) > 12.0 or row_std[y - 1] > 6.0
+        ):
+            y1 = y
+            break
+    max_mx = int(0.22 * w)
+    for x in range(int(0.03 * w), max_mx):
+        if col_std[:x].max() <= 2.5 and float(col_mean[:x].mean()) <= 10.0 and (
+            abs(float(col_mean[x]) - float(col_mean[:x].mean())) > 12.0 or col_std[x] > 6.0
+        ):
+            x0 = x
+            break
+    for x in range(w - int(0.03 * w), w - max_mx, -1):
+        if col_std[x:].max() <= 2.5 and float(col_mean[x:].mean()) <= 10.0 and (
+            abs(float(col_mean[x - 1]) - float(col_mean[x:].mean())) > 12.0 or col_std[x - 1] > 6.0
+        ):
+            x1 = x
+            break
+    if (x0 > 0 or y0 > 0 or x1 < w or y1 < h) and (x1 - x0) >= int(0.6 * w) and (y1 - y0) >= int(0.6 * h):
+        return img.crop((x0, y0, x1, y1)), deck_box
+    return img, deck_box
 
 
 def _pdf_date(raw: str | None) -> str | None:
@@ -73,6 +136,7 @@ def process_document(input_path: Path, out_dir: Path, thresholds: dict[str, Any]
         if n == 0:
             raise RuntimeError("PDF has no pages")
         first_text = ""
+        deck_box: tuple[int, int, int, int] | None = None
         for i, page in enumerate(doc):
             pno = i + 1
             status.progress("rendering pages", i / n, stage_progress=i / n)  # real: pages done / pages
@@ -86,6 +150,7 @@ def process_document(input_path: Path, out_dir: Path, thresholds: dict[str, Any]
             zoom = min(max_w / max(page.rect.width, 1.0), 2.0)
             pix = page.get_pixmap(matrix=pymupdf.Matrix(zoom, zoom), alpha=False)
             img = Image.frombytes("RGB", (pix.width, pix.height), pix.samples)
+            img, deck_box = _trim_letterbox(img, deck_box)
             rel = f"pages/p{pno}.{fmt}"
             dest = out_dir / rel
             img.save(dest, format=fmt.upper(), quality=75, method=4)

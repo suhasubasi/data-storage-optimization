@@ -189,10 +189,6 @@ def _run_job(job_id: str, asset_id: str, kind: str, original_path: str) -> None:
     try:
         cmd = pipeline_command(asset_id, kind, input_path, stage)
         env = whisper_settings.pipeline_env(dict(os.environ))  # saved model + device (env vars still win)
-        # Include tools installed alongside pipeline Python even when the backend's
-        # shell has not activated that environment (ffprobe and ffmpeg in particular).
-        pipeline_bin = str(Path(settings.PIPELINE_PYTHON).absolute().parent)
-        env["PATH"] = os.pathsep.join(p for p in (pipeline_bin, env.get("PATH")) if p)
         env["PYTHONPATH"] = os.pathsep.join(p for p in (str(settings.PIPELINE_CWD), env.get("PYTHONPATH")) if p)
         with tempfile.TemporaryFile() as out:
             proc = subprocess.Popen(cmd, cwd=settings.PIPELINE_CWD if settings.PIPELINE_CWD.exists() else None,

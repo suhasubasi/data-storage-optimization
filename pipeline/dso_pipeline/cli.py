@@ -30,6 +30,13 @@ def build_parser() -> argparse.ArgumentParser:
     us.add_argument("--out", required=True, help="data/derived/<asset_id>/ (must hold manifest.json)")
     us.add_argument("--audit-dir", default=None, help="where to save the old manifest + decision list")
     us.add_argument("--dry-run", action="store_true")
+    us.add_argument("--force", action="store_true", help="re-run/upgrade even if unique_slides was already applied")
+    sp = sub.add_parser("speakers", help="Identify speakers (Speaker 1, 2, ...) as text labels "
+                        "on an already processed recording (never re-runs Whisper)")
+    sp.add_argument("--asset-id", required=True)
+    sp.add_argument("--input", required=True, help="Path to the original video (read-only)")
+    sp.add_argument("--out", required=True, help="data/derived/<asset_id>/ (must hold manifest.json)")
+    sp.add_argument("--dry-run", action="store_true")
     pr = sub.add_parser("prune-frames", help="After ingest: remove frame images the current manifest no "
                         "longer references (only inside <out>/frames/)")
     pr.add_argument("--asset-id", required=True)
@@ -43,7 +50,7 @@ def main(argv: list[str] | None = None) -> int:
     if not re.fullmatch(r"a_[A-Za-z0-9]+", args.asset_id):
         print(f"dso_pipeline: invalid asset id {args.asset_id!r} (expected a_<alnum>)", file=sys.stderr)
         return 2
-    if args.command in ("unique-slides", "prune-frames"):
+    if args.command in ("unique-slides", "prune-frames", "speakers"):
         import json
 
         from . import postpass
@@ -51,7 +58,10 @@ def main(argv: list[str] | None = None) -> int:
         try:
             if args.command == "unique-slides":
                 res = postpass.run_unique_slides(args.asset_id, Path(args.out),
-                                                 Path(args.audit_dir) if args.audit_dir else None, args.dry_run)
+                                                 Path(args.audit_dir) if args.audit_dir else None,
+                                                 args.dry_run, args.force)
+            elif args.command == "speakers":
+                res = postpass.run_speakers(args.asset_id, Path(args.input), Path(args.out), args.dry_run)
             else:
                 res = postpass.prune_frames(args.asset_id, Path(args.out), args.dry_run)
         except Exception as e:  # noqa: BLE001

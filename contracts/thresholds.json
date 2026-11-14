@@ -15,8 +15,6 @@
     "whisper_model": "small",
     "whisper_compute_type": "int8",
     "whisper_device": "cpu",
-    "speaker_diarization": true,
-    "speaker_cluster_threshold": 0.75,
     "whisper_compute_type_cuda": "int8_float16"
   },
   "document": {
@@ -31,7 +29,7 @@
   },
   "text_normalisation": "unicodedata NFKC -> lowercase -> collapse all whitespace runs to one space -> strip; then SHA-256 of the UTF-8 bytes",
   "unique_slides": {
-    "_comment": "Unique-slide pass (pipeline/dso_pipeline/unique_slides.py). Runs after key-frame extraction, never re-runs Whisper. Merges only frames that show the same slide: every 20x20 block of a 320x180 gray thumbnail (outside a detected webcam/live-overlay box) has <= 5 % of its pixels changed by > 24, AND masked pHash distance <= 6. Never drops a frame for being short on screen.",
+    "_comment": "Unique-slide pass (pipeline/dso_pipeline/unique_slides.py). Runs after key-frame extraction, never re-runs Whisper. Default mode is slides_only: keep slide and document pictures, drop face cams and stage cameras, crop to the shared screen. Two frames are the same slide when every small block of that area (ignoring a moving cursor) has <= 5 % of its pixels changed by > 24. A changed bullet or number is a new slide. These keys override the defaults in code.",
     "enabled": true,
     "thumb_width": 320,
     "thumb_height": 180,

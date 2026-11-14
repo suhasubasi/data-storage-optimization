@@ -1,6 +1,8 @@
 # --- Node / frontend
 node_modules/
 frontend/dist/
+frontend/.pre-promotion-backup/
+frontend/.hackathon-ui-backup/
 *.tsbuildinfo
 .vite/
 npm-debug.log*
