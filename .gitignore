@@ -74,6 +74,7 @@ brief-test/
 *.msg
 *.docx
 *.png
+!docs/screenshots/*.png
 *.jpg
 *.jpeg
 
