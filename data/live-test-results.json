@@ -1,0 +1,412 @@
+{
+  "steps": [
+    {
+      "name": "health",
+      "ms": 6.9,
+      "body": {
+        "status": "ok",
+        "version": "1.0.0"
+      }
+    },
+    {
+      "name": "upload wifi-campus-plan.pdf",
+      "ms": 16.2,
+      "id": "a_075cfc51",
+      "bytes": 3020
+    },
+    {
+      "name": "process wifi-campus-plan.pdf",
+      "ms": 512.6,
+      "status": "failed",
+      "job": {
+        "id": "j_974d918ed7",
+        "asset_id": "a_075cfc51",
+        "status": "failed",
+        "progress": 0.0,
+        "stage": "starting",
+        "error": "Pipeline Python not found at C:\\Users\\suhas\\ericsson-dso\\pipeline\\.venv\\bin\\python. Set DSO_PIPELINE_PYTHON or create pipeline/.venv.",
+        "started_at": "2026-11-12T22:38:42.046000Z",
+        "finished_at": "2026-11-12T22:38:42.053000Z"
+      }
+    },
+    {
+      "name": "upload wifi-campus-plan (1).pdf",
+      "ms": 16.0,
+      "id": "a_8965ed88",
+      "bytes": 3020
+    },
+    {
+      "name": "process wifi-campus-plan (1).pdf",
+      "ms": 521.8,
+      "status": "failed",
+      "job": {
+        "id": "j_541c05de4a",
+        "asset_id": "a_8965ed88",
+        "status": "failed",
+        "progress": 0.0,
+        "stage": "starting",
+        "error": "Pipeline Python not found at C:\\Users\\suhas\\ericsson-dso\\pipeline\\.venv\\bin\\python. Set DSO_PIPELINE_PYTHON or create pipeline/.venv.",
+        "started_at": "2026-11-12T22:38:42.574000Z",
+        "finished_at": "2026-11-12T22:38:42.602000Z"
+      }
+    },
+    {
+      "name": "upload wifi-campus-plan-revB.pdf",
+      "ms": 16.4,
+      "id": "a_4140f6a7",
+      "bytes": 3032
+    },
+    {
+      "name": "process wifi-campus-plan-revB.pdf",
+      "ms": 514.4,
+      "status": "failed",
+      "job": {
+        "id": "j_d286359e96",
+        "asset_id": "a_4140f6a7",
+        "status": "failed",
+        "progress": 0.0,
+        "stage": "starting",
+        "error": "Pipeline Python not found at C:\\Users\\suhas\\ericsson-dso\\pipeline\\.venv\\bin\\python. Set DSO_PIPELINE_PYTHON or create pipeline/.venv.",
+        "started_at": "2026-11-12T22:38:43.114000Z",
+        "finished_at": "2026-11-12T22:38:43.123000Z"
+      }
+    },
+    {
+      "name": "upload lab-safety-briefing.pdf",
+      "ms": 16.5,
+      "id": "a_622475d6",
+      "bytes": 3027
+    },
+    {
+      "name": "process lab-safety-briefing.pdf",
+      "ms": 519.7,
+      "status": "failed",
+      "job": {
+        "id": "j_72e055df19",
+        "asset_id": "a_622475d6",
+        "status": "failed",
+        "progress": 0.0,
+        "stage": "starting",
+        "error": "Pipeline Python not found at C:\\Users\\suhas\\ericsson-dso\\pipeline\\.venv\\bin\\python. Set DSO_PIPELINE_PYTHON or create pipeline/.venv.",
+        "started_at": "2026-11-12T22:38:43.644000Z",
+        "finished_at": "2026-11-12T22:38:43.663000Z"
+      }
+    },
+    {
+      "name": "upload q3-procurement-notes.pdf",
+      "ms": 15.7,
+      "id": "a_dda785ba",
+      "bytes": 2401
+    },
+    {
+      "name": "process q3-procurement-notes.pdf",
+      "ms": 522.8,
+      "status": "failed",
+      "job": {
+        "id": "j_2b48d483e0",
+        "asset_id": "a_dda785ba",
+        "status": "failed",
+        "progress": 0.0,
+        "stage": "starting",
+        "error": "Pipeline Python not found at C:\\Users\\suhas\\ericsson-dso\\pipeline\\.venv\\bin\\python. Set DSO_PIPELINE_PYTHON or create pipeline/.venv.",
+        "started_at": "2026-11-12T22:38:44.181000Z",
+        "finished_at": "2026-11-12T22:38:44.201000Z"
+      }
+    },
+    {
+      "name": "upload lab-briefing.mp4",
+      "ms": 16.6,
+      "id": "a_e34668e5",
+      "bytes": 165123
+    },
+    {
+      "name": "process lab-briefing.mp4",
+      "ms": 515.0,
+      "status": "failed",
+      "job": {
+        "id": "j_bc0330e45e",
+        "asset_id": "a_e34668e5",
+        "status": "failed",
+        "progress": 0.0,
+        "stage": "starting",
+        "error": "Pipeline Python not found at C:\\Users\\suhas\\ericsson-dso\\pipeline\\.venv\\bin\\python. Set DSO_PIPELINE_PYTHON or create pipeline/.venv.",
+        "started_at": "2026-11-12T22:38:44.720000Z",
+        "finished_at": "2026-11-12T22:38:44.729000Z"
+      }
+    },
+    {
+      "name": "list assets",
+      "ms": 3.3,
+      "count": {
+        "assets": [
+          {
+            "id": "a_075cfc51",
+            "filename": "wifi-campus-plan.pdf",
+            "kind": "document",
+            "bytes": 3020,
+            "sha256": "5afa34a9e9ad08441c435a99f15f9a31d72e1770dae87f202dbc571e2abd44aa",
+            "source_system": "sharepoint",
+            "source_simulated": true,
+            "owner": "anna",
+            "status": "failed",
+            "created_at": "2026-11-12T22:38:42.032000Z",
+            "derived_bytes": 0,
+            "original_url": "/files/originals/a_075cfc51/wifi-campus-plan.pdf"
+          },
+          {
+            "id": "a_8965ed88",
+            "filename": "wifi-campus-plan (1).pdf",
+            "kind": "document",
+            "bytes": 3020,
+            "sha256": "5afa34a9e9ad08441c435a99f15f9a31d72e1770dae87f202dbc571e2abd44aa",
+            "source_system": "onedrive",
+            "source_simulated": true,
+            "owner": "carl",
+            "status": "failed",
+            "created_at": "2026-11-12T22:38:42.560000Z",
+            "derived_bytes": 0,
+            "original_url": "/files/originals/a_8965ed88/wifi-campus-plan (1).pdf"
+          },
+          {
+            "id": "a_4140f6a7",
+            "filename": "wifi-campus-plan-revB.pdf",
+            "kind": "document",
+            "bytes": 3032,
+            "sha256": "cd5822de3ed95f11504f35cb9d9614f537a50d9b6fd6d6b2d3074514d863f710",
+            "source_system": "sharepoint",
+            "source_simulated": true,
+            "owner": "anna",
+            "status": "failed",
+            "created_at": "2026-11-12T22:38:43.098000Z",
+            "derived_bytes": 0,
+            "original_url": "/files/originals/a_4140f6a7/wifi-campus-plan-revB.pdf"
+          },
+          {
+            "id": "a_622475d6",
+            "filename": "lab-safety-briefing.pdf",
+            "kind": "document",
+            "bytes": 3027,
+            "sha256": "552bf5cc10b93c50dece1b34831b707b05f27ce8fc831c83ae0a14d0ab293977",
+            "source_system": "sharepoint",
+            "source_simulated": true,
+            "owner": "bjorn",
+            "status": "failed",
+            "created_at": "2026-11-12T22:38:43.629000Z",
+            "derived_bytes": 0,
+            "original_url": "/files/originals/a_622475d6/lab-safety-briefing.pdf"
+          },
+          {
+            "id": "a_dda785ba",
+            "filename": "q3-procurement-notes.pdf",
+            "kind": "document",
+            "bytes": 2401,
+            "sha256": "567d67df3c33d82a47711a51a3d608f16f3d99001be18b735e79c8eca1b2526d",
+            "source_system": "onedrive",
+            "source_simulated": true,
+            "owner": "dana",
+            "status": "failed",
+            "created_at": "2026-11-12T22:38:44.166000Z",
+            "derived_bytes": 0,
+            "original_url": "/files/originals/a_dda785ba/q3-procurement-notes.pdf"
+          },
+          {
+            "id": "a_e34668e5",
+            "filename": "lab-briefing.mp4",
+            "kind": "video",
+            "bytes": 165123,
+            "sha256": "b043dace96551db88328c43c305e0842b8ea5ff51a22db93281acab85b0e1a82",
+            "source_system": "ericsson_play",
+            "source_simulated": true,
+            "owner": "bjorn",
+            "status": "failed",
+            "created_at": "2026-11-12T22:38:44.705000Z",
+            "derived_bytes": 0,
+            "original_url": "/files/originals/a_e34668e5/lab-briefing.mp4"
+          }
+        ]
+      }
+    },
+    {
+      "name": "search 'goggles'",
+      "ms": 3.4,
+      "n": "n/a",
+      "preview": []
+    },
+    {
+      "name": "search 'access points'",
+      "ms": 3.0,
+      "n": "n/a",
+      "preview": []
+    },
+    {
+      "name": "search 'procurement'",
+      "ms": 3.0,
+      "n": "n/a",
+      "preview": []
+    },
+    {
+      "name": "search 'yellow cabinet'",
+      "ms": 3.8,
+      "n": "n/a",
+      "preview": []
+    },
+    {
+      "name": "search '25,000'",
+      "ms": 3.2,
+      "n": "n/a",
+      "preview": []
+    },
+    {
+      "name": "search 'handover'",
+      "ms": 3.3,
+      "n": "n/a",
+      "preview": []
+    },
+    {
+      "name": "duplicates",
+      "ms": 2.9,
+      "body_keys": [
+        "groups",
+        "counts"
+      ],
+      "summary": {
+        "groups": [
+          {
+            "id": "g_exact_5afa34a9e9ad",
+            "type": "exact_file",
+            "needs_review": false,
+            "score": 1.0,
+            "evidence": {
+              "method": "sha256",
+              "sha256": "5afa34a9e9ad08441c435a99f15f9a31d72e1770dae87f202dbc571e2abd44aa",
+              "text_sha256": null,
+              "phash_distance": null,
+              "text_similarity": null
+            },
+            "members": [
+              {
+                "asset_id": "a_075cfc51",
+                "filename": "wifi-campus-plan.pdf",
+                "source_system": "sharepoint",
+                "owner": "anna",
+                "bytes": 3020,
+                "slide_id": null,
+                "page": null,
+                "image_url": null
+              },
+              {
+                "asset_id": "a_8965ed88",
+                "filename": "wifi-campus-plan (1).pdf",
+                "source_system": "onedrive",
+                "owner": "carl",
+                "bytes": 3020,
+                "slide_id": null,
+                "page": null,
+                "image_url": null
+              }
+            ]
+          }
+        ],
+        "counts": {
+          "exact_file": 1,
+          "shared_slide": 0,
+          "similar_slide": 0
+        }
+      }
+    },
+    {
+      "name": "storage report",
+      "ms": 0.8,
+      "error": 404,
+      "text": "{\"error\":{\"code\":\"not_found\",\"message\":\"Nothing was found at this address.\",\"details\":null}}",
+      "alt": 404
+    },
+    {
+      "name": "offboarding carl",
+      "ms": 3.3,
+      "status": 200,
+      "body": {
+        "owner": "carl",
+        "generated_at": "2026-11-12T22:38:45.261000Z",
+        "deletes_performed": false,
+        "rows": [
+          {
+            "asset_id": "a_8965ed88",
+            "filename": "wifi-campus-plan (1).pdf",
+            "kind": "document",
+            "bytes": 3020,
+            "source_system": "onedrive",
+            "recommendation": "eligible_after_approval",
+            "reason": "Confirmed exact duplicate (same SHA-256) at sharepoint: wifi-campus-plan.pdf (owner: anna)",
+            "duplicates_elsewhere": [
+              {
+                "asset_id": "a_075cfc51",
+                "filename": "wifi-campus-plan.pdf",
+                "source_system": "sharepoint",
+                "owner": "anna"
+              }
+            ]
+          }
+        ],
+        "summary": {
+          "total": 1,
+          "eligible": 1,
+          "keep": 0,
+          "eligible_bytes": 3020
+        }
+      }
+    },
+    {
+      "name": "offboarding anna",
+      "ms": 2.7,
+      "status": 200,
+      "body": {
+        "owner": "anna",
+        "generated_at": "2026-11-12T22:38:45.264000Z",
+        "deletes_performed": false,
+        "rows": [
+          {
+            "asset_id": "a_075cfc51",
+            "filename": "wifi-campus-plan.pdf",
+            "kind": "document",
+            "bytes": 3020,
+            "source_system": "sharepoint",
+            "recommendation": "eligible_after_approval",
+            "reason": "Confirmed exact duplicate (same SHA-256) at onedrive: wifi-campus-plan (1).pdf (owner: carl)",
+            "duplicates_elsewhere": [
+              {
+                "asset_id": "a_8965ed88",
+                "filename": "wifi-campus-plan (1).pdf",
+                "source_system": "onedrive",
+                "owner": "carl"
+              }
+            ]
+          },
+          {
+            "asset_id": "a_4140f6a7",
+            "filename": "wifi-campus-plan-revB.pdf",
+            "kind": "document",
+            "bytes": 3032,
+            "source_system": "sharepoint",
+            "recommendation": "keep",
+            "reason": "No exact copy owned by someone else. Shared or similar slides do not count.",
+            "duplicates_elsewhere": []
+          }
+        ],
+        "summary": {
+          "total": 2,
+          "eligible": 1,
+          "keep": 1,
+          "eligible_bytes": 3020
+        }
+      }
+    },
+    {
+      "name": "export jsonl",
+      "ms": 2.7,
+      "status": 200,
+      "lines": 0,
+      "bytes": 0
+    }
+  ]
+}

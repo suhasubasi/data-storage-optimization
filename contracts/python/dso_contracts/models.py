@@ -81,7 +81,7 @@ class Segment(BaseModel):
         description="The kept frame on screen when this segment STARTS (frame.t_start <= start < frame.t_end).",
     )
     speaker: str | None = Field(
-        ..., description="Recording-local voice label (Speaker 1, Speaker 2, ...), or null when unavailable or uncertain."
+        ..., description="Always null in the MVP (speaker ID is out of scope)."
     )
 
 
@@ -669,6 +669,12 @@ class ChunkKind(StrEnum):
     slide_text = "slide_text"
 
 
+class SpeakerCategory(StrEnum):
+    PRESENTER = "PRESENTER"
+    DOCUMENTARY = "DOCUMENTARY"
+    UNKNOWN = "UNKNOWN"
+
+
 class ChatMessage(BaseModel):
     model_config = ConfigDict(
         extra="forbid",
@@ -1051,6 +1057,41 @@ class StorageReport(BaseModel):
     )
 
 
+class SpeakerRoleCues(BaseModel):
+    model_config = ConfigDict(
+        extra="forbid",
+    )
+    static_seconds: float = Field(..., ge=0.0)
+    video_seconds: float = Field(..., ge=0.0)
+    static_blocks: int = Field(..., ge=0)
+    static_share: float = Field(..., ge=0.0)
+    active_span_seconds: float = Field(..., ge=0.0)
+
+
+class ExportSpeaker(BaseModel):
+    model_config = ConfigDict(
+        extra="forbid",
+    )
+    speaker: str = Field(
+        ...,
+        description="Display speaker label (e.g. 'Speaker 1 (Presenter)' or 'Speaker 1').",
+    )
+    speaker_id: str | None = Field(
+        None,
+        description="Canonical speaker identifier (e.g. 'Speaker 1'), or null when unavailable.",
+    )
+    role: SpeakerCategory | None = Field(
+        None,
+        description="Classified speaker role category, or null when unavailable.",
+    )
+    segment_count: int = Field(..., ge=0)
+    seconds_spoken: float = Field(..., ge=0.0)
+    video_churn_ratio: float | None = Field(None, ge=0.0)
+    overlap_seconds: float | None = Field(None, ge=0.0)
+    overlap_segment_count: int | None = Field(None, ge=0)
+    role_cues: SpeakerRoleCues | None = None
+
+
 class ExportChunk(BaseModel):
     model_config = ConfigDict(
         extra="forbid",
@@ -1070,6 +1111,30 @@ class ExportChunk(BaseModel):
     slide_id: str | None
     image_url: str | None
     language: str | None
+    speaker: str | None = Field(
+        None,
+        description="Speaker label for transcript_segment chunks (e.g. 'Speaker 1' or 'Speaker 1 (Presenter)'), or null.",
+    )
+    speaker_id: str | None = Field(
+        None,
+        description="Canonical speaker identifier for transcript_segment chunks (e.g. 'Speaker 1'), or null.",
+    )
+    speaker_category: SpeakerCategory | None = Field(
+        None,
+        description="Classified speaker role category for transcript_segment chunks, or null.",
+    )
+    speaker_confidence: float | None = Field(
+        None,
+        description="Real speaker assignment confidence/margin when available, or null (never fabricated).",
+    )
+    overlap: bool | None = Field(
+        None,
+        description="True when overlapping speech was detected in this transcript_segment chunk, false when single-speaker, or null when unavailable.",
+    )
+    overlap_speakers: list[str] | None = Field(
+        None,
+        description="Speaker IDs involved when overlap was detected (or [] when none), or null when unavailable.",
+    )
     metadata: AssetMetadata
     source: Provenance
 
@@ -1089,6 +1154,10 @@ class ExportAsset(BaseModel):
     slides: list[SlideView]
     matches: list[ExportMatch] = Field(
         ..., description="All exact/shared/similar matches touching this asset."
+    )
+    speakers: list[ExportSpeaker] | None = Field(
+        None,
+        description="Structured per-speaker diarization summary from transcript.json when available, or null.",
     )
 
 
@@ -1169,6 +1238,9 @@ class DsoContracts(BaseModel):
         None, alias="OffboardingReview"
     )
     Provenance_1: Provenance | None = Field(None, alias="Provenance")
+    SpeakerCategory_1: SpeakerCategory | None = Field(None, alias="SpeakerCategory")
+    SpeakerRoleCues_1: SpeakerRoleCues | None = Field(None, alias="SpeakerRoleCues")
+    ExportSpeaker_1: ExportSpeaker | None = Field(None, alias="ExportSpeaker")
     ExportChunk_1: ExportChunk | None = Field(None, alias="ExportChunk")
     ExportMatch_1: ExportMatch | None = Field(None, alias="ExportMatch")
     ExportAsset_1: ExportAsset | None = Field(None, alias="ExportAsset")

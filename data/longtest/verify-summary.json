@@ -1,0 +1,385 @@
+{
+  "ready": "ready",
+  "filename": "Your Agent Doesnt Need an LLM for Every Decision - Raymond Weitekamp OpenProse.mp4",
+  "sha256": "61f1609966f6b55f219c7f5638f96eb81d475978d5456b81e7dc2e8629fe7e72",
+  "model": "faster-whisper small int8",
+  "pipeline_seconds": 594.688,
+  "job": {
+    "id": "j_9341b715e1",
+    "asset_id": "a_0ac641df",
+    "status": "done",
+    "progress": 1.0,
+    "stage": "done",
+    "error": null,
+    "started_at": "2026-11-12T23:13:08.187000Z",
+    "finished_at": "2026-11-12T23:23:03.563000Z"
+  },
+  "duration_seconds": 3108.014,
+  "original_bytes": 347928702,
+  "derived_bytes": 22630654,
+  "bytes_by_kind": {
+    "frame": 22134204,
+    "transcript": 145930,
+    "manifest": 350520
+  },
+  "segment_count": 701,
+  "frame_count": 670,
+  "file_count": 672,
+  "language": "en",
+  "title": "Your Agent Doesn't Need an LLM for Every Decision - Raymond Weitekamp, OpenProse",
+  "author": "AI Engineer",
+  "transcript_language": "en",
+  "transcript_model": "faster-whisper small int8",
+  "transcript_duration": 3108.014,
+  "first_3_segments": [
+    {
+      "id": "s1",
+      "start": 0.0,
+      "end": 8.08,
+      "text": "Hey, my name is Raymond Whitecamp and my talk today is originally titled Recursive Decision",
+      "frame_id": "f1",
+      "speaker": null
+    },
+    {
+      "id": "s2",
+      "start": 8.08,
+      "end": 15.16,
+      "text": "Models and what I think I've realized since submitting that title is what it's really",
+      "frame_id": "f1",
+      "speaker": null
+    },
+    {
+      "id": "s3",
+      "start": 15.16,
+      "end": 21.48,
+      "text": "about what we're really going to be talking about today is Operating System 1.",
+      "frame_id": "f1",
+      "speaker": null
+    }
+  ],
+  "last_2_segments": [
+    {
+      "id": "s700",
+      "start": 3104.11,
+      "end": 3106.83,
+      "text": "when OSO is ready at oso.computer.",
+      "frame_id": "f670",
+      "speaker": null
+    },
+    {
+      "id": "s701",
+      "start": 3106.83,
+      "end": 3107.83,
+      "text": "Thank you so much.",
+      "frame_id": "f670",
+      "speaker": null
+    }
+  ],
+  "sample_phrases": [
+    {
+      "id": "s1",
+      "start": 0.0,
+      "end": 8.08,
+      "frame_id": "f1",
+      "text": "Hey, my name is Raymond Whitecamp and my talk today is originally titled Recursive Decision"
+    },
+    {
+      "id": "s2",
+      "start": 8.08,
+      "end": 15.16,
+      "frame_id": "f1",
+      "text": "Models and what I think I've realized since submitting that title is what it's really"
+    },
+    {
+      "id": "s5",
+      "start": 28.2,
+      "end": 35.24,
+      "frame_id": "f3",
+      "text": "So system one models, the naming of system one models from type safe when they released"
+    },
+    {
+      "id": "s11",
+      "start": 64.46,
+      "end": 70.38,
+      "frame_id": "f3",
+      "text": "decisions that we make are not actually like purely rational and so system one"
+    },
+    {
+      "id": "s15",
+      "start": 89.74,
+      "end": 94.3,
+      "frame_id": "f5",
+      "text": "family of models or like that's they were expecting all the other people to call them"
+    },
+    {
+      "id": "s16",
+      "start": 94.3,
+      "end": 100.78,
+      "frame_id": "f5",
+      "text": "system one models. I would say most, um, most people are calling them decision models and,"
+    },
+    {
+      "id": "s18",
+      "start": 108.14,
+      "end": 114.14,
+      "frame_id": "f5",
+      "text": "So when I came up with recursive decision models, um, you know, it's just, it was just kind of"
+    },
+    {
+      "id": "s20",
+      "start": 121.5,
+      "end": 128.22,
+      "frame_id": "f5",
+      "text": "this, uh, idea of what are they? Are they, um, decision models or not? Um, Ali here argues"
+    },
+    {
+      "id": "s21",
+      "start": 128.22,
+      "end": 133.5,
+      "frame_id": "f5",
+      "text": "that Jeff makes the judgments, um, not the decisions. Your code makes the decision. I"
+    },
+    {
+      "id": "s25",
+      "start": 145.74,
+      "end": 150.74,
+      "frame_id": "f5",
+      "text": "around this idea of, um, decision model being the term, there is the"
+    }
+  ],
+  "frames_linked_in_transcript": 272,
+  "index_bytes": 450560,
+  "per_video_scenario_0_pct": -6.63,
+  "per_video_scenario_1_pct": 93.37,
+  "per_video_s0_after": 371009916,
+  "per_video_s1_after": 23081214,
+  "corpus_totals": {
+    "asset_count": 7,
+    "original_bytes": 348108325,
+    "video_original_bytes": 348093825,
+    "document_original_bytes": 14500,
+    "derived_bytes": 22894095,
+    "index_bytes": 450560,
+    "extra_exact_copy_bytes": 3020
+  },
+  "corpus_scenarios": [
+    {
+      "id": 0,
+      "key": "today",
+      "label": "Scenario 0: today, real",
+      "savings_pct": -6.7061,
+      "before_bytes": 348108325,
+      "after_bytes": 371452980,
+      "saved_bytes": -23344655,
+      "removed": []
+    },
+    {
+      "id": 1,
+      "key": "replace_videos",
+      "label": "Scenario 1: replace videos",
+      "savings_pct": 93.2897,
+      "before_bytes": 348108325,
+      "after_bytes": 23359155,
+      "saved_bytes": 324749170,
+      "removed": [
+        {
+          "asset_id": "a_e34668e5",
+          "filename": "lab-briefing.mp4",
+          "bytes": 165123,
+          "reason": "replaced_by_derived",
+          "kept_copy_asset_id": null
+        },
+        {
+          "asset_id": "a_0ac641df",
+          "filename": "Your Agent Doesnt Need an LLM for Every Decision - Raymond Weitekamp OpenProse.mp4",
+          "bytes": 347928702,
+          "reason": "replaced_by_derived",
+          "kept_copy_asset_id": null
+        }
+      ]
+    },
+    {
+      "id": 2,
+      "key": "remove_exact_duplicates",
+      "label": "Scenario 2: remove exact duplicates",
+      "savings_pct": -6.7053,
+      "before_bytes": 348108325,
+      "after_bytes": 371449960,
+      "saved_bytes": -23341635,
+      "removed": [
+        {
+          "asset_id": "a_8965ed88",
+          "filename": "wifi-campus-plan (1).pdf",
+          "bytes": 3020,
+          "reason": "exact_duplicate",
+          "kept_copy_asset_id": "a_075cfc51"
+        }
+      ]
+    },
+    {
+      "id": 3,
+      "key": "both",
+      "label": "Scenario 3: both",
+      "savings_pct": 93.2906,
+      "before_bytes": 348108325,
+      "after_bytes": 23356135,
+      "saved_bytes": 324752190,
+      "removed": [
+        {
+          "asset_id": "a_8965ed88",
+          "filename": "wifi-campus-plan (1).pdf",
+          "bytes": 3020,
+          "reason": "exact_duplicate",
+          "kept_copy_asset_id": "a_075cfc51"
+        },
+        {
+          "asset_id": "a_e34668e5",
+          "filename": "lab-briefing.mp4",
+          "bytes": 165123,
+          "reason": "replaced_by_derived",
+          "kept_copy_asset_id": null
+        },
+        {
+          "asset_id": "a_0ac641df",
+          "filename": "Your Agent Doesnt Need an LLM for Every Decision - Raymond Weitekamp OpenProse.mp4",
+          "bytes": 347928702,
+          "reason": "replaced_by_derived",
+          "kept_copy_asset_id": null
+        }
+      ]
+    }
+  ],
+  "projection_2h": {
+    "assumed_2h_original_bytes": 1000000000,
+    "measured_duration_s": 3108.014,
+    "transcript_if_scaled_linearly_bytes": 338060,
+    "frames_if_same_change_rate_bytes": 51275917,
+    "frames_if_same_unique_slides_only_bytes": 22134204,
+    "manifest_measured_bytes": 350520,
+    "scenario1_if_1GB_and_scaled_frames_pct": 94.76,
+    "scenario1_if_1GB_and_same_frame_count_pct": 97.67,
+    "derived_scaled_plus_index": 52415058,
+    "derived_same_slides_plus_index": 23273344
+  },
+  "searches": {
+    "OpenProse": {
+      "total": 0,
+      "ours": 0,
+      "ms": 3.73,
+      "samples": []
+    },
+    "Weitekamp": {
+      "total": 0,
+      "ours": 0,
+      "ms": 3.08,
+      "samples": []
+    },
+    "LLM": {
+      "total": 7,
+      "ours": 7,
+      "ms": 4.27,
+      "samples": [
+        {
+          "asset_id": "a_0ac641df",
+          "filename": "Your Agent Doesnt Need an LLM for Every Decision - Raymond Weitekamp OpenProse.mp4",
+          "item_id": "s386",
+          "frame_id": "f363",
+          "start": 1869.48,
+          "text": "The LLM now has a structured interface"
+        },
+        {
+          "asset_id": "a_0ac641df",
+          "filename": "Your Agent Doesnt Need an LLM for Every Decision - Raymond Weitekamp OpenProse.mp4",
+          "item_id": "s388",
+          "frame_id": "f364",
+          "start": 1875.28,
+          "text": "So the LLM can basically be learning"
+        },
+        {
+          "asset_id": "a_0ac641df",
+          "filename": "Your Agent Doesnt Need an LLM for Every Decision - Raymond Weitekamp OpenProse.mp4",
+          "item_id": "s179",
+          "frame_id": "f81",
+          "start": 897.02,
+          "text": "it must compose with LLMs and with agents, right?"
+        }
+      ]
+    },
+    "handover": {
+      "total": 0,
+      "ours": 0,
+      "ms": 3.39,
+      "samples": []
+    },
+    "yellow cabinet": {
+      "total": 1,
+      "ours": 0,
+      "ms": 3.33,
+      "samples": [
+        {
+          "asset_id": "a_e34668e5",
+          "filename": "lab-briefing.mp4",
+          "item_id": "s4",
+          "frame_id": "f3",
+          "start": 12.56,
+          "text": "The emergency exit is behind the yellow cabinet."
+        }
+      ]
+    },
+    "deterministic": {
+      "total": 0,
+      "ours": 0,
+      "ms": 3.37,
+      "samples": []
+    },
+    "workflow": {
+      "total": 0,
+      "ours": 0,
+      "ms": 2.98,
+      "samples": []
+    },
+    "agent": {
+      "total": 18,
+      "ours": 18,
+      "ms": 4.34,
+      "samples": [
+        {
+          "asset_id": "a_0ac641df",
+          "filename": "Your Agent Doesnt Need an LLM for Every Decision - Raymond Weitekamp OpenProse.mp4",
+          "item_id": "s131",
+          "frame_id": "f70",
+          "start": 687.16,
+          "text": "agent."
+        },
+        {
+          "asset_id": "a_0ac641df",
+          "filename": "Your Agent Doesnt Need an LLM for Every Decision - Raymond Weitekamp OpenProse.mp4",
+          "item_id": "s652",
+          "frame_id": "f666",
+          "start": 2961.97,
+          "text": "So yes, there are regular agents and RLM agents,"
+        },
+        {
+          "asset_id": "a_0ac641df",
+          "filename": "Your Agent Doesnt Need an LLM for Every Decision - Raymond Weitekamp OpenProse.mp4",
+          "item_id": "s96",
+          "frame_id": "f28",
+          "start": 505.44,
+          "text": "agents talk was about. It's like replace RLM with like agent, right? Coding agent. Okay,"
+        }
+      ]
+    }
+  },
+  "offboarding": {
+    "owner": "erik",
+    "deletes_performed": false,
+    "eligible": null,
+    "keys": [
+      "owner",
+      "generated_at",
+      "deletes_performed",
+      "rows",
+      "summary"
+    ]
+  }
+}

@@ -1,0 +1,282 @@
+{
+  "storage_ms": 11.5,
+  "storage_status": 200,
+  "storage": {
+    "generated_at": "2026-11-12T22:40:46.153000Z",
+    "formula": "Savings % = (O \u2212 A) / O \u00d7 100",
+    "totals": {
+      "asset_count": 6,
+      "original_bytes": 179623,
+      "video_original_bytes": 165123,
+      "document_original_bytes": 14500,
+      "derived_bytes": 263440,
+      "index_bytes": 110592,
+      "extra_exact_copy_bytes": 3020
+    },
+    "scenarios": [
+      {
+        "id": 0,
+        "key": "today",
+        "label": "Scenario 0: today, real",
+        "description": "Nothing deleted. Derived data and the index are added on top of the originals, so the saving is negative.",
+        "hypothetical": false,
+        "formula": "A = O + D + I",
+        "before_bytes": 179623,
+        "after_bytes": 553655,
+        "saved_bytes": -374032,
+        "savings_pct": -208.2317,
+        "kept_original_bytes": 179623,
+        "derived_bytes": 263440,
+        "index_bytes": 110592,
+        "removed": []
+      },
+      {
+        "id": 1,
+        "key": "replace_videos",
+        "label": "Scenario 1: replace videos",
+        "description": "If an approved process replaced each processed recording by its derived data.",
+        "hypothetical": true,
+        "formula": "A = (O \u2212 processed video originals) + D + I",
+        "before_bytes": 179623,
+        "after_bytes": 388532,
+        "saved_bytes": -208909,
+        "savings_pct": -116.3041,
+        "kept_original_bytes": 14500,
+        "derived_bytes": 263440,
+        "index_bytes": 110592,
+        "removed": [
+          {
+            "asset_id": "a_e34668e5",
+            "filename": "lab-briefing.mp4",
+            "bytes": 165123,
+            "reason": "replaced_by_derived",
+            "kept_copy_asset_id": null
+          }
+        ]
+      },
+      {
+        "id": 2,
+        "key": "remove_exact_duplicates",
+        "label": "Scenario 2: remove exact duplicates",
+        "description": "Keep one copy per SHA-256 group (the earliest upload). Shared or similar slides free nothing, because the files differ.",
+        "hypothetical": true,
+        "formula": "A = (O \u2212 extra exact copies) + D + I",
+        "before_bytes": 179623,
+        "after_bytes": 550635,
+        "saved_bytes": -371012,
+        "savings_pct": -206.5504,
+        "kept_original_bytes": 176603,
+        "derived_bytes": 263440,
+        "index_bytes": 110592,
+        "removed": [
+          {
+            "asset_id": "a_8965ed88",
+            "filename": "wifi-campus-plan (1).pdf",
+            "bytes": 3020,
+            "reason": "exact_duplicate",
+            "kept_copy_asset_id": "a_075cfc51"
+          }
+        ]
+      },
+      {
+        "id": 3,
+        "key": "both",
+        "label": "Scenario 3: both",
+        "description": "Scenarios 1 and 2 together, each file counted once.",
+        "hypothetical": true,
+        "formula": "A = (O \u2212 processed video originals \u2212 extra exact copies, no double counting) + D + I",
+        "before_bytes": 179623,
+        "after_bytes": 385512,
+        "saved_bytes": -205889,
+        "savings_pct": -114.6228,
+        "kept_original_bytes": 11480,
+        "derived_bytes": 263440,
+        "index_bytes": 110592,
+        "removed": [
+          {
+            "asset_id": "a_8965ed88",
+            "filename": "wifi-campus-plan (1).pdf",
+            "bytes": 3020,
+            "reason": "exact_duplicate",
+            "kept_copy_asset_id": "a_075cfc51"
+          },
+          {
+            "asset_id": "a_e34668e5",
+            "filename": "lab-briefing.mp4",
+            "bytes": 165123,
+            "reason": "replaced_by_derived",
+            "kept_copy_asset_id": null
+          }
+        ]
+      }
+    ],
+    "not_counted": [
+      "Backups",
+      "Platform replication",
+      "Archive tiers",
+      "Compute cost",
+      "Model weights",
+      "Money"
+    ],
+    "information_lost": [
+      "Motion and live demos in video",
+      "Gestures and body language",
+      "Tone of voice (unless the optional audio track is kept)",
+      "Speaker identity (not in MVP)"
+    ],
+    "notes": [
+      "O = all original bytes in scope, every copy on every simulated system. D = all derived files + manifests. I = measured SQLite/FTS index size.",
+      "D and I are counted in every scenario (conservative).",
+      "Scenarios 1-3 are hypothetical and require human approval. The tool never deletes anything.",
+      "Ericsson's own example (PDF p.2: ~1 GB \u2192 ~50 KB text + ~2 MB frames, 'roughly 99%') is their illustration, not our measurement."
+    ]
+  },
+  "offboarding_carl": {
+    "ms": 6.1,
+    "status": 200,
+    "body": {
+      "owner": "carl",
+      "generated_at": "2026-11-12T22:40:46.160000Z",
+      "deletes_performed": false,
+      "rows": [
+        {
+          "asset_id": "a_8965ed88",
+          "filename": "wifi-campus-plan (1).pdf",
+          "kind": "document",
+          "bytes": 3020,
+          "source_system": "onedrive",
+          "recommendation": "eligible_after_approval",
+          "reason": "Confirmed exact duplicate (same SHA-256) at sharepoint: wifi-campus-plan.pdf (owner: anna)",
+          "duplicates_elsewhere": [
+            {
+              "asset_id": "a_075cfc51",
+              "filename": "wifi-campus-plan.pdf",
+              "source_system": "sharepoint",
+              "owner": "anna"
+            }
+          ]
+        }
+      ],
+      "summary": {
+        "total": 1,
+        "eligible": 1,
+        "keep": 0,
+        "eligible_bytes": 3020
+      }
+    }
+  },
+  "offboarding_anna": {
+    "ms": 4.0,
+    "status": 200,
+    "body": {
+      "owner": "anna",
+      "generated_at": "2026-11-12T22:40:46.164000Z",
+      "deletes_performed": false,
+      "rows": [
+        {
+          "asset_id": "a_075cfc51",
+          "filename": "wifi-campus-plan.pdf",
+          "kind": "document",
+          "bytes": 3020,
+          "source_system": "sharepoint",
+          "recommendation": "eligible_after_approval",
+          "reason": "Confirmed exact duplicate (same SHA-256) at onedrive: wifi-campus-plan (1).pdf (owner: carl)",
+          "duplicates_elsewhere": [
+            {
+              "asset_id": "a_8965ed88",
+              "filename": "wifi-campus-plan (1).pdf",
+              "source_system": "onedrive",
+              "owner": "carl"
+            }
+          ]
+        },
+        {
+          "asset_id": "a_4140f6a7",
+          "filename": "wifi-campus-plan-revB.pdf",
+          "kind": "document",
+          "bytes": 3032,
+          "source_system": "sharepoint",
+          "recommendation": "keep",
+          "reason": "No exact copy owned by someone else. Shared or similar slides do not count.",
+          "duplicates_elsewhere": []
+        }
+      ],
+      "summary": {
+        "total": 2,
+        "eligible": 1,
+        "keep": 1,
+        "eligible_bytes": 3020
+      }
+    }
+  },
+  "offboarding_bjorn": {
+    "ms": 3.7,
+    "status": 200,
+    "body": {
+      "owner": "bjorn",
+      "generated_at": "2026-11-12T22:40:46.168000Z",
+      "deletes_performed": false,
+      "rows": [
+        {
+          "asset_id": "a_622475d6",
+          "filename": "lab-safety-briefing.pdf",
+          "kind": "document",
+          "bytes": 3027,
+          "source_system": "sharepoint",
+          "recommendation": "keep",
+          "reason": "No exact copy owned by someone else. Shared or similar slides do not count.",
+          "duplicates_elsewhere": []
+        },
+        {
+          "asset_id": "a_e34668e5",
+          "filename": "lab-briefing.mp4",
+          "kind": "video",
+          "bytes": 165123,
+          "source_system": "ericsson_play",
+          "recommendation": "keep",
+          "reason": "No exact copy owned by someone else. Shared or similar slides do not count.",
+          "duplicates_elsewhere": []
+        }
+      ],
+      "summary": {
+        "total": 2,
+        "eligible": 0,
+        "keep": 2,
+        "eligible_bytes": 0
+      }
+    }
+  },
+  "offboarding_dana": {
+    "ms": 4.1,
+    "status": 200,
+    "body": {
+      "owner": "dana",
+      "generated_at": "2026-11-12T22:40:46.172000Z",
+      "deletes_performed": false,
+      "rows": [
+        {
+          "asset_id": "a_dda785ba",
+          "filename": "q3-procurement-notes.pdf",
+          "kind": "document",
+          "bytes": 2401,
+          "source_system": "onedrive",
+          "recommendation": "keep",
+          "reason": "No exact copy owned by someone else. Shared or similar slides do not count.",
+          "duplicates_elsewhere": []
+        }
+      ],
+      "summary": {
+        "total": 1,
+        "eligible": 0,
+        "keep": 1,
+        "eligible_bytes": 0
+      }
+    }
+  },
+  "export": {
+    "ms": 7.8,
+    "status": 200,
+    "lines": 18,
+    "bytes": 13906
+  }
+}

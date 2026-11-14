@@ -59,9 +59,10 @@ def verify_timeline(asset_id: str) -> dict:
             "problems": problems[:20], "problem_count": len(problems)}
 
 
-def apply_unique_slides(asset_id: str, dry_run: bool = False) -> dict:
+def apply_unique_slides(asset_id: str, dry_run: bool = False, force: bool = False) -> dict:
     with db.read() as conn:
-        row = conn.execute("SELECT kind, status, manifest_bytes FROM assets WHERE id = ?", (asset_id,)).fetchone()
+        row = conn.execute("SELECT kind, status, manifest_bytes, pipeline_json FROM assets WHERE id = ?",
+                           (asset_id,)).fetchone()
         busy = conn.execute("SELECT id FROM jobs WHERE asset_id = ? AND status IN ('queued', 'running')",
                             (asset_id,)).fetchone()
     if row is None:
@@ -72,8 +73,14 @@ def apply_unique_slides(asset_id: str, dry_run: bool = False) -> dict:
         raise ApiError(ErrorCode.conflict, f"A job for {asset_id} is running ({busy['id']}); try again when it ends.")
     out = str(settings.DERIVED_DIR / asset_id)
     audit = str(settings.DATA_DIR / "audit" / "unique-slides")
+    prev_us = (json.loads(row["pipeline_json"] or "{}") or {}).get("unique_slides") or {}
+    need_force = force or (bool(prev_us) and not str(prev_us.get("method", "")).startswith("slides-only v3"))
     args = ["unique-slides", "--asset-id", asset_id, "--out", out, "--audit-dir", audit]
-    res = {"pass": _pipeline(*args, *(["--dry-run"] if dry_run else []))}
+    if need_force:
+        args.append("--force")
+    if dry_run:
+        args.append("--dry-run")
+    res = {"pass": _pipeline(*args)}
     if dry_run:
         return res
     ingest.ingest_manifest(asset_id)
@@ -84,4 +91,27 @@ def apply_unique_slides(asset_id: str, dry_run: bool = False) -> dict:
     res["prune"] = _pipeline("prune-frames", "--asset-id", asset_id, "--out", out)
     ingest.reindex_asset_metadata()
     res["verify_after_prune"] = verify_timeline(asset_id)
+    return res
+
+
+def apply_speakers(asset_id: str, dry_run: bool = False) -> dict:
+    with db.read() as conn:
+        row = conn.execute("SELECT filename, kind, status, manifest_bytes FROM assets WHERE id = ?",
+                           (asset_id,)).fetchone()
+        busy = conn.execute("SELECT id FROM jobs WHERE asset_id = ? AND status IN ('queued', 'running')",
+                            (asset_id,)).fetchone()
+    if row is None:
+        raise ApiError(ErrorCode.not_found, f"Asset {asset_id} was not found.")
+    if row["kind"] != "video" or row["manifest_bytes"] is None or row["status"] != "ready":
+        raise ApiError(ErrorCode.conflict, "Only a processed ('ready') recording can run speaker identification.")
+    if busy:
+        raise ApiError(ErrorCode.conflict, f"A job for {asset_id} is running ({busy['id']}); try again when it ends.")
+    inp = str(settings.ORIGINALS_DIR / asset_id / row["filename"])
+    out = str(settings.DERIVED_DIR / asset_id)
+    args = ["speakers", "--asset-id", asset_id, "--input", inp, "--out", out]
+    if dry_run:
+        args.append("--dry-run")
+    res = {"speakers": _pipeline(*args)}
+    if not dry_run:
+        ingest.ingest_manifest(asset_id)
     return res

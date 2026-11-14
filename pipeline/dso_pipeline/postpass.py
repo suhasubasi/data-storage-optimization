@@ -12,13 +12,15 @@ from __future__ import annotations
 
 import json
 import shutil
+import subprocess
+import tempfile
 from datetime import datetime, timezone
 from pathlib import Path
 from typing import Any
 
 from dso_contracts.models import Manifest
 
-from . import unique_slides
+from . import diarize, unique_slides
 from .common import load_thresholds, sha256_file, write_json_atomic
 
 IMAGE_SUFFIXES = {".webp", ".png", ".jpg", ".jpeg"}
@@ -60,14 +62,14 @@ def _check_frame_files(out_dir: Path, m: dict[str, Any]) -> dict[str, str]:
 
 
 def run_unique_slides(asset_id: str, out_dir: Path, audit_dir: Path | None = None,
-                      dry_run: bool = False) -> dict[str, Any]:
+                      dry_run: bool = False, force: bool = False) -> dict[str, Any]:
     out_dir = out_dir.resolve()
     m = _load(out_dir, asset_id)
     if m["kind"] != "video":
         raise PostPassError("unique-slide pass is for recordings (kind 'video') only")
-    previous=(m["pipeline"] or {}).get("unique_slides")
-    if previous and previous.get("method")==unique_slides.METHOD:
-        raise PostPassError("unique-slide pass was already applied with the current method")
+    prev_us = (m["pipeline"] or {}).get("unique_slides")
+    if prev_us and not force:
+        raise PostPassError("unique-slide pass was already applied to this manifest")
     if not m["frames"]:
         raise PostPassError("this recording has no key frames")
     shas = _check_frame_files(out_dir, m)
@@ -86,6 +88,8 @@ def run_unique_slides(asset_id: str, out_dir: Path, audit_dir: Path | None = Non
     for a, b in zip(runs, runs[1:]):
         if not (a["t_start"] < b["t_start"] and abs(a["t_end"] - b["t_start"]) < 1e-6):
             raise PostPassError(f"time ranges not contiguous at {a['id']} -> {b['id']}")
+    if not runs:
+        raise PostPassError("no slide image was found, so nothing was changed")
     if runs[0]["t_start"] != m["frames"][0]["t_start"] or abs(runs[-1]["t_end"] - m["frames"][-1]["t_end"]) > 1e-6:
         raise PostPassError("time ranges do not cover the same span as before")
     covered = [fid for f in runs for fid in f["source_frames"]]
@@ -97,12 +101,27 @@ def run_unique_slides(asset_id: str, out_dir: Path, audit_dir: Path | None = Non
         if new["frame_id"] not in ids:
             raise PostPassError(f"segment {new['id']} points at an unknown frame")
 
+    # Flatten source_frames across re-runs so the complete original frame audit trail is preserved.
+    orig_src = {f["id"]: (f.get("source_frames") or [f["id"]]) for f in m["frames"]}
+    for rf in runs:
+        flat: list[str] = []
+        seen_ids: set[str] = set()
+        for fid in rf["source_frames"]:
+            for oid in orig_src.get(fid, [fid]):
+                if oid not in seen_ids:
+                    flat.append(oid)
+                    seen_ids.add(oid)
+        rf["source_frames"] = flat
+
     keep = set(r["keep_paths"])
     derived = [d for d in m["derived_files"] if d["kind"] != "frame" or d["path"] in keep]
     info = {**r["info"], "applied_as": "post_pass", "applied_at": _utc_now()}
+    if prev_us:
+        info["source_frame_count"] = max(int(prev_us.get("source_frame_count", 0)), int(info["source_frame_count"]))
+        info["source_frame_bytes"] = max(int(prev_us.get("source_frame_bytes", 0)), int(info["source_frame_bytes"]))
     summary = {
         "asset_id": asset_id,
-        "source_frames": len(m["frames"]),
+        "source_frames": info["source_frame_count"],
         "unique_slides": info["unique_slide_count"],
         "time_ranges": info["run_count"],
         "source_frame_bytes": info["source_frame_bytes"],
@@ -113,6 +132,23 @@ def run_unique_slides(asset_id: str, out_dir: Path, audit_dir: Path | None = Non
     }
     if dry_run:
         return summary
+
+    # Remove old slide-*.webp crop paths from shas check if upgrading an already-cropped manifest.
+    crop_overwritten = {f"frames/slide-{int(s['slide'])}.webp" for s in r["slides"]} if force else set()
+    unique_slides.write_crops(r, out_dir, hash_size)
+    runs = r["frames"]
+    keep = set(r["keep_paths"])
+    derived = [d for d in m["derived_files"] if d["kind"] != "frame" or d["path"] in keep]
+    have = {d["path"] for d in derived}
+    for rel in sorted(keep):
+        if rel not in have:
+            derived.append({"path": rel, "bytes": (out_dir / rel).stat().st_size, "kind": "frame"})
+    info = {**r["info"], "applied_as": "post_pass", "applied_at": info["applied_at"]}
+    if prev_us:
+        info["source_frame_count"] = max(int(prev_us.get("source_frame_count", 0)), int(info["source_frame_count"]))
+        info["source_frame_bytes"] = max(int(prev_us.get("source_frame_bytes", 0)), int(info["source_frame_bytes"]))
+    summary["unique_slide_bytes"] = info["unique_slide_bytes"]
+    summary["frames_to_prune"] = len(r["drop_paths"])
 
     # Audit trail first (outside the derived folder, so it never mixes into derived bytes).
     if audit_dir is not None:
@@ -147,7 +183,7 @@ def run_unique_slides(asset_id: str, out_dir: Path, audit_dir: Path | None = Non
     Manifest.model_validate(new)
     write_json_atomic(out_dir / "manifest.json", new)  # LAST
     for p in keep:
-        if sha256_file(out_dir / p) != shas[p]:
+        if p in shas and p not in crop_overwritten and sha256_file(out_dir / p) != shas[p]:
             raise PostPassError(f"kept image changed on disk: {p}")
     summary["manifest_bytes"] = (out_dir / "manifest.json").stat().st_size
     return summary
@@ -172,3 +208,67 @@ def prune_frames(asset_id: str, out_dir: Path, dry_run: bool = False) -> dict[st
                     p.unlink()
     return {"asset_id": asset_id, "removed_files": len(removed), "removed_bytes": removed_bytes,
             "kept_files": len({f["path"] for f in m["frames"]}), "dry_run": dry_run}
+
+
+def run_speakers(asset_id: str, video_path: Path, out_dir: Path, dry_run: bool = False) -> dict[str, Any]:
+    """Identify speakers ('Speaker 1', 'Speaker 2', ...) as text labels without re-running Whisper or saving audio."""
+    out_dir = out_dir.resolve()
+    video_path = video_path.resolve()
+    if not video_path.is_file():
+        raise PostPassError(f"original video not found: {video_path}")
+    m = _load(out_dir, asset_id)
+    if m["kind"] != "video":
+        raise PostPassError("speakers pass is for recordings (kind 'video') only")
+    if not m["segments"]:
+        return {"asset_id": asset_id, "speaker_count": 0, "speakers": [], "dry_run": dry_run}
+
+    with tempfile.TemporaryDirectory(prefix=".tmp-spk-", dir=out_dir) as tmpname:
+        wav = Path(tmpname) / "audio.wav"
+        p = subprocess.run(
+            ["ffmpeg", "-nostdin", "-v", "error", "-y", "-i", str(video_path), "-vn",
+             "-ac", "1", "-ar", "16000", "-c:a", "pcm_s16le", str(wav)],
+            stdout=subprocess.PIPE, stderr=subprocess.PIPE, text=True,
+        )
+        if p.returncode != 0:
+            raise PostPassError(f"ffmpeg audio extraction failed: {(p.stderr or '').strip()[-400:]}")
+        segments = [dict(s) for s in m["segments"]]
+        diar = diarize.diarize_wav(
+            wav, segments, video_path=video_path, include_roles=True
+        )
+        if dry_run:
+            return {"asset_id": asset_id, "speaker_count": len(diar["speakers"]),
+                    "speakers": diar["speakers"], "dry_run": True}
+
+    # Remove any legacy voice-sample WAVs so only text speaker labels remain.
+    audio_dir = out_dir / "audio"
+    if audio_dir.is_dir():
+        for old in audio_dir.glob("speaker-*.wav"):
+            old.unlink()
+        try:
+            audio_dir.rmdir()
+        except OSError:
+            pass
+
+    transcript_path = out_dir / "transcript.json"
+    if transcript_path.is_file():
+        t = json.loads(transcript_path.read_text(encoding="utf-8"))
+        t["segments"] = segments
+        t["speakers"] = diar["speakers"]
+        if diar.get("diarization") is not None:
+            t["diarization"] = diar["diarization"]
+        write_json_atomic(transcript_path, t)
+
+    derived = [d for d in m["derived_files"] if d["kind"] != "audio"]
+    for d in derived:
+        d["bytes"] = (out_dir / d["path"]).stat().st_size
+
+    new = {**m, "segments": segments, "derived_files": derived}
+    Manifest.model_validate(new)
+    write_json_atomic(out_dir / "manifest.json", new)
+    return {
+        "asset_id": asset_id,
+        "speaker_count": len(diar["speakers"]),
+        "speakers": diar["speakers"],
+        "manifest_bytes": (out_dir / "manifest.json").stat().st_size,
+        "dry_run": False,
+    }

@@ -1,4 +1,3 @@
-// REC v1.4: choose the Whisper model + device. Saved on the backend; used only by jobs started afterwards.
 import { useEffect, useState } from "react";
 import type { Settings, WhisperDevice, WhisperModelName } from "@contracts/ts/dso-contracts";
 import { api } from "../api/client";
@@ -6,15 +5,15 @@ import { useAsync } from "../lib/useAsync";
 import { Badge, Callout, ErrorBox, Loading, PageHeader } from "../components/ui";
 
 const MODEL_HELP: Record<WhisperModelName, string> = {
-  small: "Fast. Good on any computer, also without a GPU. Some small word mistakes.",
-  "large-v3-turbo": "Fast + accurate. Best choice with an NVIDIA GPU (used about 1.3 GB of GPU memory in our test). Slow on a CPU.",
-  "large-v3": "Most accurate, but slower. Needs an NVIDIA GPU (used about 2.4 GB of GPU memory in our test). Very slow on a CPU.",
+  small: "Fast baseline suitable for CPU or GPU.",
+  "large-v3-turbo": "Best speed/accuracy balance on NVIDIA CUDA (~1.3 GB VRAM).",
+  "large-v3": "Maximum transcription fidelity on GPU (~2.4 GB VRAM). Slow on CPU.",
 };
 
 const DEVICES: { value: WhisperDevice; label: string; help: string }[] = [
-  { value: "auto", label: "Auto", help: "Use the NVIDIA GPU if there is one, else the CPU." },
-  { value: "cuda", label: "GPU", help: "NVIDIA GPU only. A job fails with a clear message if no GPU is usable." },
-  { value: "cpu", label: "CPU", help: "Never use the GPU." },
+  { value: "auto", label: "Auto", help: "Use NVIDIA CUDA when available, otherwise CPU." },
+  { value: "cuda", label: "NVIDIA GPU", help: "Require CUDA GPU; fail fast if unavailable." },
+  { value: "cpu", label: "CPU only", help: "Force CPU execution regardless of GPU presence." },
 ];
 
 export default function SettingsPage() {
@@ -33,6 +32,7 @@ export default function SettingsPage() {
   }, [s.data]);
 
   const current = saved ?? s.data;
+  const changed = !!current && (current.whisper_model !== model || current.whisper_device !== device);
 
   async function save() {
     setSaving(true);
@@ -46,37 +46,34 @@ export default function SettingsPage() {
     }
   }
 
-  const changed = !!current && (current.whisper_model !== model || current.whisper_device !== device);
-
   return (
-    <section>
+    <section className="page-stack page-settings">
       <PageHeader
-        title="Settings"
-        lead="Choose the speech-to-text model (Whisper) and where it runs. The choice is used for the next files you process. Files that are already processed are never re-processed automatically."
+        title="Runtime & speech-to-text settings"
+        lead="Choose how future recordings are transcribed. Existing processed files stay as they are."
       />
+
       {s.loading && !s.data ? (
-        <Loading />
+        <Loading label="Inspecting hardware & installed weights…" />
       ) : s.error ? (
         <ErrorBox error={s.error} onRetry={s.reload} />
       ) : current ? (
-        <>
+        <div className="split-2">
           <div className="card">
             <div className="card-head">
-              <h3>Speech-to-text model</h3>
-              <span>
-                GPU:{" "}
-                {current.gpu_available === true ? (
-                  <Badge tone="green">NVIDIA GPU found</Badge>
-                ) : current.gpu_available === false ? (
-                  <Badge tone="grey">no NVIDIA GPU</Badge>
-                ) : (
-                  <Badge tone="amber">could not check</Badge>
-                )}
-              </span>
+              <h3>Speech-to-text model (faster-whisper)</h3>
+              {current.gpu_available === true ? (
+                <Badge tone="green">NVIDIA CUDA detected</Badge>
+              ) : current.gpu_available === false ? (
+                <Badge tone="grey">CPU only host</Badge>
+              ) : (
+                <Badge tone="amber">Hardware probe inconclusive</Badge>
+              )}
             </div>
-            <div className="choice-list" role="radiogroup" aria-label="Whisper model">
+
+            <div className="choice-stack" role="radiogroup" aria-label="Whisper model">
               {current.models.map((m) => (
-                <label key={m.name} className={`choice ${model === m.name ? "on" : ""} ${m.installed ? "" : "off"}`}>
+                <label key={m.name} className={`choice-card ${model === m.name ? "on" : ""} ${m.installed ? "" : "disabled"}`}>
                   <input
                     type="radio"
                     name="model"
@@ -85,25 +82,24 @@ export default function SettingsPage() {
                     disabled={!m.installed}
                     onChange={() => setModel(m.name)}
                   />
-                  <span>
-                    <b>{m.label}</b> <code>{m.name}</code>{" "}
-                    {m.installed ? <Badge tone="green">installed</Badge> : <Badge tone="grey">not installed</Badge>}
-                    <br />
-                    <span className="muted small">
-                      {MODEL_HELP[m.name]}
-                      {!m.installed && <> To use it, download it first: see the README, section "Which Whisper model?".</>}
-                    </span>
-                  </span>
+                  <div>
+                    <div className="row-actions">
+                      <strong>{m.label}</strong>
+                      <code>{m.name}</code>
+                      {m.installed ? <Badge tone="green">Installed</Badge> : <Badge tone="grey">Not downloaded</Badge>}
+                    </div>
+                    <p className="muted small">{MODEL_HELP[m.name]}</p>
+                  </div>
                 </label>
               ))}
             </div>
 
-            <h3>Device</h3>
-            <div className="choice-list" role="radiogroup" aria-label="Device">
+            <h3 style={{ marginTop: 20 }}>Compute device</h3>
+            <div className="choice-stack" role="radiogroup" aria-label="Device">
               {DEVICES.map((d) => {
                 const blocked = d.value === "cuda" && current.gpu_available === false;
                 return (
-                  <label key={d.value} className={`choice ${device === d.value ? "on" : ""} ${blocked ? "off" : ""}`}>
+                  <label key={d.value} className={`choice-card ${device === d.value ? "on" : ""} ${blocked ? "disabled" : ""}`}>
                     <input
                       type="radio"
                       name="device"
@@ -112,49 +108,43 @@ export default function SettingsPage() {
                       disabled={blocked}
                       onChange={() => setDevice(d.value)}
                     />
-                    <span>
-                      <b>{d.label}</b>
-                      <br />
-                      <span className="muted small">{d.help}</span>
-                    </span>
+                    <div>
+                      <strong>{d.label}</strong>
+                      <p className="muted small">{d.help}</p>
+                    </div>
                   </label>
                 );
               })}
             </div>
 
-            <div className="row-actions">
-              <button className="btn primary" disabled={saving || !changed} onClick={save}>
-                {saving ? "Saving…" : "Save"}
+            <div className="row-actions" style={{ marginTop: 16 }}>
+              <button type="button" className="btn btn-primary" disabled={saving || !changed} onClick={save}>
+                {saving ? "Saving…" : "Save runtime settings"}
               </button>
             </div>
             {saveError && <ErrorBox error={saveError} />}
             {saved && !changed && (
-              <Callout tone="safe" title="Saved.">
-                The next file you process (or re-process) uses <code>{saved.whisper_model}</code> on{" "}
-                <code>{saved.whisper_device}</code>. Nothing was re-processed.
+              <Callout tone="safe" title="Configuration saved.">
+                Upcoming jobs will use <code>{saved.whisper_model}</code> on <code>{saved.whisper_device}</code>.
               </Callout>
             )}
           </div>
 
           <div className="card">
-            <h3>What the next job will really use</h3>
+            <h3>Effective runtime configuration</h3>
             <p>
-              Model <code>{current.effective_model}</code> · device <code>{current.effective_device}</code>
+              Next queued job runs <code>{current.effective_model}</code> on <code>{current.effective_device}</code>.
             </p>
             {current.env_overrides.length > 0 && (
-              <Callout tone="warn" title="Set by the backend start command.">
-                {current.env_overrides.map((v) => (
-                  <code key={v}>{v} </code>
-                ))}
-                is set when the backend was started, and it wins over the choice above. Start the backend without it to use the
-                choice saved here.
+              <Callout tone="warn" title="Environment override active.">
+                {current.env_overrides.map((v) => <code key={v}>{v} </code>)} is forcing runtime behavior at backend startup and overrides saved UI choices.
               </Callout>
             )}
             <p className="muted small">
-              Each transcript records the model and device that made it (shown as "Model" on the recording page).
+              Notice also: the standalone speaker diarizer (Silero VAD + Pyannote ONNX + SpeechBrain ECAPA + 2 fps visual playback classifier) runs locally alongside Whisper with zero saved audio clips.
             </p>
           </div>
-        </>
+        </div>
       ) : null}
     </section>
   );

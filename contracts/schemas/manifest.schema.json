@@ -212,7 +212,7 @@
           ]
         },
         "speaker": {
-          "description": "Recording-local voice label (Speaker 1, Speaker 2, ...), or null when unavailable or uncertain.",
+          "description": "Always null in the MVP (speaker ID is out of scope).",
           "type": [
             "string",
             "null"

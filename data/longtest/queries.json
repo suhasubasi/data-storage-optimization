@@ -1,0 +1,11 @@
+﻿{"positive": [
+ {"q": "Danny Kahneman", "expect_segment": "s6"},
+ {"q": "recursivecodingagents", "expect_segment": "s75"},
+ {"q": "Jeff plays doom", "expect_segment": "s114"},
+ {"q": "zero shot", "expect_segment": "s26"},
+ {"q": "compaction", "expect_segment": "s100"},
+ {"q": "Recursive Language Models", "expect_segment": "s41"},
+ {"q": "oso computer", "expect_segment": "s700"},
+ {"q": "45 milliseconds", "expect_segment": "s605"}
+],
+"negative": {"q": "kubernetes", "expect_segment": null}}

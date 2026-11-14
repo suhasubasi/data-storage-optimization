@@ -78,8 +78,3 @@ def test_big_model_on_cpu(fake_whisper, tmp_path, monkeypatch):
     r = tr.transcribe(tmp_path / "a.wav", 10.0, CFG, lambda p: None)
     assert fake_whisper.calls == [("large-v3-turbo", "cpu", "int8")]
     assert r.model_label == "faster-whisper large-v3-turbo int8"
-
-
-def test_word_timestamps_are_requested_for_diarization(fake_whisper, tmp_path):
-    tr.transcribe(tmp_path / 'audio.wav', 2, CFG, lambda p: None, with_words=True)
-    assert fake_whisper.kw['word_timestamps'] is True

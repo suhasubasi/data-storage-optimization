@@ -121,6 +121,13 @@ export type OffboardingRecommendation = "eligible_after_approval" | "keep";
  */
 export type ChunkKind = "transcript_segment" | "slide_text";
 /**
+ * Speaker role category from diarization: PRESENTER, DOCUMENTARY, or UNKNOWN.
+ *
+ * This interface was referenced by `DsoContracts`'s JSON-Schema
+ * via the `definition` "SpeakerCategory".
+ */
+export type SpeakerCategory = "PRESENTER" | "DOCUMENTARY" | "UNKNOWN";
+/**
  * REC v1.4: the Whisper models the user can pick in the UI. small = fast, large-v3-turbo = fast + accurate (needs an NVIDIA GPU to be fast), large-v3 = most accurate (slowest). 'medium' is deliberately not offered.
  *
  * This interface was referenced by `DsoContracts`'s JSON-Schema
@@ -191,6 +198,9 @@ export interface DsoContracts {
   OffboardingRow?: OffboardingRow;
   OffboardingReview?: OffboardingReview;
   Provenance?: Provenance;
+  SpeakerCategory?: SpeakerCategory;
+  SpeakerRoleCues?: SpeakerRoleCues;
+  ExportSpeaker?: ExportSpeaker;
   ExportChunk?: ExportChunk;
   ExportMatch?: ExportMatch;
   ExportAsset?: ExportAsset;
@@ -263,7 +273,7 @@ export interface Segment {
    */
   frame_id: string | null;
   /**
-   * Recording-local voice label (Speaker 1, Speaker 2, ...), or null when unavailable or uncertain.
+   * Always null in the MVP (speaker ID is out of scope).
    */
   speaker: string | null;
 }
@@ -974,6 +984,45 @@ export interface Provenance {
   original_url: string;
 }
 /**
+ * Visual/temporal cues used to classify a speaker's role (PRESENTER vs DOCUMENTARY vs UNKNOWN).
+ *
+ * This interface was referenced by `DsoContracts`'s JSON-Schema
+ * via the `definition` "SpeakerRoleCues".
+ */
+export interface SpeakerRoleCues {
+  static_seconds: number;
+  video_seconds: number;
+  static_blocks: number;
+  static_share: number;
+  active_span_seconds: number;
+}
+/**
+ * Per-speaker summary and role cues from diarization.
+ *
+ * This interface was referenced by `DsoContracts`'s JSON-Schema
+ * via the `definition` "ExportSpeaker".
+ */
+export interface ExportSpeaker {
+  /**
+   * Display speaker label (e.g. 'Speaker 1 (Presenter)' or 'Speaker 1').
+   */
+  speaker: string;
+  /**
+   * Canonical speaker identifier (e.g. 'Speaker 1'), or null when unavailable.
+   */
+  speaker_id?: string | null;
+  /**
+   * Classified speaker role category, or null when unavailable.
+   */
+  role?: SpeakerCategory | null;
+  segment_count: number;
+  seconds_spoken: number;
+  video_churn_ratio?: number | null;
+  overlap_seconds?: number | null;
+  overlap_segment_count?: number | null;
+  role_cues?: SpeakerRoleCues | null;
+}
+/**
  * One AI-ready text chunk. GET /api/export.jsonl returns one ExportChunk per line. 'metadata' repeats the asset's doc_number / revision / title for revision tracking.
  *
  * This interface was referenced by `DsoContracts`'s JSON-Schema
@@ -991,6 +1040,30 @@ export interface ExportChunk {
   slide_id: string | null;
   image_url: string | null;
   language: string | null;
+  /**
+   * Speaker label for transcript_segment chunks (e.g. 'Speaker 1' or 'Speaker 1 (Presenter)'), or null.
+   */
+  speaker?: string | null;
+  /**
+   * Canonical speaker identifier for transcript_segment chunks (e.g. 'Speaker 1'), or null.
+   */
+  speaker_id?: string | null;
+  /**
+   * Classified speaker role category for transcript_segment chunks, or null.
+   */
+  speaker_category?: SpeakerCategory | null;
+  /**
+   * Real speaker assignment confidence/margin when available, or null (never fabricated).
+   */
+  speaker_confidence?: number | null;
+  /**
+   * True when overlapping speech was detected in this transcript_segment chunk, false when single-speaker, or null when unavailable.
+   */
+  overlap?: boolean | null;
+  /**
+   * Speaker IDs involved when overlap was detected (or [] when none), or null when unavailable.
+   */
+  overlap_speakers?: string[] | null;
   metadata: AssetMetadata;
   source: Provenance;
 }
@@ -1026,6 +1099,10 @@ export interface ExportAsset {
    * All exact/shared/similar matches touching this asset.
    */
   matches: ExportMatch[];
+  /**
+   * Structured per-speaker diarization summary from transcript.json when available, or null.
+   */
+  speakers?: ExportSpeaker[] | null;
 }
 /**
  * This interface was referenced by `DsoContracts`'s JSON-Schema

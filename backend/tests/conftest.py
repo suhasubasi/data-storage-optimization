@@ -25,10 +25,19 @@ def fixture_json(name: str):
 
 
 def fill_optional(obj):
-    """Fixtures omit optional AssetMetadata.duration_seconds; the API sends it as null (schema-valid)."""
+    """Fixtures omit optional v1.x fields (duration_seconds, speaker/diarization fields, speakers); the API sends them as null (schema-valid)."""
     if isinstance(obj, dict):
         if "doc_number" in obj and "revision" in obj:
             obj.setdefault("duration_seconds", None)
+        if "chunk_id" in obj and "kind" in obj:
+            obj.setdefault("speaker", None)
+            obj.setdefault("speaker_id", None)
+            obj.setdefault("speaker_category", None)
+            obj.setdefault("speaker_confidence", None)
+            obj.setdefault("overlap", None)
+            obj.setdefault("overlap_speakers", None)
+        if "exported_at" in obj and "chunks" in obj and "matches" in obj:
+            obj.setdefault("speakers", None)
         for v in obj.values():
             fill_optional(v)
     elif isinstance(obj, list):

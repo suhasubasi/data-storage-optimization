@@ -1,0 +1,97 @@
+{
+  "ok": [
+    "frontend .env.local has VITE_USE_MOCKS=false",
+    "original on disk matches API sha256 61f1609966f6b55f… (Your Agent Doesnt Need an LLM for Every Decision - Raymond Weitekamp OpenProse.mp4, 347928702 bytes)",
+    "uploaded original is the same bytes as the file in data/samples",
+    "filename is the OpenProse talk: Your Agent Doesnt Need an LLM for Every Decision - Raymond Weitekamp OpenProse.mp4",
+    "status is ready",
+    "duration is 3108.014 s (~51 min 48 s), matches the source file",
+    "metadata title is the real talk: Your Agent Doesn't Need an LLM for Every Decision - Raymond Weitekamp, OpenProse",
+    "model is real ASR: faster-whisper small int8",
+    "timeline belongs to a_0ac641df",
+    "timeline has 670 frames and 701 segments",
+    "every frame URL points only at a_0ac641df, none at another asset",
+    "all 670 frame files exist on disk under derived/a_0ac641df/frames",
+    "last frame ends at 3108.014 s, matching the 3108.014 s duration",
+    "first key frame starts at 0:00",
+    "every transcript segment's frame_id exists in this recording's frame list",
+    "every segment is linked to the key frame that was on screen when that sentence starts",
+    "transcript timestamps are in order",
+    "transcript has none of the earlier test-file phrases (goggles, yellow cabinet, wifi, handover, etc.)",
+    "transcript is clearly this talk (Raymond, Recursive Decision, Operating System)",
+    "OpenProse key frames are not the same files as the lab-briefing video frames",
+    "slides endpoint is empty for this video (slides belong to PDFs, not mixed in)",
+    "this filename is unique in the library (no second copy mixed under another id)",
+    "original_url is /files/originals/a_0ac641df/…",
+    "manifest.json on disk is for a_0ac641df",
+    "manifest original path: originals/a_0ac641df/Your Agent Doesnt Need an LLM for Every Decision - Raymond Weitekamp OpenProse.mp4"
+  ],
+  "issues": [],
+  "counts": {
+    "frames": 670,
+    "segments": 701,
+    "issues": 0
+  },
+  "identity": {
+    "id": "a_0ac641df",
+    "filename": "Your Agent Doesnt Need an LLM for Every Decision - Raymond Weitekamp OpenProse.mp4",
+    "sha256": "61f1609966f6b55f219c7f5638f96eb81d475978d5456b81e7dc2e8629fe7e72",
+    "bytes": 347928702,
+    "owner": "erik",
+    "source_system": "ericsson_play",
+    "title": "Your Agent Doesn't Need an LLM for Every Decision - Raymond Weitekamp, OpenProse",
+    "duration_seconds": 3108.014,
+    "model": "faster-whisper small int8",
+    "original_url": "/files/originals/a_0ac641df/Your Agent Doesnt Need an LLM for Every Decision - Raymond Weitekamp OpenProse.mp4"
+  },
+  "samples": [
+    {
+      "where": "start",
+      "id": "s1",
+      "start": 0.0,
+      "end": 8.08,
+      "frame_id": "f1",
+      "text": "Hey, my name is Raymond Whitecamp and my talk today is originally titled Recursive Decision"
+    },
+    {
+      "where": "middle",
+      "id": "s351",
+      "start": 1658.84,
+      "end": 1663.16,
+      "frame_id": "f324",
+      "text": "Now you can start to have, so these are actual real call trees from the demo I'm about to"
+    },
+    {
+      "where": "late",
+      "id": "s561",
+      "start": 2639.45,
+      "end": 2642.57,
+      "frame_id": "f542",
+      "text": "because it's actually a little bit confusing video to watch."
+    },
+    {
+      "where": "end",
+      "id": "s701",
+      "start": 3106.83,
+      "end": 3107.83,
+      "frame_id": "f670",
+      "text": "Thank you so much."
+    }
+  ],
+  "first_last_frames": {
+    "first": {
+      "id": "f1",
+      "t_start": 0.0,
+      "t_end": 24.0,
+      "image_url": "/files/derived/a_0ac641df/frames/f1.webp",
+      "path": null
+    },
+    "last": {
+      "id": "f670",
+      "t_start": 3085.0,
+      "t_end": 3108.014,
+      "image_url": "/files/derived/a_0ac641df/frames/f670.webp",
+      "path": null
+    }
+  }
+}

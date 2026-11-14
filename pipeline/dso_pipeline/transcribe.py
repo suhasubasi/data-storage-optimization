@@ -23,7 +23,7 @@ from __future__ import annotations
 import os
 import sys
 import wave
-from dataclasses import dataclass, field
+from dataclasses import dataclass
 from pathlib import Path
 from typing import Any, Callable
 
@@ -35,8 +35,6 @@ class TranscriptResult:
     model_label: str
     device: str = "cpu"
     compute_type: str = "int8"
-    words: list[list[tuple[float, float, str]]] = field(default_factory=list)
-    speakers: list[str | None] = field(default_factory=list)
 
 
 DEVICES = ("cpu", "cuda", "auto")
@@ -126,7 +124,7 @@ def _stub(wav: Path, duration: float, on_progress: Callable[[float], None]) -> T
     return TranscriptResult(segs, "en", "stub (test only, not a real transcript)")
 
 
-def transcribe(wav: Path, duration: float, thresholds: dict[str, Any], on_progress: Callable[[float], None], *, with_words: bool = False) -> TranscriptResult:
+def transcribe(wav: Path, duration: float, thresholds: dict[str, Any], on_progress: Callable[[float], None]) -> TranscriptResult:
     if os.environ.get("DSO_TRANSCRIBER", "whisper").lower() == "stub":
         return _stub(wav, duration, on_progress)
 
@@ -144,24 +142,36 @@ def transcribe(wav: Path, duration: float, thresholds: dict[str, Any], on_progre
         compute_type=compute,
         download_root=os.environ.get("DSO_WHISPER_MODEL_DIR") or None,
     )
-    seg_iter, info = model.transcribe(
-        load_wav_16k_mono(wav),
-        language=language,
-        beam_size=beam,
-        vad_filter=True,  # skip silence: faster on long recordings, fewer hallucinations
-        condition_on_previous_text=False,
-        **({"word_timestamps": True} if with_words else {}),
-    )
+    import inspect
+
+    transcribe_kw: dict[str, Any] = {
+        "language": language,
+        "beam_size": beam,
+        "vad_filter": True,  # skip silence: faster on long recordings, fewer hallucinations
+        "condition_on_previous_text": False,
+    }
+    try:
+        sig_params = inspect.signature(model.transcribe).parameters
+    except (TypeError, ValueError):
+        sig_params = {}
+    if "vad_parameters" in sig_params:
+        transcribe_kw["vad_parameters"] = {
+            "min_silence_duration_ms": 500,
+            "max_speech_duration_s": 25,
+        }
+    try:
+        seg_iter, info = model.transcribe(load_wav_16k_mono(wav), **transcribe_kw)
+    except TypeError:
+        transcribe_kw.pop("vad_parameters", None)
+        seg_iter, info = model.transcribe(load_wav_16k_mono(wav), **transcribe_kw)
     segs: list[tuple[float, float, str]] = []
-    words = []
     for s in seg_iter:  # generator: transcription actually runs here
         text = s.text.strip()
         if text:
             segs.append((round(float(s.start), 3), round(float(s.end), 3), text))
-            words.append([(float(w.start), float(w.end), w.word) for w in (getattr(s, "words", None) or [])])
         if duration > 0:
             on_progress(min(float(s.end) / duration, 1.0))
     on_progress(1.0)
     # The label goes into transcript.json and the manifest, so every result says how it was made.
     label = f"faster-whisper {Path(model_name).name} {compute}" + (" cuda" if device == "cuda" else "")
-    return TranscriptResult(segs, info.language, label, device, compute, words=words)
+    return TranscriptResult(segs, info.language, label, device, compute)

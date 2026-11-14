@@ -1,6 +1,5 @@
-import type { SourceSystem, AssetKind } from "@contracts/ts/dso-contracts";
+import type { AssetKind, SourceSystem, SpeakerCategory } from "@contracts/ts/dso-contracts";
 
-/** Decimal units (1 MB = 1,000,000 bytes), same as disk vendors and the storage report. */
 export function formatBytes(n: number | null | undefined, digits = 1): string {
   if (n === null || n === undefined || Number.isNaN(n)) return "—";
   const sign = n < 0 ? "−" : "";
@@ -14,7 +13,6 @@ export function formatBytes(n: number | null | undefined, digits = 1): string {
   return `${sign}${i === 0 ? v.toFixed(0) : v.toFixed(digits)} ${units[i]}`;
 }
 
-/** Exact bytes with thin separators, for formulas. */
 export function exactBytes(n: number): string {
   const sign = n < 0 ? "−" : "";
   return `${sign}${Math.abs(n).toLocaleString("en-US")} B`;
@@ -63,7 +61,6 @@ export function downloadText(filename: string, text: string, mime = "application
   setTimeout(() => URL.revokeObjectURL(url), 1000);
 }
 
-/** Elapsed time in plain words, e.g. "45 s", "3 min 05 s", "1 h 02 min". */
 export function formatDuration(sec: number | null | undefined): string {
   if (sec === null || sec === undefined || Number.isNaN(sec)) return "—";
   const s = Math.max(0, Math.round(sec));
@@ -74,7 +71,6 @@ export function formatDuration(sec: number | null | undefined): string {
   return `${m} min ${String(s % 60).padStart(2, "0")} s`;
 }
 
-/** Time left from the backend's estimate (eta_s). Always labelled as an estimate. */
 export function formatEta(sec: number | null | undefined): string | null {
   if (sec === null || sec === undefined || Number.isNaN(sec)) return null;
   if (sec < 60) return "less than 1 min left (estimate)";
@@ -82,4 +78,22 @@ export function formatEta(sec: number | null | undefined): string | null {
   if (min < 90) return `about ${min} min left (estimate)`;
   const h = Math.floor(min / 60);
   return `about ${h} h ${String(min % 60).padStart(2, "0")} min left (estimate)`;
+}
+
+export interface ParsedSpeakerLabel {
+  raw: string;
+  base: string;
+  category: SpeakerCategory | null;
+  overlap: boolean;
+}
+
+export function parseSpeakerLabel(label: string | null | undefined): ParsedSpeakerLabel {
+  const raw = (label ?? "").trim();
+  const overlap = /overlap|\+/i.test(raw);
+  const base = raw.replace(/\s*\([^)]*\)\s*$/, "").trim() || raw;
+  let category: SpeakerCategory | null = null;
+  if (/\bpresenter\b/i.test(raw)) category = "PRESENTER";
+  else if (/\bdocumentary\b/i.test(raw)) category = "DOCUMENTARY";
+  else if (/\bunknown\b/i.test(raw)) category = "UNKNOWN";
+  return { raw, base, category, overlap };
 }

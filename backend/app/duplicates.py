@@ -21,6 +21,7 @@ Extra REC (backend-only noise rules, easy to switch off):
 from __future__ import annotations
 
 import json
+import re
 import unicodedata
 from difflib import SequenceMatcher
 from itertools import combinations
@@ -53,6 +54,21 @@ def phash_distance(a: str, b: str) -> int:
 def _near_uniform(ph: str) -> bool:
     ones = bin(int(ph, 16)).count("1")
     return ones <= 2 or ones >= PHASH_BITS - 2
+
+
+def _tokens(text: str) -> set[str]:
+    return {w for w in re.findall(r"[a-z0-9]{3,}", normalise(text or ""))}
+
+
+def _jaccard(a: set[str], b: set[str]) -> float:
+    if not a or not b:
+        return 0.0
+    return len(a & b) / len(a | b)
+
+
+def _is_exported_slide_deck(filename: str | None) -> bool:
+    low = (filename or "").strip().lower()
+    return low.endswith((".slides.pptx", ".slides.pdf"))
 
 
 def representatives(conn) -> dict[str, str]:
@@ -131,4 +147,105 @@ def recompute_matches() -> int:
             rows.append((ra, rb, "slide", typ, method, score, json.dumps(ev)))
         conn.executemany(
             "INSERT INTO matches (a_id, b_id, level, type, method, score, evidence) VALUES (?,?,?,?,?,?,?)", rows)
+        # 3) video frames -> matching document slide by pHash + transcript token affinity (sets frames.matched_slide_id)
+        # Exclude self-exported .slides.pptx / .slides.pdf decks so they never hijack source-of-truth matches.
+        raw_doc_slides = conn.execute(
+            """
+            SELECT s.asset_id, s.id, s.page, s.phash, s.text, a.filename, a.created_at, a.metadata_json
+            FROM slides s
+            JOIN assets a ON a.id = s.asset_id
+            ORDER BY a.created_at, s.asset_id, s.page
+            """
+        ).fetchall()
+        doc_slides: list[dict] = []
+        for s in raw_doc_slides:
+            if _is_exported_slide_deck(s["filename"]) or _near_uniform(s["phash"]):
+                continue
+            try:
+                meta = json.loads(s["metadata_json"] or "{}")
+            except ValueError:
+                meta = {}
+            doc_slides.append({
+                "ref": f"{s['asset_id']}:{s['id']}",
+                "asset_id": s["asset_id"],
+                "page": s["page"],
+                "phash": s["phash"],
+                "tokens": _tokens(s["text"]),
+                "has_doc_no": 0 if meta.get("doc_number") else 1,
+                "has_rev": 0 if meta.get("revision") else 1,
+                "created_at": s["created_at"] or "",
+            })
+        doc_slides.sort(key=lambda s: (s["has_doc_no"], s["has_rev"], s["created_at"], s["asset_id"], s["page"]))
+        for idx, s in enumerate(doc_slides):
+            s["prio"] = idx
+
+        all_frames = [
+            dict(r)
+            for r in conn.execute("SELECT asset_id, id, path, phash FROM frames ORDER BY asset_id, t_start, id")
+        ]
+        if all_frames:
+            frames_by_video: dict[str, list[dict]] = {}
+            for f in all_frames:
+                frames_by_video.setdefault(f["asset_id"], []).append(f)
+
+            segs_by_video_frame: dict[tuple[str, str], list[str]] = {}
+            for seg in conn.execute("SELECT asset_id, frame_id, text FROM segments WHERE frame_id IS NOT NULL"):
+                segs_by_video_frame.setdefault((seg["asset_id"], seg["frame_id"]), []).append(seg["text"])
+
+            strict_max = min(int(t["similar_max"]), 10)
+            relaxed_max = max(int(t["similar_max"]), 14)
+            frame_updates: list[tuple[str | None, str, str]] = []
+
+            for vid, vframes in frames_by_video.items():
+                if not doc_slides:
+                    for f in vframes:
+                        frame_updates.append((None, vid, f["id"]))
+                    continue
+
+                # Pool spoken transcript tokens across all time ranges sharing the same unique slide path
+                tokens_by_path: dict[str, set[str]] = {}
+                for f in vframes:
+                    txt = " ".join(segs_by_video_frame.get((vid, f["id"]), ()))
+                    tokens_by_path.setdefault(f["path"], set()).update(_tokens(txt))
+
+                # Anchor decks: documents with >= 1 strong pHash match (<= strict_max) in this recording
+                anchor_decks = {
+                    s["asset_id"]
+                    for f in vframes
+                    if f["phash"] and not _near_uniform(f["phash"])
+                    for s in doc_slides
+                    if phash_distance(f["phash"], s["phash"]) <= strict_max
+                }
+
+                for f in vframes:
+                    fph = f["phash"]
+                    best_ref: str | None = None
+                    best_key: tuple[int, float, int] | None = None
+                    ftoks = tokens_by_path.get(f["path"], set())
+                    if fph and not _near_uniform(fph):
+                        for s in doc_slides:
+                            d = phash_distance(fph, s["phash"])
+                            if d > 18:
+                                continue
+                            in_anchor = s["asset_id"] in anchor_decks
+                            jac = _jaccard(ftoks, s["tokens"])
+                            matched = (
+                                d <= strict_max
+                                or (d <= 12 and (in_anchor or len(s["tokens"]) >= 3))
+                                or (d <= relaxed_max and (in_anchor or jac >= 0.05))
+                                or (d <= 18 and ((in_anchor and jac >= 0.04) or jac >= 0.20))
+                            )
+                            if not matched:
+                                continue
+                            eff_d = d - (1 if in_anchor and d > strict_max else 0)
+                            cand_key = (eff_d, -round(jac, 4), s["prio"])
+                            if best_key is None or cand_key < best_key:
+                                best_key = cand_key
+                                best_ref = s["ref"]
+                    frame_updates.append((best_ref, vid, f["id"]))
+
+            conn.executemany(
+                "UPDATE frames SET matched_slide_id = ? WHERE asset_id = ? AND id = ?",
+                frame_updates,
+            )
         return len(rows)

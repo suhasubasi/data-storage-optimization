@@ -22,6 +22,12 @@ def safe_filename(name: str | None) -> str:
     base = Path((name or "").replace("\\", "/")).name.strip()
     if not base or base.startswith(".") or base.endswith(".part"):
         raise ApiError(ErrorCode.validation_error, "The uploaded file needs a normal file name.", {"filename": name})
+    if base.lower().endswith((".slides.pptx", ".slides.pdf", ".transcript.txt")):
+        raise ApiError(
+            ErrorCode.validation_error,
+            "Generated DSO export files (.slides.pptx, .slides.pdf, .transcript.txt) cannot be re-uploaded as source originals.",
+            {"filename": base},
+        )
     return base
 
 

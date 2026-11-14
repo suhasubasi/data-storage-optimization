@@ -3,78 +3,88 @@ import type { StorageReport, StorageScenario } from "@contracts/ts/dso-contracts
 import { api } from "../api/client";
 import { useAsync } from "../lib/useAsync";
 import { exactBytes, formatBytes, formatDate, formatPct } from "../lib/format";
-import { Badge, Callout, ErrorBox, Loading, PageHeader, Stat } from "../components/ui";
+import { Badge, Callout, ErrorBox, Loading, PageHeader, StatCard } from "../components/ui";
+import { checkScenario } from "../lib/impact";
 
-const pctOf = (v: number, max: number) => `max(${v > 0 ? 2 : 0}px, ${(v / max) * 100}%)`;
+const pctOf = (v: number, max: number) => `max(${v > 0 ? 2 : 0}px, ${(v / Math.max(1, max)) * 100}%)`;
 
-/** Re-check the backend's numbers with the frozen formula so the demo can show the maths adds up. */
-function check(s: StorageScenario) {
-  const A = s.kept_original_bytes + s.derived_bytes + s.index_bytes;
-  const pct = s.before_bytes ? ((s.before_bytes - A) / s.before_bytes) * 100 : null;
-  const ok = A === s.after_bytes && s.before_bytes - A === s.saved_bytes && (pct === null ? s.savings_pct === null : Math.abs(pct - (s.savings_pct ?? NaN)) < 0.01);
-  return { A, pct, ok };
+function checkFormula(s: StorageScenario) {
+  const { after, pct, valid } = checkScenario(s);
+  return { A: after, pct, ok: valid };
 }
 
-function Bars({ s, max }: { s: StorageScenario; max: number }) {
-  return (
-    <div className="bars" aria-hidden>
-      <div className="bar-row">
-        <span className="bar-label">Before (O)</span>
-        <div className="bar-track">
-          <div className="bar orig" style={{ width: pctOf(s.before_bytes, max) }} />
-        </div>
-        <span className="bar-val">{formatBytes(s.before_bytes)}</span>
-      </div>
-      <div className="bar-row">
-        <span className="bar-label">After (A)</span>
-        <div className="bar-track">
-          <div className="bar orig" style={{ width: pctOf(s.kept_original_bytes, max) }} title="kept originals" />
-          <div className="bar derived" style={{ width: pctOf(s.derived_bytes, max) }} title="derived files" />
-          <div className="bar index" style={{ width: pctOf(s.index_bytes, max) }} title="index" />
-        </div>
-        <span className="bar-val">{formatBytes(s.after_bytes)}</span>
-      </div>
-    </div>
-  );
-}
-
-function ScenarioCard({ s, max, open, onToggle }: { s: StorageScenario; max: number; open: boolean; onToggle: () => void }) {
-  const c = check(s);
+function ScenarioCard({
+  s,
+  max,
+  open,
+  onToggle,
+}: {
+  s: StorageScenario;
+  max: number;
+  open: boolean;
+  onToggle: () => void;
+}) {
+  const c = checkFormula(s);
   const negative = s.saved_bytes <= 0;
+
   return (
-    <article className={`card scenario ${s.hypothetical ? "hypo" : "real"}`}>
+    <article className={`card scenario-card ${s.hypothetical ? "hypo" : "real"}`}>
       <div className="card-head">
         <h3>{s.label}</h3>
-        {s.hypothetical ? <Badge tone="amber">Hypothetical · needs approval</Badge> : <Badge tone="blue">Real · today</Badge>}
+        {s.hypothetical ? <Badge tone="amber">Simulated · requires approval</Badge> : <Badge tone="blue">Measured · current disk</Badge>}
       </div>
-      <p className="muted">{s.description}</p>
-      <div className={`big-pct ${negative ? "neg" : "pos"}`}>
-        {formatPct(s.savings_pct)}
-        <span className="small"> {negative ? "added" : "saved"}: {formatBytes(Math.abs(s.saved_bytes))}</span>
+      <p className="muted small">{s.description}</p>
+
+      <div className={`scenario-kpi ${negative ? "neg" : "pos"}`}>
+        <strong>{formatPct(s.savings_pct)}</strong>
+        <span>
+          {negative ? "added" : s.hypothetical ? "potential reduction" : "reduction"}: {formatBytes(Math.abs(s.saved_bytes))}
+        </span>
       </div>
-      <Bars s={s} max={max} />
-      <div className="formula">
+
+      <div className="stack-bars" aria-hidden>
+        <div className="stack-row">
+          <span className="stack-label">Before (O)</span>
+          <div className="stack-track">
+            <div className="seg-orig" style={{ width: pctOf(s.before_bytes, max) }} />
+          </div>
+          <span className="stack-val">{formatBytes(s.before_bytes)}</span>
+        </div>
+        <div className="stack-row">
+          <span className="stack-label">After (A)</span>
+          <div className="stack-track">
+            <div className="seg-orig" style={{ width: pctOf(s.kept_original_bytes, max) }} title="Kept originals" />
+            <div className="seg-derived" style={{ width: pctOf(s.derived_bytes, max) }} title="Derived outputs (D)" />
+            <div className="seg-index" style={{ width: pctOf(s.index_bytes, max) }} title="SQLite + FTS index (I)" />
+          </div>
+          <span className="stack-val">{formatBytes(s.after_bytes)}</span>
+        </div>
+      </div>
+
+      <div className="formula-panel">
         <code>{s.formula}</code>
-        <div className="small">
+        <div className="small muted">
           A = {exactBytes(s.kept_original_bytes)} kept + {exactBytes(s.derived_bytes)} D + {exactBytes(s.index_bytes)} I = <b>{exactBytes(c.A)}</b>
         </div>
         <div className="small">
-          ({exactBytes(s.before_bytes)} − {exactBytes(c.A)}) / {exactBytes(s.before_bytes)} × 100 = <b>{formatPct(c.pct, 4)}</b>{" "}
-          {c.ok ? <span className="ok">✓ matches report</span> : <span className="err-text">✗ does not match the report: check backend</span>}
+          Verified: <b>{formatPct(c.pct, 4)}</b>{" "}
+          {c.ok ? <Badge tone="green">✓ Matches report</Badge> : <Badge tone="red">✗ Check formula</Badge>}
         </div>
       </div>
-      <button className="btn small ghost" onClick={onToggle} aria-expanded={open}>
-        {open ? "Hide" : "Show"} what would be removed ({s.removed.length})
+
+      <button type="button" className="btn btn-secondary btn-xs" onClick={onToggle} aria-expanded={open}>
+        {open ? "Hide" : "Show"} flagged removals ({s.removed.length})
       </button>
+
       {open &&
         (s.removed.length === 0 ? (
-          <p className="muted small">Nothing. The tool never deletes; this is the real situation today.</p>
+          <p className="muted small">None — nothing is removed in current read-only mode.</p>
         ) : (
-          <ul className="removed">
+          <ul className="removed-list">
             {s.removed.map((r) => (
               <li key={r.asset_id}>
                 <b>{r.filename}</b> · {formatBytes(r.bytes)} ·{" "}
-                {r.reason === "exact_duplicate" ? `exact duplicate (copy ${r.kept_copy_asset_id} stays)` : "replaced by its derived data"}
+                {r.reason === "exact_duplicate" ? `exact copy (keep ${r.kept_copy_asset_id})` : "replaced by derived index"}
               </li>
             ))}
           </ul>
@@ -86,11 +96,16 @@ function ScenarioCard({ s, max, open, onToggle }: { s: StorageScenario; max: num
 function Totals({ r }: { r: StorageReport }) {
   const t = r.totals;
   return (
-    <div className="stats-row">
-      <Stat label="O · originals in scope" value={formatBytes(t.original_bytes)} sub={`${t.asset_count} files · video ${formatBytes(t.video_original_bytes)} · docs ${formatBytes(t.document_original_bytes)}`} />
-      <Stat label="D · derived files + manifests" value={formatBytes(t.derived_bytes)} sub="added by processing" />
-      <Stat label="I · SQLite + FTS index" value={formatBytes(t.index_bytes)} sub="added by processing" />
-      <Stat label="Extra exact copies" value={formatBytes(t.extra_exact_copy_bytes)} sub="beyond the first copy per SHA-256" />
+    <div className="stats-grid-4">
+      <StatCard
+        label="O · Originals in scope"
+        value={formatBytes(t.original_bytes)}
+        sub={`${t.asset_count} files (video ${formatBytes(t.video_original_bytes)} · docs ${formatBytes(t.document_original_bytes)})`}
+        tone="accent"
+      />
+      <StatCard label="D · Derived files + manifests" value={formatBytes(t.derived_bytes)} sub="Transcripts, slide decks, keyframes" />
+      <StatCard label="I · SQLite + FTS index" value={formatBytes(t.index_bytes)} sub="Database index (always counted)" />
+      <StatCard label="Exact duplicate overhead" value={formatBytes(t.extra_exact_copy_bytes)} sub="Copies beyond first per SHA-256" tone="safe" />
     </div>
   );
 }
@@ -103,103 +118,90 @@ export default function Storage() {
   const max = r ? Math.max(...r.scenarios.map((s) => Math.max(s.before_bytes, s.after_bytes))) : 1;
 
   return (
-    <section>
-      <PageHeader title="Storage report" lead="How many bytes would really be freed, and under which decision. Processing alone saves nothing.">
-        {r && (
-          <Badge tone="green" title={formatDate(r.generated_at)}>
-            Measured on disk by the backend
-          </Badge>
-        )}
-      </PageHeader>
+    <section className="page-stack page-storage">
+      <PageHeader
+        title="Storage optimizer"
+        lead="Understand your storage footprint. Compare measured usage with potential savings before making decisions."
+        actions={r && <Badge tone="green" title={formatDate(r.generated_at)}>Measured on disk</Badge>}
+      />
 
-      <div className="card scope-bar">
-        <label className="toggle">
-          <input type="checkbox" checked={includeTest} onChange={(e) => setIncludeTest(e.target.checked)} />{" "}
-          Include generated test files
-        </label>
-        <span className="muted small">
-          {r?.scope === "all_files" ? (
-            <>
-              Scope: <b>all files</b>, including generated test files (synthetic samples).
-            </>
-          ) : (
-            <>
-              Scope: <b>real uploaded files only</b>.{" "}
-              {r?.excluded_test_data && r.excluded_test_data.asset_count > 0
-                ? `${r.excluded_test_data.asset_count} generated test files (${formatBytes(r.excluded_test_data.original_bytes)} originals + ${formatBytes(
-                    r.excluded_test_data.derived_bytes,
-                  )} derived) are left out. They stay on disk; nothing is deleted.`
-                : "No generated test files are marked in the library."}
-            </>
-          )}{" "}
-          The index (I) is always the whole database, which keeps the numbers conservative.
-        </span>
-        {r?.scope !== "all_files" && r?.excluded_test_data && r.excluded_test_data.asset_ids.length > 0 && (
-          <div className="muted small">
-            Left out: {r.excluded_test_data.asset_ids.map((id) => <code key={id}>{id} </code>)}
-          </div>
-        )}
+      <div className="card scope-card">
+        <div className="scope-head">
+          <label className="check-inline">
+            <input type="checkbox" checked={includeTest} onChange={(e) => setIncludeTest(e.target.checked)} />
+            <span>Include synthetic generated test files</span>
+          </label>
+          <span className="muted small">
+            {r?.scope === "all_files"
+              ? "Scope: all library assets including synthetic test files."
+              : r?.excluded_test_data && r.excluded_test_data.asset_count > 0
+                ? `Real uploads only (${r.excluded_test_data.asset_count} synthetic files totaling ${formatBytes(
+                    r.excluded_test_data.original_bytes + r.excluded_test_data.derived_bytes,
+                  )} excluded conservatively).`
+                : "Scope: all real uploaded files."}
+          </span>
+        </div>
       </div>
 
       {res.loading ? (
-        <Loading label="Measuring…" />
+        <Loading label="Measuring files on disk…" />
       ) : res.error ? (
         <ErrorBox error={res.error} onRetry={res.reload} />
       ) : r ? (
         <>
-          <div className="card formula-card">
-            <h3>The formula</h3>
-            <p className="formula-main">
-              <code>{r.formula}</code>
-            </p>
-            <p>
-              <b>O</b> = bytes of all original files in scope (every copy on every simulated system). <b>A</b> = originals still kept + <b>all</b>{" "}
-              derived files (D) + the database/index (I). D and I are counted in every scenario, so the numbers are conservative.
-            </p>
-          </div>
           <Totals r={r} />
-          <div className="legend small">
-            <span>
-              <i className="sw orig" /> originals kept
-            </span>
-            <span>
-              <i className="sw derived" /> derived files (D)
-            </span>
-            <span>
-              <i className="sw index" /> index (I)
-            </span>
+
+          <div className="card scenario-comparison">
+            <div className="card-head"><div><span className="section-eyebrow">COMPARE THE DECISIONS</span><h2>Four scenarios. One consistent calculation.</h2></div><Badge tone="blue">Nothing deleted</Badge></div>
+            <p className="muted small">Savings are relative to original file bytes. Every scenario includes all derived files and the index. Positive savings require an approved change to retained originals.</p>
+            <div className="table-wrap"><table className="data-table">
+              <thead><tr><th>Scenario</th><th className="num">Original baseline</th><th className="num">Total after</th><th className="num">Savings</th><th>Decision</th></tr></thead>
+              <tbody>{r.scenarios.map((s) => <tr key={s.id} className={s.key === "both" ? "combined-scenario" : ""}>
+                <td><a href={`#scenario-${s.id}`}>{s.label}</a></td>
+                <td className="num">{formatBytes(s.before_bytes)}</td><td className="num">{formatBytes(s.after_bytes)}</td>
+                <td className="num"><strong>{checkScenario(s).valid ? formatPct(s.savings_pct, 1) : "Check formula"}</strong></td>
+                <td>{s.hypothetical ? <Badge tone="amber">Requires approval</Badge> : <Badge tone="blue">Current usage</Badge>}</td>
+              </tr>)}</tbody>
+            </table></div>
           </div>
+
+          <div className="card formula-banner">
+            <div>
+              <div className="small muted">Canonical savings equation</div>
+              <code className="formula-big">{r.formula}</code>
+            </div>
+            <div className="legend-row small">
+              <span><i className="sw sw-orig" /> Kept originals</span>
+              <span><i className="sw sw-derived" /> Derived (D)</span>
+              <span><i className="sw sw-index" /> SQLite Index (I)</span>
+            </div>
+          </div>
+
           <div className="scenario-grid">
             {r.scenarios.map((s) => (
-              <ScenarioCard key={s.id} s={s} max={max} open={!!open[s.id]} onToggle={() => setOpen((p) => ({ ...p, [s.id]: !p[s.id] }))} />
+              <div id={`scenario-${s.id}`} key={s.id} className="scenario-anchor"><ScenarioCard s={s} max={max} open={!!open[s.id]} onToggle={() => setOpen((p) => ({ ...p, [s.id]: !p[s.id] }))} /></div>
             ))}
           </div>
 
-          <div className="grid-2">
+          <div className="split-2">
             <div className="card">
-              <h3>Not counted</h3>
-              <ul>
-                {r.not_counted.map((x) => (
-                  <li key={x}>{x}</li>
-                ))}
+              <h3>Methodology boundaries</h3>
+              <h4>Not counted in totals</h4>
+              <ul className="plain-list">
+                {r.not_counted.map((x) => <li key={x}>{x}</li>)}
               </ul>
-              <h3>Information lost if an original were removed</h3>
-              <ul>
-                {r.information_lost.map((x) => (
-                  <li key={x}>{x}</li>
-                ))}
+              <h4>Lost if originals are later removed</h4>
+              <ul className="plain-list">
+                {r.information_lost.map((x) => <li key={x}>{x}</li>)}
               </ul>
             </div>
             <div className="card">
-              <h3>Notes</h3>
-              <ul>
-                {r.notes.map((x) => (
-                  <li key={x}>{x}</li>
-                ))}
+              <h3>Notes &amp; challenge benchmark comparison</h3>
+              <ul className="plain-list">
+                {r.notes.map((x) => <li key={x}>{x}</li>)}
               </ul>
-              <Callout tone="warn" title="Ericsson's illustration, not our measurement:">
-                The challenge PDF (p.2) gives an example of about 1 GB of video becoming about 50 KB of text plus about 2 MB of frames, “roughly 99%”.
-                We show it only for comparison. Every number above comes from files measured on disk.
+              <Callout tone="warn" title="Ericsson challenge brief illustration vs real measurements:">
+                The hackathon PDF illustrates ~1 GB video → 50 KB text + 2 MB frames (~99% saving). All figures above reflect actual byte sizes on disk in your workspace.
               </Callout>
             </div>
           </div>

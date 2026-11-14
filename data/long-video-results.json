@@ -1,0 +1,7246 @@
+{
+  "source": {
+    "how": "Real recording provided by the user (downloaded by them), placed in data/samples. Not generated.",
+    "path": "C:\\Users\\suhas\\ericsson-dso\\data\\samples\\Your Agent Doesnt Need an LLM for Every Decision - Raymond Weitekamp OpenProse.mp4",
+    "title_tag": "Your Agent Doesn't Need an LLM for Every Decision - Raymond Weitekamp, OpenProse",
+    "artist_tag": "AI Engineer"
+  },
+  "probe": {
+    "duration_seconds": 3108.01415,
+    "original_bytes": 347928702,
+    "container_bitrate_bps": 895565,
+    "video": {
+      "codec": "av1",
+      "width": 2560,
+      "height": 1440,
+      "fps": "60/1",
+      "bitrate_bps": 763830
+    },
+    "audio": {
+      "codec": "aac",
+      "sample_rate": "44100",
+      "channels": 2,
+      "bitrate_bps": 128000
+    }
+  },
+  "ids": {
+    "asset_id": "a_0ac641df",
+    "job_id": "j_9341b715e1",
+    "first_failed_job": "j_8d1ca20007",
+    "first_failed_job_error": "Pipeline failed (exit 1): {'code': 'pipeline_failed', 'message': \"Processing failed while extracting key frames: [WinError 5] Åtkomst nekad: 'C:\\\\\\\\Users\\\\\\\\suhas\\\\\\\\ericsson-dso\\\\\\\\data\\\\\\\\derived\\\\\\\\a_0ac641df\\\\\\\\progress.json.tmp' -> 'C:\\\\\\\\Users\\\\\\\\suhas\\\\\\\\ericsson-dso\\\\\\\\data\\\\\\\\derived\\\\\\\\a_0ac641df\\\\\\\\progress.json'\", 'details': {'stage': 'extracting key frames', 'type': 'PermissionError', 'trace': 'Traceback (most recent call last):\\n  File \"C:\\\\Users\\\\suhas\\\\ericsson-dso\\\\pipeline\\\\dso_pipeline\\\\process.py\", line 87, in run\\n    parts = process_video(input_path, out_dir, thresholds, status)\\n            ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\\n  File \"C:\\\\Users\\\\suhas\\\\ericsson-dso\\\\pipeline\\\\dso_pipeline\\\\video.py\", line 165, in process_video\\n    status.progress(\"extracting key frames\", 0.05 + 0.25 * min(t / duration, 1.0))\\n  File \"C:\\\\Users\\\\suhas\\\\ericsson-dso\\\\pipeline\\\\dso_pipeline\\\\common.py\", line 84, in progress\\n    write_json_atomic(\\n  File \"C:\\\\Users\\\\suhas\\\\ericsson-dso\\\\pipeline\\\\dso_pipeline\\\\common.py\", line 72, in write_json_atomic\\n    os.replace(tmp, path)\\nPermissionError: [WinError 5] Åtkomst nekad: \\'C:\\\\\\\\Users\\\\\\\\suhas\\\\\\\\ericsson-dso\\\\\\\\data\\\\\\\\derived\\\\\\\\a_0ac641df\\\\\\\\progress.json.tmp\\' -> \\'C:\\\\\\\\Users\\\\\\\\suhas\\\\\\\\ericsson-dso\\\\\\\\data\\\\\\\\derived\\\\\\\\a_0ac641df\\\\\\\\progress.json\\'\\n'}}"
+  },
+  "timings": {
+    "upload_ms": 1135.4,
+    "job": {
+      "id": "j_9341b715e1",
+      "asset_id": "a_0ac641df",
+      "status": "done",
+      "progress": 1.0,
+      "stage": "done",
+      "error": null,
+      "started_at": "2026-11-12T23:13:08.187000Z",
+      "finished_at": "2026-11-12T23:23:03.563000Z"
+    },
+    "manifest_pipeline": {
+      "version": "0.1.0",
+      "model": "faster-whisper small int8",
+      "frame_threshold": 12,
+      "seconds": 594.688
+    },
+    "storage_report_ms": 7.6,
+    "asset_detail_ms": 10.1,
+    "offboarding_ms": 3.8,
+    "duplicates_ms": 4.0,
+    "export_ms": 19.9
+  },
+  "asset_detail": {
+    "id": "a_0ac641df",
+    "status": "ready",
+    "kind": "video",
+    "bytes": 347928702,
+    "derived_bytes": 22630654,
+    "owner": "erik",
+    "source_system": "ericsson_play",
+    "sha256": "61f1609966f6b55f219c7f5638f96eb81d475978d5456b81e7dc2e8629fe7e72",
+    "metadata": {
+      "title": "Your Agent Doesn't Need an LLM for Every Decision - Raymond Weitekamp, OpenProse",
+      "author": "AI Engineer",
+      "doc_number": null,
+      "revision": null,
+      "date": null,
+      "language": "en",
+      "duration_seconds": 3108.014
+    },
+    "pipeline": {
+      "version": "0.1.0",
+      "model": "faster-whisper small int8",
+      "frame_threshold": 12,
+      "seconds": 594.688,
+      "warnings": null
+    }
+  },
+  "derived": {
+    "transcript_bytes": 145930,
+    "manifest_bytes": 350520,
+    "frame_count": 670,
+    "frame_bytes_total": 22134204,
+    "frames": [
+      {
+        "id": "f1",
+        "t_start": 0.0,
+        "t_end": 24.0,
+        "bytes": 18168
+      },
+      {
+        "id": "f2",
+        "t_start": 24.0,
+        "t_end": 25.0,
+        "bytes": 33434
+      },
+      {
+        "id": "f3",
+        "t_start": 25.0,
+        "t_end": 77.0,
+        "bytes": 32200
+      },
+      {
+        "id": "f4",
+        "t_start": 77.0,
+        "t_end": 79.0,
+        "bytes": 32242
+      },
+      {
+        "id": "f5",
+        "t_start": 79.0,
+        "t_end": 156.0,
+        "bytes": 32224
+      },
+      {
+        "id": "f6",
+        "t_start": 156.0,
+        "t_end": 157.0,
+        "bytes": 29988
+      },
+      {
+        "id": "f7",
+        "t_start": 157.0,
+        "t_end": 210.0,
+        "bytes": 14726
+      },
+      {
+        "id": "f8",
+        "t_start": 210.0,
+        "t_end": 213.0,
+        "bytes": 14682
+      },
+      {
+        "id": "f9",
+        "t_start": 213.0,
+        "t_end": 214.0,
+        "bytes": 14754
+      },
+      {
+        "id": "f10",
+        "t_start": 214.0,
+        "t_end": 216.0,
+        "bytes": 39664
+      },
+      {
+        "id": "f11",
+        "t_start": 216.0,
+        "t_end": 217.0,
+        "bytes": 39546
+      },
+      {
+        "id": "f12",
+        "t_start": 217.0,
+        "t_end": 319.0,
+        "bytes": 39666
+      },
+      {
+        "id": "f13",
+        "t_start": 319.0,
+        "t_end": 331.0,
+        "bytes": 39888
+      },
+      {
+        "id": "f14",
+        "t_start": 331.0,
+        "t_end": 335.0,
+        "bytes": 39830
+      },
+      {
+        "id": "f15",
+        "t_start": 335.0,
+        "t_end": 337.0,
+        "bytes": 39906
+      },
+      {
+        "id": "f16",
+        "t_start": 337.0,
+        "t_end": 383.0,
+        "bytes": 39686
+      },
+      {
+        "id": "f17",
+        "t_start": 383.0,
+        "t_end": 422.0,
+        "bytes": 50664
+      },
+      {
+        "id": "f18",
+        "t_start": 422.0,
+        "t_end": 423.0,
+        "bytes": 17584
+      },
+      {
+        "id": "f19",
+        "t_start": 423.0,
+        "t_end": 436.0,
+        "bytes": 17060
+      },
+      {
+        "id": "f20",
+        "t_start": 436.0,
+        "t_end": 446.0,
+        "bytes": 17312
+      },
+      {
+        "id": "f21",
+        "t_start": 446.0,
+        "t_end": 467.0,
+        "bytes": 17040
+      },
+      {
+        "id": "f22",
+        "t_start": 467.0,
+        "t_end": 468.0,
+        "bytes": 16972
+      },
+      {
+        "id": "f23",
+        "t_start": 468.0,
+        "t_end": 469.0,
+        "bytes": 17264
+      },
+      {
+        "id": "f24",
+        "t_start": 469.0,
+        "t_end": 471.0,
+        "bytes": 17466
+      },
+      {
+        "id": "f25",
+        "t_start": 471.0,
+        "t_end": 485.0,
+        "bytes": 17180
+      },
+      {
+        "id": "f26",
+        "t_start": 485.0,
+        "t_end": 486.0,
+        "bytes": 16910
+      },
+      {
+        "id": "f27",
+        "t_start": 486.0,
+        "t_end": 490.0,
+        "bytes": 27906
+      },
+      {
+        "id": "f28",
+        "t_start": 490.0,
+        "t_end": 506.0,
+        "bytes": 28188
+      },
+      {
+        "id": "f29",
+        "t_start": 506.0,
+        "t_end": 510.0,
+        "bytes": 25472
+      },
+      {
+        "id": "f30",
+        "t_start": 510.0,
+        "t_end": 513.0,
+        "bytes": 28170
+      },
+      {
+        "id": "f31",
+        "t_start": 513.0,
+        "t_end": 514.0,
+        "bytes": 33012
+      },
+      {
+        "id": "f32",
+        "t_start": 514.0,
+        "t_end": 515.0,
+        "bytes": 34920
+      },
+      {
+        "id": "f33",
+        "t_start": 515.0,
+        "t_end": 518.0,
+        "bytes": 34738
+      },
+      {
+        "id": "f34",
+        "t_start": 518.0,
+        "t_end": 521.0,
+        "bytes": 35898
+      },
+      {
+        "id": "f35",
+        "t_start": 521.0,
+        "t_end": 550.0,
+        "bytes": 28038
+      },
+      {
+        "id": "f36",
+        "t_start": 550.0,
+        "t_end": 551.0,
+        "bytes": 27618
+      },
+      {
+        "id": "f37",
+        "t_start": 551.0,
+        "t_end": 552.0,
+        "bytes": 27848
+      },
+      {
+        "id": "f38",
+        "t_start": 552.0,
+        "t_end": 554.0,
+        "bytes": 28954
+      },
+      {
+        "id": "f39",
+        "t_start": 554.0,
+        "t_end": 555.0,
+        "bytes": 23714
+      },
+      {
+        "id": "f40",
+        "t_start": 555.0,
+        "t_end": 574.0,
+        "bytes": 28468
+      },
+      {
+        "id": "f41",
+        "t_start": 574.0,
+        "t_end": 576.0,
+        "bytes": 32534
+      },
+      {
+        "id": "f42",
+        "t_start": 576.0,
+        "t_end": 580.0,
+        "bytes": 30446
+      },
+      {
+        "id": "f43",
+        "t_start": 580.0,
+        "t_end": 582.0,
+        "bytes": 32082
+      },
+      {
+        "id": "f44",
+        "t_start": 582.0,
+        "t_end": 583.0,
+        "bytes": 26186
+      },
+      {
+        "id": "f45",
+        "t_start": 583.0,
+        "t_end": 588.0,
+        "bytes": 28412
+      },
+      {
+        "id": "f46",
+        "t_start": 588.0,
+        "t_end": 620.0,
+        "bytes": 28560
+      },
+      {
+        "id": "f47",
+        "t_start": 620.0,
+        "t_end": 621.0,
+        "bytes": 25724
+      },
+      {
+        "id": "f48",
+        "t_start": 621.0,
+        "t_end": 625.0,
+        "bytes": 27296
+      },
+      {
+        "id": "f49",
+        "t_start": 625.0,
+        "t_end": 626.0,
+        "bytes": 22278
+      },
+      {
+        "id": "f50",
+        "t_start": 626.0,
+        "t_end": 628.0,
+        "bytes": 30566
+      },
+      {
+        "id": "f51",
+        "t_start": 628.0,
+        "t_end": 629.0,
+        "bytes": 30260
+      },
+      {
+        "id": "f52",
+        "t_start": 629.0,
+        "t_end": 630.0,
+        "bytes": 28454
+      },
+      {
+        "id": "f53",
+        "t_start": 630.0,
+        "t_end": 631.0,
+        "bytes": 30584
+      },
+      {
+        "id": "f54",
+        "t_start": 631.0,
+        "t_end": 632.0,
+        "bytes": 31438
+      },
+      {
+        "id": "f55",
+        "t_start": 632.0,
+        "t_end": 633.0,
+        "bytes": 30800
+      },
+      {
+        "id": "f56",
+        "t_start": 633.0,
+        "t_end": 634.0,
+        "bytes": 31332
+      },
+      {
+        "id": "f57",
+        "t_start": 634.0,
+        "t_end": 635.0,
+        "bytes": 23462
+      },
+      {
+        "id": "f58",
+        "t_start": 635.0,
+        "t_end": 636.0,
+        "bytes": 15758
+      },
+      {
+        "id": "f59",
+        "t_start": 636.0,
+        "t_end": 637.0,
+        "bytes": 22648
+      },
+      {
+        "id": "f60",
+        "t_start": 637.0,
+        "t_end": 638.0,
+        "bytes": 15052
+      },
+      {
+        "id": "f61",
+        "t_start": 638.0,
+        "t_end": 668.0,
+        "bytes": 25232
+      },
+      {
+        "id": "f62",
+        "t_start": 668.0,
+        "t_end": 670.0,
+        "bytes": 20814
+      },
+      {
+        "id": "f63",
+        "t_start": 670.0,
+        "t_end": 671.0,
+        "bytes": 24268
+      },
+      {
+        "id": "f64",
+        "t_start": 671.0,
+        "t_end": 672.0,
+        "bytes": 26184
+      },
+      {
+        "id": "f65",
+        "t_start": 672.0,
+        "t_end": 673.0,
+        "bytes": 28228
+      },
+      {
+        "id": "f66",
+        "t_start": 673.0,
+        "t_end": 674.0,
+        "bytes": 24452
+      },
+      {
+        "id": "f67",
+        "t_start": 674.0,
+        "t_end": 675.0,
+        "bytes": 24908
+      },
+      {
+        "id": "f68",
+        "t_start": 675.0,
+        "t_end": 676.0,
+        "bytes": 19916
+      },
+      {
+        "id": "f69",
+        "t_start": 676.0,
+        "t_end": 677.0,
+        "bytes": 25950
+      },
+      {
+        "id": "f70",
+        "t_start": 677.0,
+        "t_end": 735.0,
+        "bytes": 24356
+      },
+      {
+        "id": "f71",
+        "t_start": 735.0,
+        "t_end": 755.0,
+        "bytes": 14818
+      },
+      {
+        "id": "f72",
+        "t_start": 755.0,
+        "t_end": 756.0,
+        "bytes": 12004
+      },
+      {
+        "id": "f73",
+        "t_start": 756.0,
+        "t_end": 758.0,
+        "bytes": 12044
+      },
+      {
+        "id": "f74",
+        "t_start": 758.0,
+        "t_end": 759.0,
+        "bytes": 12068
+      },
+      {
+        "id": "f75",
+        "t_start": 759.0,
+        "t_end": 774.0,
+        "bytes": 12002
+      },
+      {
+        "id": "f76",
+        "t_start": 774.0,
+        "t_end": 775.0,
+        "bytes": 11988
+      },
+      {
+        "id": "f77",
+        "t_start": 775.0,
+        "t_end": 778.0,
+        "bytes": 18734
+      },
+      {
+        "id": "f78",
+        "t_start": 778.0,
+        "t_end": 781.0,
+        "bytes": 18790
+      },
+      {
+        "id": "f79",
+        "t_start": 781.0,
+        "t_end": 831.0,
+        "bytes": 18830
+      },
+      {
+        "id": "f80",
+        "t_start": 831.0,
+        "t_end": 832.0,
+        "bytes": 18934
+      },
+      {
+        "id": "f81",
+        "t_start": 832.0,
+        "t_end": 904.0,
+        "bytes": 19140
+      },
+      {
+        "id": "f82",
+        "t_start": 904.0,
+        "t_end": 905.0,
+        "bytes": 9824
+      },
+      {
+        "id": "f83",
+        "t_start": 905.0,
+        "t_end": 907.0,
+        "bytes": 9790
+      },
+      {
+        "id": "f84",
+        "t_start": 907.0,
+        "t_end": 914.0,
+        "bytes": 10004
+      },
+      {
+        "id": "f85",
+        "t_start": 914.0,
+        "t_end": 915.0,
+        "bytes": 15770
+      },
+      {
+        "id": "f86",
+        "t_start": 915.0,
+        "t_end": 928.0,
+        "bytes": 17276
+      },
+      {
+        "id": "f87",
+        "t_start": 928.0,
+        "t_end": 929.0,
+        "bytes": 12420
+      },
+      {
+        "id": "f88",
+        "t_start": 929.0,
+        "t_end": 930.0,
+        "bytes": 15848
+      },
+      {
+        "id": "f89",
+        "t_start": 930.0,
+        "t_end": 931.0,
+        "bytes": 17780
+      },
+      {
+        "id": "f90",
+        "t_start": 931.0,
+        "t_end": 932.0,
+        "bytes": 16912
+      },
+      {
+        "id": "f91",
+        "t_start": 932.0,
+        "t_end": 934.0,
+        "bytes": 21880
+      },
+      {
+        "id": "f92",
+        "t_start": 934.0,
+        "t_end": 940.0,
+        "bytes": 22298
+      },
+      {
+        "id": "f93",
+        "t_start": 940.0,
+        "t_end": 942.0,
+        "bytes": 22504
+      },
+      {
+        "id": "f94",
+        "t_start": 942.0,
+        "t_end": 948.0,
+        "bytes": 21686
+      },
+      {
+        "id": "f95",
+        "t_start": 948.0,
+        "t_end": 950.0,
+        "bytes": 19950
+      },
+      {
+        "id": "f96",
+        "t_start": 950.0,
+        "t_end": 951.0,
+        "bytes": 10240
+      },
+      {
+        "id": "f97",
+        "t_start": 951.0,
+        "t_end": 952.0,
+        "bytes": 9564
+      },
+      {
+        "id": "f98",
+        "t_start": 952.0,
+        "t_end": 953.0,
+        "bytes": 16278
+      },
+      {
+        "id": "f99",
+        "t_start": 953.0,
+        "t_end": 954.0,
+        "bytes": 16562
+      },
+      {
+        "id": "f100",
+        "t_start": 954.0,
+        "t_end": 957.0,
+        "bytes": 22090
+      },
+      {
+        "id": "f101",
+        "t_start": 957.0,
+        "t_end": 964.0,
+        "bytes": 22246
+      },
+      {
+        "id": "f102",
+        "t_start": 964.0,
+        "t_end": 975.0,
+        "bytes": 21736
+      },
+      {
+        "id": "f103",
+        "t_start": 975.0,
+        "t_end": 979.0,
+        "bytes": 19838
+      },
+      {
+        "id": "f104",
+        "t_start": 979.0,
+        "t_end": 985.0,
+        "bytes": 19940
+      },
+      {
+        "id": "f105",
+        "t_start": 985.0,
+        "t_end": 997.0,
+        "bytes": 19792
+      },
+      {
+        "id": "f106",
+        "t_start": 997.0,
+        "t_end": 998.0,
+        "bytes": 18324
+      },
+      {
+        "id": "f107",
+        "t_start": 998.0,
+        "t_end": 999.0,
+        "bytes": 17064
+      },
+      {
+        "id": "f108",
+        "t_start": 999.0,
+        "t_end": 1000.0,
+        "bytes": 8834
+      },
+      {
+        "id": "f109",
+        "t_start": 1000.0,
+        "t_end": 1001.0,
+        "bytes": 8570
+      },
+      {
+        "id": "f110",
+        "t_start": 1001.0,
+        "t_end": 1002.0,
+        "bytes": 14624
+      },
+      {
+        "id": "f111",
+        "t_start": 1002.0,
+        "t_end": 1003.0,
+        "bytes": 16616
+      },
+      {
+        "id": "f112",
+        "t_start": 1003.0,
+        "t_end": 1004.0,
+        "bytes": 18694
+      },
+      {
+        "id": "f113",
+        "t_start": 1004.0,
+        "t_end": 1006.0,
+        "bytes": 22766
+      },
+      {
+        "id": "f114",
+        "t_start": 1006.0,
+        "t_end": 1007.0,
+        "bytes": 23172
+      },
+      {
+        "id": "f115",
+        "t_start": 1007.0,
+        "t_end": 1008.0,
+        "bytes": 15582
+      },
+      {
+        "id": "f116",
+        "t_start": 1008.0,
+        "t_end": 1009.0,
+        "bytes": 20082
+      },
+      {
+        "id": "f117",
+        "t_start": 1009.0,
+        "t_end": 1010.0,
+        "bytes": 11290
+      },
+      {
+        "id": "f118",
+        "t_start": 1010.0,
+        "t_end": 1011.0,
+        "bytes": 17090
+      },
+      {
+        "id": "f119",
+        "t_start": 1011.0,
+        "t_end": 1051.0,
+        "bytes": 21354
+      },
+      {
+        "id": "f120",
+        "t_start": 1051.0,
+        "t_end": 1052.0,
+        "bytes": 23130
+      },
+      {
+        "id": "f121",
+        "t_start": 1052.0,
+        "t_end": 1053.0,
+        "bytes": 27772
+      },
+      {
+        "id": "f122",
+        "t_start": 1053.0,
+        "t_end": 1056.0,
+        "bytes": 33114
+      },
+      {
+        "id": "f123",
+        "t_start": 1056.0,
+        "t_end": 1057.0,
+        "bytes": 20560
+      },
+      {
+        "id": "f124",
+        "t_start": 1057.0,
+        "t_end": 1058.0,
+        "bytes": 26770
+      },
+      {
+        "id": "f125",
+        "t_start": 1058.0,
+        "t_end": 1059.0,
+        "bytes": 29424
+      },
+      {
+        "id": "f126",
+        "t_start": 1059.0,
+        "t_end": 1062.0,
+        "bytes": 28344
+      },
+      {
+        "id": "f127",
+        "t_start": 1062.0,
+        "t_end": 1065.0,
+        "bytes": 27638
+      },
+      {
+        "id": "f128",
+        "t_start": 1065.0,
+        "t_end": 1067.0,
+        "bytes": 20586
+      },
+      {
+        "id": "f129",
+        "t_start": 1067.0,
+        "t_end": 1071.0,
+        "bytes": 32538
+      },
+      {
+        "id": "f130",
+        "t_start": 1071.0,
+        "t_end": 1072.0,
+        "bytes": 25524
+      },
+      {
+        "id": "f131",
+        "t_start": 1072.0,
+        "t_end": 1073.0,
+        "bytes": 29458
+      },
+      {
+        "id": "f132",
+        "t_start": 1073.0,
+        "t_end": 1074.0,
+        "bytes": 29090
+      },
+      {
+        "id": "f133",
+        "t_start": 1074.0,
+        "t_end": 1075.0,
+        "bytes": 28504
+      },
+      {
+        "id": "f134",
+        "t_start": 1075.0,
+        "t_end": 1077.0,
+        "bytes": 32702
+      },
+      {
+        "id": "f135",
+        "t_start": 1077.0,
+        "t_end": 1078.0,
+        "bytes": 32458
+      },
+      {
+        "id": "f136",
+        "t_start": 1078.0,
+        "t_end": 1079.0,
+        "bytes": 21146
+      },
+      {
+        "id": "f137",
+        "t_start": 1079.0,
+        "t_end": 1081.0,
+        "bytes": 15546
+      },
+      {
+        "id": "f138",
+        "t_start": 1081.0,
+        "t_end": 1082.0,
+        "bytes": 27834
+      },
+      {
+        "id": "f139",
+        "t_start": 1082.0,
+        "t_end": 1083.0,
+        "bytes": 27628
+      },
+      {
+        "id": "f140",
+        "t_start": 1083.0,
+        "t_end": 1086.0,
+        "bytes": 29124
+      },
+      {
+        "id": "f141",
+        "t_start": 1086.0,
+        "t_end": 1087.0,
+        "bytes": 20516
+      },
+      {
+        "id": "f142",
+        "t_start": 1087.0,
+        "t_end": 1088.0,
+        "bytes": 27476
+      },
+      {
+        "id": "f143",
+        "t_start": 1088.0,
+        "t_end": 1092.0,
+        "bytes": 33226
+      },
+      {
+        "id": "f144",
+        "t_start": 1092.0,
+        "t_end": 1093.0,
+        "bytes": 23414
+      },
+      {
+        "id": "f145",
+        "t_start": 1093.0,
+        "t_end": 1094.0,
+        "bytes": 28652
+      },
+      {
+        "id": "f146",
+        "t_start": 1094.0,
+        "t_end": 1097.0,
+        "bytes": 28170
+      },
+      {
+        "id": "f147",
+        "t_start": 1097.0,
+        "t_end": 1101.0,
+        "bytes": 27742
+      },
+      {
+        "id": "f148",
+        "t_start": 1101.0,
+        "t_end": 1102.0,
+        "bytes": 23584
+      },
+      {
+        "id": "f149",
+        "t_start": 1102.0,
+        "t_end": 1106.0,
+        "bytes": 31616
+      },
+      {
+        "id": "f150",
+        "t_start": 1106.0,
+        "t_end": 1107.0,
+        "bytes": 25404
+      },
+      {
+        "id": "f151",
+        "t_start": 1107.0,
+        "t_end": 1108.0,
+        "bytes": 27196
+      },
+      {
+        "id": "f152",
+        "t_start": 1108.0,
+        "t_end": 1109.0,
+        "bytes": 28482
+      },
+      {
+        "id": "f153",
+        "t_start": 1109.0,
+        "t_end": 1110.0,
+        "bytes": 28300
+      },
+      {
+        "id": "f154",
+        "t_start": 1110.0,
+        "t_end": 1111.0,
+        "bytes": 29978
+      },
+      {
+        "id": "f155",
+        "t_start": 1111.0,
+        "t_end": 1114.0,
+        "bytes": 32378
+      },
+      {
+        "id": "f156",
+        "t_start": 1114.0,
+        "t_end": 1115.0,
+        "bytes": 23678
+      },
+      {
+        "id": "f157",
+        "t_start": 1115.0,
+        "t_end": 1116.0,
+        "bytes": 26786
+      },
+      {
+        "id": "f158",
+        "t_start": 1116.0,
+        "t_end": 1117.0,
+        "bytes": 28474
+      },
+      {
+        "id": "f159",
+        "t_start": 1117.0,
+        "t_end": 1118.0,
+        "bytes": 26902
+      },
+      {
+        "id": "f160",
+        "t_start": 1118.0,
+        "t_end": 1120.0,
+        "bytes": 29632
+      },
+      {
+        "id": "f161",
+        "t_start": 1120.0,
+        "t_end": 1122.0,
+        "bytes": 29630
+      },
+      {
+        "id": "f162",
+        "t_start": 1122.0,
+        "t_end": 1123.0,
+        "bytes": 24540
+      },
+      {
+        "id": "f163",
+        "t_start": 1123.0,
+        "t_end": 1127.0,
+        "bytes": 32234
+      },
+      {
+        "id": "f164",
+        "t_start": 1127.0,
+        "t_end": 1128.0,
+        "bytes": 23758
+      },
+      {
+        "id": "f165",
+        "t_start": 1128.0,
+        "t_end": 1129.0,
+        "bytes": 27842
+      },
+      {
+        "id": "f166",
+        "t_start": 1129.0,
+        "t_end": 1131.0,
+        "bytes": 28064
+      },
+      {
+        "id": "f167",
+        "t_start": 1131.0,
+        "t_end": 1132.0,
+        "bytes": 26850
+      },
+      {
+        "id": "f168",
+        "t_start": 1132.0,
+        "t_end": 1136.0,
+        "bytes": 27562
+      },
+      {
+        "id": "f169",
+        "t_start": 1136.0,
+        "t_end": 1137.0,
+        "bytes": 23586
+      },
+      {
+        "id": "f170",
+        "t_start": 1137.0,
+        "t_end": 1138.0,
+        "bytes": 26120
+      },
+      {
+        "id": "f171",
+        "t_start": 1138.0,
+        "t_end": 1141.0,
+        "bytes": 32506
+      },
+      {
+        "id": "f172",
+        "t_start": 1141.0,
+        "t_end": 1142.0,
+        "bytes": 24194
+      },
+      {
+        "id": "f173",
+        "t_start": 1142.0,
+        "t_end": 1143.0,
+        "bytes": 27156
+      },
+      {
+        "id": "f174",
+        "t_start": 1143.0,
+        "t_end": 1144.0,
+        "bytes": 29476
+      },
+      {
+        "id": "f175",
+        "t_start": 1144.0,
+        "t_end": 1145.0,
+        "bytes": 27808
+      },
+      {
+        "id": "f176",
+        "t_start": 1145.0,
+        "t_end": 1146.0,
+        "bytes": 30084
+      },
+      {
+        "id": "f177",
+        "t_start": 1146.0,
+        "t_end": 1149.0,
+        "bytes": 32532
+      },
+      {
+        "id": "f178",
+        "t_start": 1149.0,
+        "t_end": 1151.0,
+        "bytes": 21550
+      },
+      {
+        "id": "f179",
+        "t_start": 1151.0,
+        "t_end": 1152.0,
+        "bytes": 28378
+      },
+      {
+        "id": "f180",
+        "t_start": 1152.0,
+        "t_end": 1153.0,
+        "bytes": 28060
+      },
+      {
+        "id": "f181",
+        "t_start": 1153.0,
+        "t_end": 1157.0,
+        "bytes": 28808
+      },
+      {
+        "id": "f182",
+        "t_start": 1157.0,
+        "t_end": 1158.0,
+        "bytes": 24110
+      },
+      {
+        "id": "f183",
+        "t_start": 1158.0,
+        "t_end": 1159.0,
+        "bytes": 28422
+      },
+      {
+        "id": "f184",
+        "t_start": 1159.0,
+        "t_end": 1162.0,
+        "bytes": 33458
+      },
+      {
+        "id": "f185",
+        "t_start": 1162.0,
+        "t_end": 1163.0,
+        "bytes": 21648
+      },
+      {
+        "id": "f186",
+        "t_start": 1163.0,
+        "t_end": 1164.0,
+        "bytes": 27134
+      },
+      {
+        "id": "f187",
+        "t_start": 1164.0,
+        "t_end": 1165.0,
+        "bytes": 29564
+      },
+      {
+        "id": "f188",
+        "t_start": 1165.0,
+        "t_end": 1167.0,
+        "bytes": 26682
+      },
+      {
+        "id": "f189",
+        "t_start": 1167.0,
+        "t_end": 1168.0,
+        "bytes": 26358
+      },
+      {
+        "id": "f190",
+        "t_start": 1168.0,
+        "t_end": 1169.0,
+        "bytes": 27556
+      },
+      {
+        "id": "f191",
+        "t_start": 1169.0,
+        "t_end": 1170.0,
+        "bytes": 27588
+      },
+      {
+        "id": "f192",
+        "t_start": 1170.0,
+        "t_end": 1176.0,
+        "bytes": 54428
+      },
+      {
+        "id": "f193",
+        "t_start": 1176.0,
+        "t_end": 1177.0,
+        "bytes": 57290
+      },
+      {
+        "id": "f194",
+        "t_start": 1177.0,
+        "t_end": 1178.0,
+        "bytes": 57634
+      },
+      {
+        "id": "f195",
+        "t_start": 1178.0,
+        "t_end": 1180.0,
+        "bytes": 58456
+      },
+      {
+        "id": "f196",
+        "t_start": 1180.0,
+        "t_end": 1181.0,
+        "bytes": 58362
+      },
+      {
+        "id": "f197",
+        "t_start": 1181.0,
+        "t_end": 1182.0,
+        "bytes": 53636
+      },
+      {
+        "id": "f198",
+        "t_start": 1182.0,
+        "t_end": 1183.0,
+        "bytes": 57984
+      },
+      {
+        "id": "f199",
+        "t_start": 1183.0,
+        "t_end": 1184.0,
+        "bytes": 58394
+      },
+      {
+        "id": "f200",
+        "t_start": 1184.0,
+        "t_end": 1185.0,
+        "bytes": 54048
+      },
+      {
+        "id": "f201",
+        "t_start": 1185.0,
+        "t_end": 1186.0,
+        "bytes": 56896
+      },
+      {
+        "id": "f202",
+        "t_start": 1186.0,
+        "t_end": 1187.0,
+        "bytes": 59206
+      },
+      {
+        "id": "f203",
+        "t_start": 1187.0,
+        "t_end": 1188.0,
+        "bytes": 61792
+      },
+      {
+        "id": "f204",
+        "t_start": 1188.0,
+        "t_end": 1189.0,
+        "bytes": 60034
+      },
+      {
+        "id": "f205",
+        "t_start": 1189.0,
+        "t_end": 1192.0,
+        "bytes": 57272
+      },
+      {
+        "id": "f206",
+        "t_start": 1192.0,
+        "t_end": 1193.0,
+        "bytes": 55530
+      },
+      {
+        "id": "f207",
+        "t_start": 1193.0,
+        "t_end": 1194.0,
+        "bytes": 56462
+      },
+      {
+        "id": "f208",
+        "t_start": 1194.0,
+        "t_end": 1195.0,
+        "bytes": 59768
+      },
+      {
+        "id": "f209",
+        "t_start": 1195.0,
+        "t_end": 1197.0,
+        "bytes": 60926
+      },
+      {
+        "id": "f210",
+        "t_start": 1197.0,
+        "t_end": 1199.0,
+        "bytes": 58680
+      },
+      {
+        "id": "f211",
+        "t_start": 1199.0,
+        "t_end": 1201.0,
+        "bytes": 57482
+      },
+      {
+        "id": "f212",
+        "t_start": 1201.0,
+        "t_end": 1202.0,
+        "bytes": 54784
+      },
+      {
+        "id": "f213",
+        "t_start": 1202.0,
+        "t_end": 1204.0,
+        "bytes": 55750
+      },
+      {
+        "id": "f214",
+        "t_start": 1204.0,
+        "t_end": 1205.0,
+        "bytes": 54086
+      },
+      {
+        "id": "f215",
+        "t_start": 1205.0,
+        "t_end": 1206.0,
+        "bytes": 54668
+      },
+      {
+        "id": "f216",
+        "t_start": 1206.0,
+        "t_end": 1208.0,
+        "bytes": 58866
+      },
+      {
+        "id": "f217",
+        "t_start": 1208.0,
+        "t_end": 1211.0,
+        "bytes": 56748
+      },
+      {
+        "id": "f218",
+        "t_start": 1211.0,
+        "t_end": 1212.0,
+        "bytes": 57320
+      },
+      {
+        "id": "f219",
+        "t_start": 1212.0,
+        "t_end": 1213.0,
+        "bytes": 57210
+      },
+      {
+        "id": "f220",
+        "t_start": 1213.0,
+        "t_end": 1215.0,
+        "bytes": 57848
+      },
+      {
+        "id": "f221",
+        "t_start": 1215.0,
+        "t_end": 1216.0,
+        "bytes": 58604
+      },
+      {
+        "id": "f222",
+        "t_start": 1216.0,
+        "t_end": 1217.0,
+        "bytes": 54110
+      },
+      {
+        "id": "f223",
+        "t_start": 1217.0,
+        "t_end": 1219.0,
+        "bytes": 57130
+      },
+      {
+        "id": "f224",
+        "t_start": 1219.0,
+        "t_end": 1220.0,
+        "bytes": 54058
+      },
+      {
+        "id": "f225",
+        "t_start": 1220.0,
+        "t_end": 1221.0,
+        "bytes": 56042
+      },
+      {
+        "id": "f226",
+        "t_start": 1221.0,
+        "t_end": 1222.0,
+        "bytes": 58448
+      },
+      {
+        "id": "f227",
+        "t_start": 1222.0,
+        "t_end": 1223.0,
+        "bytes": 61992
+      },
+      {
+        "id": "f228",
+        "t_start": 1223.0,
+        "t_end": 1224.0,
+        "bytes": 60538
+      },
+      {
+        "id": "f229",
+        "t_start": 1224.0,
+        "t_end": 1225.0,
+        "bytes": 56898
+      },
+      {
+        "id": "f230",
+        "t_start": 1225.0,
+        "t_end": 1227.0,
+        "bytes": 58194
+      },
+      {
+        "id": "f231",
+        "t_start": 1227.0,
+        "t_end": 1229.0,
+        "bytes": 55962
+      },
+      {
+        "id": "f232",
+        "t_start": 1229.0,
+        "t_end": 1230.0,
+        "bytes": 59906
+      },
+      {
+        "id": "f233",
+        "t_start": 1230.0,
+        "t_end": 1232.0,
+        "bytes": 61022
+      },
+      {
+        "id": "f234",
+        "t_start": 1232.0,
+        "t_end": 1233.0,
+        "bytes": 58718
+      },
+      {
+        "id": "f235",
+        "t_start": 1233.0,
+        "t_end": 1234.0,
+        "bytes": 59950
+      },
+      {
+        "id": "f236",
+        "t_start": 1234.0,
+        "t_end": 1235.0,
+        "bytes": 58638
+      },
+      {
+        "id": "f237",
+        "t_start": 1235.0,
+        "t_end": 1236.0,
+        "bytes": 59868
+      },
+      {
+        "id": "f238",
+        "t_start": 1236.0,
+        "t_end": 1237.0,
+        "bytes": 56270
+      },
+      {
+        "id": "f239",
+        "t_start": 1237.0,
+        "t_end": 1239.0,
+        "bytes": 55920
+      },
+      {
+        "id": "f240",
+        "t_start": 1239.0,
+        "t_end": 1240.0,
+        "bytes": 54312
+      },
+      {
+        "id": "f241",
+        "t_start": 1240.0,
+        "t_end": 1241.0,
+        "bytes": 54734
+      },
+      {
+        "id": "f242",
+        "t_start": 1241.0,
+        "t_end": 1243.0,
+        "bytes": 58776
+      },
+      {
+        "id": "f243",
+        "t_start": 1243.0,
+        "t_end": 1246.0,
+        "bytes": 56670
+      },
+      {
+        "id": "f244",
+        "t_start": 1246.0,
+        "t_end": 1248.0,
+        "bytes": 57328
+      },
+      {
+        "id": "f245",
+        "t_start": 1248.0,
+        "t_end": 1250.0,
+        "bytes": 58748
+      },
+      {
+        "id": "f246",
+        "t_start": 1250.0,
+        "t_end": 1251.0,
+        "bytes": 58824
+      },
+      {
+        "id": "f247",
+        "t_start": 1251.0,
+        "t_end": 1252.0,
+        "bytes": 54432
+      },
+      {
+        "id": "f248",
+        "t_start": 1252.0,
+        "t_end": 1254.0,
+        "bytes": 58218
+      },
+      {
+        "id": "f249",
+        "t_start": 1254.0,
+        "t_end": 1256.0,
+        "bytes": 55452
+      },
+      {
+        "id": "f250",
+        "t_start": 1256.0,
+        "t_end": 1257.0,
+        "bytes": 58860
+      },
+      {
+        "id": "f251",
+        "t_start": 1257.0,
+        "t_end": 1258.0,
+        "bytes": 61828
+      },
+      {
+        "id": "f252",
+        "t_start": 1258.0,
+        "t_end": 1259.0,
+        "bytes": 60014
+      },
+      {
+        "id": "f253",
+        "t_start": 1259.0,
+        "t_end": 1262.0,
+        "bytes": 56874
+      },
+      {
+        "id": "f254",
+        "t_start": 1262.0,
+        "t_end": 1263.0,
+        "bytes": 55820
+      },
+      {
+        "id": "f255",
+        "t_start": 1263.0,
+        "t_end": 1264.0,
+        "bytes": 56074
+      },
+      {
+        "id": "f256",
+        "t_start": 1264.0,
+        "t_end": 1265.0,
+        "bytes": 59798
+      },
+      {
+        "id": "f257",
+        "t_start": 1265.0,
+        "t_end": 1267.0,
+        "bytes": 60832
+      },
+      {
+        "id": "f258",
+        "t_start": 1267.0,
+        "t_end": 1268.0,
+        "bytes": 58390
+      },
+      {
+        "id": "f259",
+        "t_start": 1268.0,
+        "t_end": 1269.0,
+        "bytes": 60126
+      },
+      {
+        "id": "f260",
+        "t_start": 1269.0,
+        "t_end": 1272.0,
+        "bytes": 58536
+      },
+      {
+        "id": "f261",
+        "t_start": 1272.0,
+        "t_end": 1273.0,
+        "bytes": 55338
+      },
+      {
+        "id": "f262",
+        "t_start": 1273.0,
+        "t_end": 1274.0,
+        "bytes": 56232
+      },
+      {
+        "id": "f263",
+        "t_start": 1274.0,
+        "t_end": 1275.0,
+        "bytes": 54262
+      },
+      {
+        "id": "f264",
+        "t_start": 1275.0,
+        "t_end": 1276.0,
+        "bytes": 71532
+      },
+      {
+        "id": "f265",
+        "t_start": 1276.0,
+        "t_end": 1280.0,
+        "bytes": 77838
+      },
+      {
+        "id": "f266",
+        "t_start": 1280.0,
+        "t_end": 1322.0,
+        "bytes": 84460
+      },
+      {
+        "id": "f267",
+        "t_start": 1322.0,
+        "t_end": 1329.0,
+        "bytes": 80810
+      },
+      {
+        "id": "f268",
+        "t_start": 1329.0,
+        "t_end": 1330.0,
+        "bytes": 71036
+      },
+      {
+        "id": "f269",
+        "t_start": 1330.0,
+        "t_end": 1331.0,
+        "bytes": 69160
+      },
+      {
+        "id": "f270",
+        "t_start": 1331.0,
+        "t_end": 1332.0,
+        "bytes": 69786
+      },
+      {
+        "id": "f271",
+        "t_start": 1332.0,
+        "t_end": 1333.0,
+        "bytes": 71276
+      },
+      {
+        "id": "f272",
+        "t_start": 1333.0,
+        "t_end": 1334.0,
+        "bytes": 81430
+      },
+      {
+        "id": "f273",
+        "t_start": 1334.0,
+        "t_end": 1335.0,
+        "bytes": 82798
+      },
+      {
+        "id": "f274",
+        "t_start": 1335.0,
+        "t_end": 1336.0,
+        "bytes": 89040
+      },
+      {
+        "id": "f275",
+        "t_start": 1336.0,
+        "t_end": 1337.0,
+        "bytes": 91120
+      },
+      {
+        "id": "f276",
+        "t_start": 1337.0,
+        "t_end": 1338.0,
+        "bytes": 88596
+      },
+      {
+        "id": "f277",
+        "t_start": 1338.0,
+        "t_end": 1339.0,
+        "bytes": 90686
+      },
+      {
+        "id": "f278",
+        "t_start": 1339.0,
+        "t_end": 1340.0,
+        "bytes": 83166
+      },
+      {
+        "id": "f279",
+        "t_start": 1340.0,
+        "t_end": 1341.0,
+        "bytes": 84194
+      },
+      {
+        "id": "f280",
+        "t_start": 1341.0,
+        "t_end": 1342.0,
+        "bytes": 83294
+      },
+      {
+        "id": "f281",
+        "t_start": 1342.0,
+        "t_end": 1350.0,
+        "bytes": 82282
+      },
+      {
+        "id": "f282",
+        "t_start": 1350.0,
+        "t_end": 1352.0,
+        "bytes": 81106
+      },
+      {
+        "id": "f283",
+        "t_start": 1352.0,
+        "t_end": 1355.0,
+        "bytes": 85146
+      },
+      {
+        "id": "f284",
+        "t_start": 1355.0,
+        "t_end": 1358.0,
+        "bytes": 81050
+      },
+      {
+        "id": "f285",
+        "t_start": 1358.0,
+        "t_end": 1359.0,
+        "bytes": 82758
+      },
+      {
+        "id": "f286",
+        "t_start": 1359.0,
+        "t_end": 1360.0,
+        "bytes": 82182
+      },
+      {
+        "id": "f287",
+        "t_start": 1360.0,
+        "t_end": 1361.0,
+        "bytes": 79078
+      },
+      {
+        "id": "f288",
+        "t_start": 1361.0,
+        "t_end": 1362.0,
+        "bytes": 78812
+      },
+      {
+        "id": "f289",
+        "t_start": 1362.0,
+        "t_end": 1363.0,
+        "bytes": 74974
+      },
+      {
+        "id": "f290",
+        "t_start": 1363.0,
+        "t_end": 1364.0,
+        "bytes": 77770
+      },
+      {
+        "id": "f291",
+        "t_start": 1364.0,
+        "t_end": 1365.0,
+        "bytes": 92500
+      },
+      {
+        "id": "f292",
+        "t_start": 1365.0,
+        "t_end": 1366.0,
+        "bytes": 88336
+      },
+      {
+        "id": "f293",
+        "t_start": 1366.0,
+        "t_end": 1367.0,
+        "bytes": 79746
+      },
+      {
+        "id": "f294",
+        "t_start": 1367.0,
+        "t_end": 1368.0,
+        "bytes": 78254
+      },
+      {
+        "id": "f295",
+        "t_start": 1368.0,
+        "t_end": 1369.0,
+        "bytes": 78238
+      },
+      {
+        "id": "f296",
+        "t_start": 1369.0,
+        "t_end": 1370.0,
+        "bytes": 77148
+      },
+      {
+        "id": "f297",
+        "t_start": 1370.0,
+        "t_end": 1371.0,
+        "bytes": 78578
+      },
+      {
+        "id": "f298",
+        "t_start": 1371.0,
+        "t_end": 1372.0,
+        "bytes": 78474
+      },
+      {
+        "id": "f299",
+        "t_start": 1372.0,
+        "t_end": 1373.0,
+        "bytes": 77740
+      },
+      {
+        "id": "f300",
+        "t_start": 1373.0,
+        "t_end": 1374.0,
+        "bytes": 79784
+      },
+      {
+        "id": "f301",
+        "t_start": 1374.0,
+        "t_end": 1375.0,
+        "bytes": 80272
+      },
+      {
+        "id": "f302",
+        "t_start": 1375.0,
+        "t_end": 1376.0,
+        "bytes": 79050
+      },
+      {
+        "id": "f303",
+        "t_start": 1376.0,
+        "t_end": 1401.0,
+        "bytes": 86214
+      },
+      {
+        "id": "f304",
+        "t_start": 1401.0,
+        "t_end": 1412.0,
+        "bytes": 14694
+      },
+      {
+        "id": "f305",
+        "t_start": 1412.0,
+        "t_end": 1419.0,
+        "bytes": 16036
+      },
+      {
+        "id": "f306",
+        "t_start": 1419.0,
+        "t_end": 1421.0,
+        "bytes": 16494
+      },
+      {
+        "id": "f307",
+        "t_start": 1421.0,
+        "t_end": 1424.0,
+        "bytes": 16418
+      },
+      {
+        "id": "f308",
+        "t_start": 1424.0,
+        "t_end": 1506.0,
+        "bytes": 16216
+      },
+      {
+        "id": "f309",
+        "t_start": 1506.0,
+        "t_end": 1517.0,
+        "bytes": 16472
+      },
+      {
+        "id": "f310",
+        "t_start": 1517.0,
+        "t_end": 1518.0,
+        "bytes": 12406
+      },
+      {
+        "id": "f311",
+        "t_start": 1518.0,
+        "t_end": 1519.0,
+        "bytes": 16040
+      },
+      {
+        "id": "f312",
+        "t_start": 1519.0,
+        "t_end": 1520.0,
+        "bytes": 14840
+      },
+      {
+        "id": "f313",
+        "t_start": 1520.0,
+        "t_end": 1569.0,
+        "bytes": 15998
+      },
+      {
+        "id": "f314",
+        "t_start": 1569.0,
+        "t_end": 1571.0,
+        "bytes": 13664
+      },
+      {
+        "id": "f315",
+        "t_start": 1571.0,
+        "t_end": 1572.0,
+        "bytes": 20612
+      },
+      {
+        "id": "f316",
+        "t_start": 1572.0,
+        "t_end": 1573.0,
+        "bytes": 23746
+      },
+      {
+        "id": "f317",
+        "t_start": 1573.0,
+        "t_end": 1576.0,
+        "bytes": 23908
+      },
+      {
+        "id": "f318",
+        "t_start": 1576.0,
+        "t_end": 1577.0,
+        "bytes": 15636
+      },
+      {
+        "id": "f319",
+        "t_start": 1577.0,
+        "t_end": 1579.0,
+        "bytes": 12706
+      },
+      {
+        "id": "f320",
+        "t_start": 1579.0,
+        "t_end": 1645.0,
+        "bytes": 36294
+      },
+      {
+        "id": "f321",
+        "t_start": 1645.0,
+        "t_end": 1646.0,
+        "bytes": 18414
+      },
+      {
+        "id": "f322",
+        "t_start": 1646.0,
+        "t_end": 1647.0,
+        "bytes": 21072
+      },
+      {
+        "id": "f323",
+        "t_start": 1647.0,
+        "t_end": 1656.0,
+        "bytes": 17094
+      },
+      {
+        "id": "f324",
+        "t_start": 1656.0,
+        "t_end": 1682.0,
+        "bytes": 36262
+      },
+      {
+        "id": "f325",
+        "t_start": 1682.0,
+        "t_end": 1683.0,
+        "bytes": 36964
+      },
+      {
+        "id": "f326",
+        "t_start": 1683.0,
+        "t_end": 1684.0,
+        "bytes": 36810
+      },
+      {
+        "id": "f327",
+        "t_start": 1684.0,
+        "t_end": 1685.0,
+        "bytes": 36488
+      },
+      {
+        "id": "f328",
+        "t_start": 1685.0,
+        "t_end": 1697.0,
+        "bytes": 36592
+      },
+      {
+        "id": "f329",
+        "t_start": 1697.0,
+        "t_end": 1743.0,
+        "bytes": 41494
+      },
+      {
+        "id": "f330",
+        "t_start": 1743.0,
+        "t_end": 1744.0,
+        "bytes": 47018
+      },
+      {
+        "id": "f331",
+        "t_start": 1744.0,
+        "t_end": 1746.0,
+        "bytes": 50392
+      },
+      {
+        "id": "f332",
+        "t_start": 1746.0,
+        "t_end": 1747.0,
+        "bytes": 30970
+      },
+      {
+        "id": "f333",
+        "t_start": 1747.0,
+        "t_end": 1748.0,
+        "bytes": 20904
+      },
+      {
+        "id": "f334",
+        "t_start": 1748.0,
+        "t_end": 1749.0,
+        "bytes": 32832
+      },
+      {
+        "id": "f335",
+        "t_start": 1749.0,
+        "t_end": 1762.0,
+        "bytes": 52894
+      },
+      {
+        "id": "f336",
+        "t_start": 1762.0,
+        "t_end": 1764.0,
+        "bytes": 48834
+      },
+      {
+        "id": "f337",
+        "t_start": 1764.0,
+        "t_end": 1765.0,
+        "bytes": 20078
+      },
+      {
+        "id": "f338",
+        "t_start": 1765.0,
+        "t_end": 1766.0,
+        "bytes": 30024
+      },
+      {
+        "id": "f339",
+        "t_start": 1766.0,
+        "t_end": 1767.0,
+        "bytes": 49338
+      },
+      {
+        "id": "f340",
+        "t_start": 1767.0,
+        "t_end": 1768.0,
+        "bytes": 26284
+      },
+      {
+        "id": "f341",
+        "t_start": 1768.0,
+        "t_end": 1769.0,
+        "bytes": 21254
+      },
+      {
+        "id": "f342",
+        "t_start": 1769.0,
+        "t_end": 1770.0,
+        "bytes": 19382
+      },
+      {
+        "id": "f343",
+        "t_start": 1770.0,
+        "t_end": 1779.0,
+        "bytes": 49894
+      },
+      {
+        "id": "f344",
+        "t_start": 1779.0,
+        "t_end": 1780.0,
+        "bytes": 18682
+      },
+      {
+        "id": "f345",
+        "t_start": 1780.0,
+        "t_end": 1801.0,
+        "bytes": 17082
+      },
+      {
+        "id": "f346",
+        "t_start": 1801.0,
+        "t_end": 1802.0,
+        "bytes": 17636
+      },
+      {
+        "id": "f347",
+        "t_start": 1802.0,
+        "t_end": 1803.0,
+        "bytes": 17286
+      },
+      {
+        "id": "f348",
+        "t_start": 1803.0,
+        "t_end": 1804.0,
+        "bytes": 49858
+      },
+      {
+        "id": "f349",
+        "t_start": 1804.0,
+        "t_end": 1812.0,
+        "bytes": 48404
+      },
+      {
+        "id": "f350",
+        "t_start": 1812.0,
+        "t_end": 1813.0,
+        "bytes": 52286
+      },
+      {
+        "id": "f351",
+        "t_start": 1813.0,
+        "t_end": 1816.0,
+        "bytes": 54540
+      },
+      {
+        "id": "f352",
+        "t_start": 1816.0,
+        "t_end": 1822.0,
+        "bytes": 47448
+      },
+      {
+        "id": "f353",
+        "t_start": 1822.0,
+        "t_end": 1823.0,
+        "bytes": 36270
+      },
+      {
+        "id": "f354",
+        "t_start": 1823.0,
+        "t_end": 1845.0,
+        "bytes": 49750
+      },
+      {
+        "id": "f355",
+        "t_start": 1845.0,
+        "t_end": 1850.0,
+        "bytes": 54426
+      },
+      {
+        "id": "f356",
+        "t_start": 1850.0,
+        "t_end": 1857.0,
+        "bytes": 48092
+      },
+      {
+        "id": "f357",
+        "t_start": 1857.0,
+        "t_end": 1858.0,
+        "bytes": 24418
+      },
+      {
+        "id": "f358",
+        "t_start": 1858.0,
+        "t_end": 1861.0,
+        "bytes": 50338
+      },
+      {
+        "id": "f359",
+        "t_start": 1861.0,
+        "t_end": 1862.0,
+        "bytes": 17314
+      },
+      {
+        "id": "f360",
+        "t_start": 1862.0,
+        "t_end": 1863.0,
+        "bytes": 47316
+      },
+      {
+        "id": "f361",
+        "t_start": 1863.0,
+        "t_end": 1866.0,
+        "bytes": 46912
+      },
+      {
+        "id": "f362",
+        "t_start": 1866.0,
+        "t_end": 1869.0,
+        "bytes": 46930
+      },
+      {
+        "id": "f363",
+        "t_start": 1869.0,
+        "t_end": 1870.0,
+        "bytes": 41822
+      },
+      {
+        "id": "f364",
+        "t_start": 1870.0,
+        "t_end": 1884.0,
+        "bytes": 49048
+      },
+      {
+        "id": "f365",
+        "t_start": 1884.0,
+        "t_end": 1887.0,
+        "bytes": 47126
+      },
+      {
+        "id": "f366",
+        "t_start": 1887.0,
+        "t_end": 1888.0,
+        "bytes": 14958
+      },
+      {
+        "id": "f367",
+        "t_start": 1888.0,
+        "t_end": 1889.0,
+        "bytes": 20100
+      },
+      {
+        "id": "f368",
+        "t_start": 1889.0,
+        "t_end": 1890.0,
+        "bytes": 19518
+      },
+      {
+        "id": "f369",
+        "t_start": 1890.0,
+        "t_end": 1898.0,
+        "bytes": 48250
+      },
+      {
+        "id": "f370",
+        "t_start": 1898.0,
+        "t_end": 1902.0,
+        "bytes": 53984
+      },
+      {
+        "id": "f371",
+        "t_start": 1902.0,
+        "t_end": 1925.0,
+        "bytes": 48014
+      },
+      {
+        "id": "f372",
+        "t_start": 1925.0,
+        "t_end": 1926.0,
+        "bytes": 50054
+      },
+      {
+        "id": "f373",
+        "t_start": 1926.0,
+        "t_end": 1968.0,
+        "bytes": 14786
+      },
+      {
+        "id": "f374",
+        "t_start": 1968.0,
+        "t_end": 1970.0,
+        "bytes": 14720
+      },
+      {
+        "id": "f375",
+        "t_start": 1970.0,
+        "t_end": 2022.0,
+        "bytes": 14890
+      },
+      {
+        "id": "f376",
+        "t_start": 2022.0,
+        "t_end": 2023.0,
+        "bytes": 18746
+      },
+      {
+        "id": "f377",
+        "t_start": 2023.0,
+        "t_end": 2025.0,
+        "bytes": 21064
+      },
+      {
+        "id": "f378",
+        "t_start": 2025.0,
+        "t_end": 2026.0,
+        "bytes": 24756
+      },
+      {
+        "id": "f379",
+        "t_start": 2026.0,
+        "t_end": 2027.0,
+        "bytes": 26146
+      },
+      {
+        "id": "f380",
+        "t_start": 2027.0,
+        "t_end": 2028.0,
+        "bytes": 25798
+      },
+      {
+        "id": "f381",
+        "t_start": 2028.0,
+        "t_end": 2029.0,
+        "bytes": 26224
+      },
+      {
+        "id": "f382",
+        "t_start": 2029.0,
+        "t_end": 2031.0,
+        "bytes": 27590
+      },
+      {
+        "id": "f383",
+        "t_start": 2031.0,
+        "t_end": 2035.0,
+        "bytes": 29118
+      },
+      {
+        "id": "f384",
+        "t_start": 2035.0,
+        "t_end": 2036.0,
+        "bytes": 19368
+      },
+      {
+        "id": "f385",
+        "t_start": 2036.0,
+        "t_end": 2037.0,
+        "bytes": 21596
+      },
+      {
+        "id": "f386",
+        "t_start": 2037.0,
+        "t_end": 2038.0,
+        "bytes": 23718
+      },
+      {
+        "id": "f387",
+        "t_start": 2038.0,
+        "t_end": 2039.0,
+        "bytes": 25300
+      },
+      {
+        "id": "f388",
+        "t_start": 2039.0,
+        "t_end": 2040.0,
+        "bytes": 26480
+      },
+      {
+        "id": "f389",
+        "t_start": 2040.0,
+        "t_end": 2041.0,
+        "bytes": 26186
+      },
+      {
+        "id": "f390",
+        "t_start": 2041.0,
+        "t_end": 2042.0,
+        "bytes": 26792
+      },
+      {
+        "id": "f391",
+        "t_start": 2042.0,
+        "t_end": 2043.0,
+        "bytes": 28718
+      },
+      {
+        "id": "f392",
+        "t_start": 2043.0,
+        "t_end": 2044.0,
+        "bytes": 29236
+      },
+      {
+        "id": "f393",
+        "t_start": 2044.0,
+        "t_end": 2048.0,
+        "bytes": 28962
+      },
+      {
+        "id": "f394",
+        "t_start": 2048.0,
+        "t_end": 2049.0,
+        "bytes": 20722
+      },
+      {
+        "id": "f395",
+        "t_start": 2049.0,
+        "t_end": 2050.0,
+        "bytes": 22642
+      },
+      {
+        "id": "f396",
+        "t_start": 2050.0,
+        "t_end": 2051.0,
+        "bytes": 25018
+      },
+      {
+        "id": "f397",
+        "t_start": 2051.0,
+        "t_end": 2052.0,
+        "bytes": 26176
+      },
+      {
+        "id": "f398",
+        "t_start": 2052.0,
+        "t_end": 2055.0,
+        "bytes": 25784
+      },
+      {
+        "id": "f399",
+        "t_start": 2055.0,
+        "t_end": 2056.0,
+        "bytes": 28832
+      },
+      {
+        "id": "f400",
+        "t_start": 2056.0,
+        "t_end": 2057.0,
+        "bytes": 29540
+      },
+      {
+        "id": "f401",
+        "t_start": 2057.0,
+        "t_end": 2060.0,
+        "bytes": 28990
+      },
+      {
+        "id": "f402",
+        "t_start": 2060.0,
+        "t_end": 2061.0,
+        "bytes": 19312
+      },
+      {
+        "id": "f403",
+        "t_start": 2061.0,
+        "t_end": 2062.0,
+        "bytes": 21636
+      },
+      {
+        "id": "f404",
+        "t_start": 2062.0,
+        "t_end": 2063.0,
+        "bytes": 23392
+      },
+      {
+        "id": "f405",
+        "t_start": 2063.0,
+        "t_end": 2064.0,
+        "bytes": 25144
+      },
+      {
+        "id": "f406",
+        "t_start": 2064.0,
+        "t_end": 2065.0,
+        "bytes": 26430
+      },
+      {
+        "id": "f407",
+        "t_start": 2065.0,
+        "t_end": 2066.0,
+        "bytes": 26368
+      },
+      {
+        "id": "f408",
+        "t_start": 2066.0,
+        "t_end": 2067.0,
+        "bytes": 26236
+      },
+      {
+        "id": "f409",
+        "t_start": 2067.0,
+        "t_end": 2069.0,
+        "bytes": 28220
+      },
+      {
+        "id": "f410",
+        "t_start": 2069.0,
+        "t_end": 2070.0,
+        "bytes": 28750
+      },
+      {
+        "id": "f411",
+        "t_start": 2070.0,
+        "t_end": 2073.0,
+        "bytes": 29122
+      },
+      {
+        "id": "f412",
+        "t_start": 2073.0,
+        "t_end": 2074.0,
+        "bytes": 20742
+      },
+      {
+        "id": "f413",
+        "t_start": 2074.0,
+        "t_end": 2075.0,
+        "bytes": 22040
+      },
+      {
+        "id": "f414",
+        "t_start": 2075.0,
+        "t_end": 2076.0,
+        "bytes": 25096
+      },
+      {
+        "id": "f415",
+        "t_start": 2076.0,
+        "t_end": 2077.0,
+        "bytes": 26050
+      },
+      {
+        "id": "f416",
+        "t_start": 2077.0,
+        "t_end": 2078.0,
+        "bytes": 26122
+      },
+      {
+        "id": "f417",
+        "t_start": 2078.0,
+        "t_end": 2079.0,
+        "bytes": 26140
+      },
+      {
+        "id": "f418",
+        "t_start": 2079.0,
+        "t_end": 2080.0,
+        "bytes": 26882
+      },
+      {
+        "id": "f419",
+        "t_start": 2080.0,
+        "t_end": 2081.0,
+        "bytes": 28752
+      },
+      {
+        "id": "f420",
+        "t_start": 2081.0,
+        "t_end": 2085.0,
+        "bytes": 29270
+      },
+      {
+        "id": "f421",
+        "t_start": 2085.0,
+        "t_end": 2086.0,
+        "bytes": 18900
+      },
+      {
+        "id": "f422",
+        "t_start": 2086.0,
+        "t_end": 2087.0,
+        "bytes": 21322
+      },
+      {
+        "id": "f423",
+        "t_start": 2087.0,
+        "t_end": 2088.0,
+        "bytes": 22742
+      },
+      {
+        "id": "f424",
+        "t_start": 2088.0,
+        "t_end": 2089.0,
+        "bytes": 25256
+      },
+      {
+        "id": "f425",
+        "t_start": 2089.0,
+        "t_end": 2090.0,
+        "bytes": 26424
+      },
+      {
+        "id": "f426",
+        "t_start": 2090.0,
+        "t_end": 2091.0,
+        "bytes": 26368
+      },
+      {
+        "id": "f427",
+        "t_start": 2091.0,
+        "t_end": 2092.0,
+        "bytes": 26956
+      },
+      {
+        "id": "f428",
+        "t_start": 2092.0,
+        "t_end": 2093.0,
+        "bytes": 27898
+      },
+      {
+        "id": "f429",
+        "t_start": 2093.0,
+        "t_end": 2094.0,
+        "bytes": 28956
+      },
+      {
+        "id": "f430",
+        "t_start": 2094.0,
+        "t_end": 2096.0,
+        "bytes": 29012
+      },
+      {
+        "id": "f431",
+        "t_start": 2096.0,
+        "t_end": 2098.0,
+        "bytes": 28922
+      },
+      {
+        "id": "f432",
+        "t_start": 2098.0,
+        "t_end": 2099.0,
+        "bytes": 19500
+      },
+      {
+        "id": "f433",
+        "t_start": 2099.0,
+        "t_end": 2100.0,
+        "bytes": 21478
+      },
+      {
+        "id": "f434",
+        "t_start": 2100.0,
+        "t_end": 2101.0,
+        "bytes": 23702
+      },
+      {
+        "id": "f435",
+        "t_start": 2101.0,
+        "t_end": 2102.0,
+        "bytes": 25256
+      },
+      {
+        "id": "f436",
+        "t_start": 2102.0,
+        "t_end": 2103.0,
+        "bytes": 26262
+      },
+      {
+        "id": "f437",
+        "t_start": 2103.0,
+        "t_end": 2104.0,
+        "bytes": 26542
+      },
+      {
+        "id": "f438",
+        "t_start": 2104.0,
+        "t_end": 2105.0,
+        "bytes": 26606
+      },
+      {
+        "id": "f439",
+        "t_start": 2105.0,
+        "t_end": 2106.0,
+        "bytes": 28540
+      },
+      {
+        "id": "f440",
+        "t_start": 2106.0,
+        "t_end": 2107.0,
+        "bytes": 29414
+      },
+      {
+        "id": "f441",
+        "t_start": 2107.0,
+        "t_end": 2111.0,
+        "bytes": 28836
+      },
+      {
+        "id": "f442",
+        "t_start": 2111.0,
+        "t_end": 2113.0,
+        "bytes": 20810
+      },
+      {
+        "id": "f443",
+        "t_start": 2113.0,
+        "t_end": 2114.0,
+        "bytes": 25032
+      },
+      {
+        "id": "f444",
+        "t_start": 2114.0,
+        "t_end": 2189.0,
+        "bytes": 11678
+      },
+      {
+        "id": "f445",
+        "t_start": 2189.0,
+        "t_end": 2190.0,
+        "bytes": 10298
+      },
+      {
+        "id": "f446",
+        "t_start": 2190.0,
+        "t_end": 2191.0,
+        "bytes": 10450
+      },
+      {
+        "id": "f447",
+        "t_start": 2191.0,
+        "t_end": 2192.0,
+        "bytes": 10298
+      },
+      {
+        "id": "f448",
+        "t_start": 2192.0,
+        "t_end": 2194.0,
+        "bytes": 8814
+      },
+      {
+        "id": "f449",
+        "t_start": 2194.0,
+        "t_end": 2197.0,
+        "bytes": 10216
+      },
+      {
+        "id": "f450",
+        "t_start": 2197.0,
+        "t_end": 2199.0,
+        "bytes": 8784
+      },
+      {
+        "id": "f451",
+        "t_start": 2199.0,
+        "t_end": 2201.0,
+        "bytes": 10186
+      },
+      {
+        "id": "f452",
+        "t_start": 2201.0,
+        "t_end": 2204.0,
+        "bytes": 9324
+      },
+      {
+        "id": "f453",
+        "t_start": 2204.0,
+        "t_end": 2206.0,
+        "bytes": 10552
+      },
+      {
+        "id": "f454",
+        "t_start": 2206.0,
+        "t_end": 2207.0,
+        "bytes": 9122
+      },
+      {
+        "id": "f455",
+        "t_start": 2207.0,
+        "t_end": 2209.0,
+        "bytes": 9240
+      },
+      {
+        "id": "f456",
+        "t_start": 2209.0,
+        "t_end": 2211.0,
+        "bytes": 10384
+      },
+      {
+        "id": "f457",
+        "t_start": 2211.0,
+        "t_end": 2213.0,
+        "bytes": 9110
+      },
+      {
+        "id": "f458",
+        "t_start": 2213.0,
+        "t_end": 2214.0,
+        "bytes": 10068
+      },
+      {
+        "id": "f459",
+        "t_start": 2214.0,
+        "t_end": 2216.0,
+        "bytes": 10372
+      },
+      {
+        "id": "f460",
+        "t_start": 2216.0,
+        "t_end": 2217.0,
+        "bytes": 9046
+      },
+      {
+        "id": "f461",
+        "t_start": 2217.0,
+        "t_end": 2218.0,
+        "bytes": 9002
+      },
+      {
+        "id": "f462",
+        "t_start": 2218.0,
+        "t_end": 2221.0,
+        "bytes": 10466
+      },
+      {
+        "id": "f463",
+        "t_start": 2221.0,
+        "t_end": 2223.0,
+        "bytes": 9010
+      },
+      {
+        "id": "f464",
+        "t_start": 2223.0,
+        "t_end": 2224.0,
+        "bytes": 10370
+      },
+      {
+        "id": "f465",
+        "t_start": 2224.0,
+        "t_end": 2225.0,
+        "bytes": 49522
+      },
+      {
+        "id": "f466",
+        "t_start": 2225.0,
+        "t_end": 2237.0,
+        "bytes": 49406
+      },
+      {
+        "id": "f467",
+        "t_start": 2237.0,
+        "t_end": 2239.0,
+        "bytes": 50082
+      },
+      {
+        "id": "f468",
+        "t_start": 2239.0,
+        "t_end": 2240.0,
+        "bytes": 49252
+      },
+      {
+        "id": "f469",
+        "t_start": 2240.0,
+        "t_end": 2246.0,
+        "bytes": 49532
+      },
+      {
+        "id": "f470",
+        "t_start": 2246.0,
+        "t_end": 2257.0,
+        "bytes": 49234
+      },
+      {
+        "id": "f471",
+        "t_start": 2257.0,
+        "t_end": 2274.0,
+        "bytes": 49032
+      },
+      {
+        "id": "f472",
+        "t_start": 2274.0,
+        "t_end": 2277.0,
+        "bytes": 49326
+      },
+      {
+        "id": "f473",
+        "t_start": 2277.0,
+        "t_end": 2284.0,
+        "bytes": 49386
+      },
+      {
+        "id": "f474",
+        "t_start": 2284.0,
+        "t_end": 2303.0,
+        "bytes": 49172
+      },
+      {
+        "id": "f475",
+        "t_start": 2303.0,
+        "t_end": 2317.0,
+        "bytes": 49264
+      },
+      {
+        "id": "f476",
+        "t_start": 2317.0,
+        "t_end": 2328.0,
+        "bytes": 13490
+      },
+      {
+        "id": "f477",
+        "t_start": 2328.0,
+        "t_end": 2330.0,
+        "bytes": 13438
+      },
+      {
+        "id": "f478",
+        "t_start": 2330.0,
+        "t_end": 2337.0,
+        "bytes": 13396
+      },
+      {
+        "id": "f479",
+        "t_start": 2337.0,
+        "t_end": 2364.0,
+        "bytes": 13478
+      },
+      {
+        "id": "f480",
+        "t_start": 2364.0,
+        "t_end": 2366.0,
+        "bytes": 13798
+      },
+      {
+        "id": "f481",
+        "t_start": 2366.0,
+        "t_end": 2383.0,
+        "bytes": 13548
+      },
+      {
+        "id": "f482",
+        "t_start": 2383.0,
+        "t_end": 2395.0,
+        "bytes": 13414
+      },
+      {
+        "id": "f483",
+        "t_start": 2395.0,
+        "t_end": 2396.0,
+        "bytes": 13576
+      },
+      {
+        "id": "f484",
+        "t_start": 2396.0,
+        "t_end": 2426.0,
+        "bytes": 32614
+      },
+      {
+        "id": "f485",
+        "t_start": 2426.0,
+        "t_end": 2428.0,
+        "bytes": 33332
+      },
+      {
+        "id": "f486",
+        "t_start": 2428.0,
+        "t_end": 2429.0,
+        "bytes": 32552
+      },
+      {
+        "id": "f487",
+        "t_start": 2429.0,
+        "t_end": 2430.0,
+        "bytes": 32276
+      },
+      {
+        "id": "f488",
+        "t_start": 2430.0,
+        "t_end": 2431.0,
+        "bytes": 31792
+      },
+      {
+        "id": "f489",
+        "t_start": 2431.0,
+        "t_end": 2432.0,
+        "bytes": 32378
+      },
+      {
+        "id": "f490",
+        "t_start": 2432.0,
+        "t_end": 2433.0,
+        "bytes": 32468
+      },
+      {
+        "id": "f491",
+        "t_start": 2433.0,
+        "t_end": 2434.0,
+        "bytes": 32584
+      },
+      {
+        "id": "f492",
+        "t_start": 2434.0,
+        "t_end": 2435.0,
+        "bytes": 32046
+      },
+      {
+        "id": "f493",
+        "t_start": 2435.0,
+        "t_end": 2436.0,
+        "bytes": 30906
+      },
+      {
+        "id": "f494",
+        "t_start": 2436.0,
+        "t_end": 2438.0,
+        "bytes": 31922
+      },
+      {
+        "id": "f495",
+        "t_start": 2438.0,
+        "t_end": 2440.0,
+        "bytes": 32178
+      },
+      {
+        "id": "f496",
+        "t_start": 2440.0,
+        "t_end": 2441.0,
+        "bytes": 31010
+      },
+      {
+        "id": "f497",
+        "t_start": 2441.0,
+        "t_end": 2442.0,
+        "bytes": 30916
+      },
+      {
+        "id": "f498",
+        "t_start": 2442.0,
+        "t_end": 2444.0,
+        "bytes": 31744
+      },
+      {
+        "id": "f499",
+        "t_start": 2444.0,
+        "t_end": 2445.0,
+        "bytes": 32146
+      },
+      {
+        "id": "f500",
+        "t_start": 2445.0,
+        "t_end": 2446.0,
+        "bytes": 32376
+      },
+      {
+        "id": "f501",
+        "t_start": 2446.0,
+        "t_end": 2447.0,
+        "bytes": 31136
+      },
+      {
+        "id": "f502",
+        "t_start": 2447.0,
+        "t_end": 2451.0,
+        "bytes": 32048
+      },
+      {
+        "id": "f503",
+        "t_start": 2451.0,
+        "t_end": 2452.0,
+        "bytes": 30936
+      },
+      {
+        "id": "f504",
+        "t_start": 2452.0,
+        "t_end": 2453.0,
+        "bytes": 31664
+      },
+      {
+        "id": "f505",
+        "t_start": 2453.0,
+        "t_end": 2454.0,
+        "bytes": 32282
+      },
+      {
+        "id": "f506",
+        "t_start": 2454.0,
+        "t_end": 2459.0,
+        "bytes": 33434
+      },
+      {
+        "id": "f507",
+        "t_start": 2459.0,
+        "t_end": 2462.0,
+        "bytes": 32340
+      },
+      {
+        "id": "f508",
+        "t_start": 2462.0,
+        "t_end": 2464.0,
+        "bytes": 32868
+      },
+      {
+        "id": "f509",
+        "t_start": 2464.0,
+        "t_end": 2465.0,
+        "bytes": 31832
+      },
+      {
+        "id": "f510",
+        "t_start": 2465.0,
+        "t_end": 2466.0,
+        "bytes": 28414
+      },
+      {
+        "id": "f511",
+        "t_start": 2466.0,
+        "t_end": 2467.0,
+        "bytes": 28702
+      },
+      {
+        "id": "f512",
+        "t_start": 2467.0,
+        "t_end": 2468.0,
+        "bytes": 31060
+      },
+      {
+        "id": "f513",
+        "t_start": 2468.0,
+        "t_end": 2469.0,
+        "bytes": 31064
+      },
+      {
+        "id": "f514",
+        "t_start": 2469.0,
+        "t_end": 2470.0,
+        "bytes": 31142
+      },
+      {
+        "id": "f515",
+        "t_start": 2470.0,
+        "t_end": 2471.0,
+        "bytes": 31400
+      },
+      {
+        "id": "f516",
+        "t_start": 2471.0,
+        "t_end": 2472.0,
+        "bytes": 31768
+      },
+      {
+        "id": "f517",
+        "t_start": 2472.0,
+        "t_end": 2473.0,
+        "bytes": 31450
+      },
+      {
+        "id": "f518",
+        "t_start": 2473.0,
+        "t_end": 2474.0,
+        "bytes": 30930
+      },
+      {
+        "id": "f519",
+        "t_start": 2474.0,
+        "t_end": 2475.0,
+        "bytes": 31252
+      },
+      {
+        "id": "f520",
+        "t_start": 2475.0,
+        "t_end": 2476.0,
+        "bytes": 32192
+      },
+      {
+        "id": "f521",
+        "t_start": 2476.0,
+        "t_end": 2477.0,
+        "bytes": 30232
+      },
+      {
+        "id": "f522",
+        "t_start": 2477.0,
+        "t_end": 2478.0,
+        "bytes": 30272
+      },
+      {
+        "id": "f523",
+        "t_start": 2478.0,
+        "t_end": 2479.0,
+        "bytes": 31088
+      },
+      {
+        "id": "f524",
+        "t_start": 2479.0,
+        "t_end": 2480.0,
+        "bytes": 30814
+      },
+      {
+        "id": "f525",
+        "t_start": 2480.0,
+        "t_end": 2481.0,
+        "bytes": 32240
+      },
+      {
+        "id": "f526",
+        "t_start": 2481.0,
+        "t_end": 2482.0,
+        "bytes": 32204
+      },
+      {
+        "id": "f527",
+        "t_start": 2482.0,
+        "t_end": 2483.0,
+        "bytes": 31098
+      },
+      {
+        "id": "f528",
+        "t_start": 2483.0,
+        "t_end": 2484.0,
+        "bytes": 30210
+      },
+      {
+        "id": "f529",
+        "t_start": 2484.0,
+        "t_end": 2485.0,
+        "bytes": 30130
+      },
+      {
+        "id": "f530",
+        "t_start": 2485.0,
+        "t_end": 2486.0,
+        "bytes": 31746
+      },
+      {
+        "id": "f531",
+        "t_start": 2486.0,
+        "t_end": 2487.0,
+        "bytes": 31248
+      },
+      {
+        "id": "f532",
+        "t_start": 2487.0,
+        "t_end": 2488.0,
+        "bytes": 31692
+      },
+      {
+        "id": "f533",
+        "t_start": 2488.0,
+        "t_end": 2507.0,
+        "bytes": 31010
+      },
+      {
+        "id": "f534",
+        "t_start": 2507.0,
+        "t_end": 2527.0,
+        "bytes": 30716
+      },
+      {
+        "id": "f535",
+        "t_start": 2527.0,
+        "t_end": 2532.0,
+        "bytes": 31214
+      },
+      {
+        "id": "f536",
+        "t_start": 2532.0,
+        "t_end": 2538.0,
+        "bytes": 31090
+      },
+      {
+        "id": "f537",
+        "t_start": 2538.0,
+        "t_end": 2574.0,
+        "bytes": 30932
+      },
+      {
+        "id": "f538",
+        "t_start": 2574.0,
+        "t_end": 2575.0,
+        "bytes": 30920
+      },
+      {
+        "id": "f539",
+        "t_start": 2575.0,
+        "t_end": 2630.0,
+        "bytes": 30930
+      },
+      {
+        "id": "f540",
+        "t_start": 2630.0,
+        "t_end": 2633.0,
+        "bytes": 39674
+      },
+      {
+        "id": "f541",
+        "t_start": 2633.0,
+        "t_end": 2635.0,
+        "bytes": 39086
+      },
+      {
+        "id": "f542",
+        "t_start": 2635.0,
+        "t_end": 2646.0,
+        "bytes": 39012
+      },
+      {
+        "id": "f543",
+        "t_start": 2646.0,
+        "t_end": 2653.0,
+        "bytes": 39534
+      },
+      {
+        "id": "f544",
+        "t_start": 2653.0,
+        "t_end": 2675.0,
+        "bytes": 39560
+      },
+      {
+        "id": "f545",
+        "t_start": 2675.0,
+        "t_end": 2681.0,
+        "bytes": 39600
+      },
+      {
+        "id": "f546",
+        "t_start": 2681.0,
+        "t_end": 2684.0,
+        "bytes": 39314
+      },
+      {
+        "id": "f547",
+        "t_start": 2684.0,
+        "t_end": 2687.0,
+        "bytes": 39732
+      },
+      {
+        "id": "f548",
+        "t_start": 2687.0,
+        "t_end": 2698.0,
+        "bytes": 39558
+      },
+      {
+        "id": "f549",
+        "t_start": 2698.0,
+        "t_end": 2714.0,
+        "bytes": 39548
+      },
+      {
+        "id": "f550",
+        "t_start": 2714.0,
+        "t_end": 2740.0,
+        "bytes": 39894
+      },
+      {
+        "id": "f551",
+        "t_start": 2740.0,
+        "t_end": 2742.0,
+        "bytes": 39182
+      },
+      {
+        "id": "f552",
+        "t_start": 2742.0,
+        "t_end": 2745.0,
+        "bytes": 39184
+      },
+      {
+        "id": "f553",
+        "t_start": 2745.0,
+        "t_end": 2746.0,
+        "bytes": 27138
+      },
+      {
+        "id": "f554",
+        "t_start": 2746.0,
+        "t_end": 2747.0,
+        "bytes": 17360
+      },
+      {
+        "id": "f555",
+        "t_start": 2747.0,
+        "t_end": 2748.0,
+        "bytes": 26342
+      },
+      {
+        "id": "f556",
+        "t_start": 2748.0,
+        "t_end": 2749.0,
+        "bytes": 19354
+      },
+      {
+        "id": "f557",
+        "t_start": 2749.0,
+        "t_end": 2750.0,
+        "bytes": 28268
+      },
+      {
+        "id": "f558",
+        "t_start": 2750.0,
+        "t_end": 2751.0,
+        "bytes": 35568
+      },
+      {
+        "id": "f559",
+        "t_start": 2751.0,
+        "t_end": 2752.0,
+        "bytes": 21530
+      },
+      {
+        "id": "f560",
+        "t_start": 2752.0,
+        "t_end": 2753.0,
+        "bytes": 19224
+      },
+      {
+        "id": "f561",
+        "t_start": 2753.0,
+        "t_end": 2754.0,
+        "bytes": 34942
+      },
+      {
+        "id": "f562",
+        "t_start": 2754.0,
+        "t_end": 2755.0,
+        "bytes": 30018
+      },
+      {
+        "id": "f563",
+        "t_start": 2755.0,
+        "t_end": 2756.0,
+        "bytes": 37882
+      },
+      {
+        "id": "f564",
+        "t_start": 2756.0,
+        "t_end": 2757.0,
+        "bytes": 21490
+      },
+      {
+        "id": "f565",
+        "t_start": 2757.0,
+        "t_end": 2759.0,
+        "bytes": 31322
+      },
+      {
+        "id": "f566",
+        "t_start": 2759.0,
+        "t_end": 2760.0,
+        "bytes": 27640
+      },
+      {
+        "id": "f567",
+        "t_start": 2760.0,
+        "t_end": 2761.0,
+        "bytes": 35524
+      },
+      {
+        "id": "f568",
+        "t_start": 2761.0,
+        "t_end": 2762.0,
+        "bytes": 26744
+      },
+      {
+        "id": "f569",
+        "t_start": 2762.0,
+        "t_end": 2763.0,
+        "bytes": 28684
+      },
+      {
+        "id": "f570",
+        "t_start": 2763.0,
+        "t_end": 2764.0,
+        "bytes": 26896
+      },
+      {
+        "id": "f571",
+        "t_start": 2764.0,
+        "t_end": 2766.0,
+        "bytes": 24710
+      },
+      {
+        "id": "f572",
+        "t_start": 2766.0,
+        "t_end": 2767.0,
+        "bytes": 38716
+      },
+      {
+        "id": "f573",
+        "t_start": 2767.0,
+        "t_end": 2768.0,
+        "bytes": 27422
+      },
+      {
+        "id": "f574",
+        "t_start": 2768.0,
+        "t_end": 2769.0,
+        "bytes": 38136
+      },
+      {
+        "id": "f575",
+        "t_start": 2769.0,
+        "t_end": 2770.0,
+        "bytes": 27314
+      },
+      {
+        "id": "f576",
+        "t_start": 2770.0,
+        "t_end": 2771.0,
+        "bytes": 26470
+      },
+      {
+        "id": "f577",
+        "t_start": 2771.0,
+        "t_end": 2772.0,
+        "bytes": 20242
+      },
+      {
+        "id": "f578",
+        "t_start": 2772.0,
+        "t_end": 2773.0,
+        "bytes": 24726
+      },
+      {
+        "id": "f579",
+        "t_start": 2773.0,
+        "t_end": 2775.0,
+        "bytes": 26194
+      },
+      {
+        "id": "f580",
+        "t_start": 2775.0,
+        "t_end": 2776.0,
+        "bytes": 19258
+      },
+      {
+        "id": "f581",
+        "t_start": 2776.0,
+        "t_end": 2777.0,
+        "bytes": 38190
+      },
+      {
+        "id": "f582",
+        "t_start": 2777.0,
+        "t_end": 2778.0,
+        "bytes": 27078
+      },
+      {
+        "id": "f583",
+        "t_start": 2778.0,
+        "t_end": 2779.0,
+        "bytes": 37822
+      },
+      {
+        "id": "f584",
+        "t_start": 2779.0,
+        "t_end": 2780.0,
+        "bytes": 26942
+      },
+      {
+        "id": "f585",
+        "t_start": 2780.0,
+        "t_end": 2781.0,
+        "bytes": 29188
+      },
+      {
+        "id": "f586",
+        "t_start": 2781.0,
+        "t_end": 2782.0,
+        "bytes": 20212
+      },
+      {
+        "id": "f587",
+        "t_start": 2782.0,
+        "t_end": 2783.0,
+        "bytes": 26644
+      },
+      {
+        "id": "f588",
+        "t_start": 2783.0,
+        "t_end": 2784.0,
+        "bytes": 26262
+      },
+      {
+        "id": "f589",
+        "t_start": 2784.0,
+        "t_end": 2785.0,
+        "bytes": 31532
+      },
+      {
+        "id": "f590",
+        "t_start": 2785.0,
+        "t_end": 2786.0,
+        "bytes": 19446
+      },
+      {
+        "id": "f591",
+        "t_start": 2786.0,
+        "t_end": 2787.0,
+        "bytes": 38364
+      },
+      {
+        "id": "f592",
+        "t_start": 2787.0,
+        "t_end": 2788.0,
+        "bytes": 27336
+      },
+      {
+        "id": "f593",
+        "t_start": 2788.0,
+        "t_end": 2789.0,
+        "bytes": 38020
+      },
+      {
+        "id": "f594",
+        "t_start": 2789.0,
+        "t_end": 2790.0,
+        "bytes": 26920
+      },
+      {
+        "id": "f595",
+        "t_start": 2790.0,
+        "t_end": 2791.0,
+        "bytes": 29676
+      },
+      {
+        "id": "f596",
+        "t_start": 2791.0,
+        "t_end": 2792.0,
+        "bytes": 20086
+      },
+      {
+        "id": "f597",
+        "t_start": 2792.0,
+        "t_end": 2793.0,
+        "bytes": 30470
+      },
+      {
+        "id": "f598",
+        "t_start": 2793.0,
+        "t_end": 2794.0,
+        "bytes": 26474
+      },
+      {
+        "id": "f599",
+        "t_start": 2794.0,
+        "t_end": 2795.0,
+        "bytes": 19290
+      },
+      {
+        "id": "f600",
+        "t_start": 2795.0,
+        "t_end": 2796.0,
+        "bytes": 19164
+      },
+      {
+        "id": "f601",
+        "t_start": 2796.0,
+        "t_end": 2797.0,
+        "bytes": 38096
+      },
+      {
+        "id": "f602",
+        "t_start": 2797.0,
+        "t_end": 2798.0,
+        "bytes": 27250
+      },
+      {
+        "id": "f603",
+        "t_start": 2798.0,
+        "t_end": 2799.0,
+        "bytes": 37652
+      },
+      {
+        "id": "f604",
+        "t_start": 2799.0,
+        "t_end": 2800.0,
+        "bytes": 27392
+      },
+      {
+        "id": "f605",
+        "t_start": 2800.0,
+        "t_end": 2801.0,
+        "bytes": 30366
+      },
+      {
+        "id": "f606",
+        "t_start": 2801.0,
+        "t_end": 2802.0,
+        "bytes": 20396
+      },
+      {
+        "id": "f607",
+        "t_start": 2802.0,
+        "t_end": 2803.0,
+        "bytes": 31134
+      },
+      {
+        "id": "f608",
+        "t_start": 2803.0,
+        "t_end": 2804.0,
+        "bytes": 26386
+      },
+      {
+        "id": "f609",
+        "t_start": 2804.0,
+        "t_end": 2805.0,
+        "bytes": 19400
+      },
+      {
+        "id": "f610",
+        "t_start": 2805.0,
+        "t_end": 2806.0,
+        "bytes": 19238
+      },
+      {
+        "id": "f611",
+        "t_start": 2806.0,
+        "t_end": 2807.0,
+        "bytes": 38504
+      },
+      {
+        "id": "f612",
+        "t_start": 2807.0,
+        "t_end": 2808.0,
+        "bytes": 27216
+      },
+      {
+        "id": "f613",
+        "t_start": 2808.0,
+        "t_end": 2809.0,
+        "bytes": 37686
+      },
+      {
+        "id": "f614",
+        "t_start": 2809.0,
+        "t_end": 2810.0,
+        "bytes": 26318
+      },
+      {
+        "id": "f615",
+        "t_start": 2810.0,
+        "t_end": 2811.0,
+        "bytes": 30412
+      },
+      {
+        "id": "f616",
+        "t_start": 2811.0,
+        "t_end": 2812.0,
+        "bytes": 20284
+      },
+      {
+        "id": "f617",
+        "t_start": 2812.0,
+        "t_end": 2813.0,
+        "bytes": 27426
+      },
+      {
+        "id": "f618",
+        "t_start": 2813.0,
+        "t_end": 2814.0,
+        "bytes": 26580
+      },
+      {
+        "id": "f619",
+        "t_start": 2814.0,
+        "t_end": 2815.0,
+        "bytes": 19536
+      },
+      {
+        "id": "f620",
+        "t_start": 2815.0,
+        "t_end": 2816.0,
+        "bytes": 19282
+      },
+      {
+        "id": "f621",
+        "t_start": 2816.0,
+        "t_end": 2817.0,
+        "bytes": 38352
+      },
+      {
+        "id": "f622",
+        "t_start": 2817.0,
+        "t_end": 2818.0,
+        "bytes": 20278
+      },
+      {
+        "id": "f623",
+        "t_start": 2818.0,
+        "t_end": 2819.0,
+        "bytes": 37858
+      },
+      {
+        "id": "f624",
+        "t_start": 2819.0,
+        "t_end": 2820.0,
+        "bytes": 27072
+      },
+      {
+        "id": "f625",
+        "t_start": 2820.0,
+        "t_end": 2821.0,
+        "bytes": 29248
+      },
+      {
+        "id": "f626",
+        "t_start": 2821.0,
+        "t_end": 2822.0,
+        "bytes": 20202
+      },
+      {
+        "id": "f627",
+        "t_start": 2822.0,
+        "t_end": 2823.0,
+        "bytes": 24900
+      },
+      {
+        "id": "f628",
+        "t_start": 2823.0,
+        "t_end": 2824.0,
+        "bytes": 26352
+      },
+      {
+        "id": "f629",
+        "t_start": 2824.0,
+        "t_end": 2825.0,
+        "bytes": 19626
+      },
+      {
+        "id": "f630",
+        "t_start": 2825.0,
+        "t_end": 2827.0,
+        "bytes": 43528
+      },
+      {
+        "id": "f631",
+        "t_start": 2827.0,
+        "t_end": 2835.0,
+        "bytes": 42122
+      },
+      {
+        "id": "f632",
+        "t_start": 2835.0,
+        "t_end": 2844.0,
+        "bytes": 16940
+      },
+      {
+        "id": "f633",
+        "t_start": 2844.0,
+        "t_end": 2845.0,
+        "bytes": 18502
+      },
+      {
+        "id": "f634",
+        "t_start": 2845.0,
+        "t_end": 2847.0,
+        "bytes": 18018
+      },
+      {
+        "id": "f635",
+        "t_start": 2847.0,
+        "t_end": 2853.0,
+        "bytes": 18032
+      },
+      {
+        "id": "f636",
+        "t_start": 2853.0,
+        "t_end": 2855.0,
+        "bytes": 18228
+      },
+      {
+        "id": "f637",
+        "t_start": 2855.0,
+        "t_end": 2857.0,
+        "bytes": 20068
+      },
+      {
+        "id": "f638",
+        "t_start": 2857.0,
+        "t_end": 2863.0,
+        "bytes": 20038
+      },
+      {
+        "id": "f639",
+        "t_start": 2863.0,
+        "t_end": 2864.0,
+        "bytes": 21280
+      },
+      {
+        "id": "f640",
+        "t_start": 2864.0,
+        "t_end": 2867.0,
+        "bytes": 19094
+      },
+      {
+        "id": "f641",
+        "t_start": 2867.0,
+        "t_end": 2868.0,
+        "bytes": 22026
+      },
+      {
+        "id": "f642",
+        "t_start": 2868.0,
+        "t_end": 2871.0,
+        "bytes": 18996
+      },
+      {
+        "id": "f643",
+        "t_start": 2871.0,
+        "t_end": 2873.0,
+        "bytes": 20598
+      },
+      {
+        "id": "f644",
+        "t_start": 2873.0,
+        "t_end": 2875.0,
+        "bytes": 21194
+      },
+      {
+        "id": "f645",
+        "t_start": 2875.0,
+        "t_end": 2878.0,
+        "bytes": 19660
+      },
+      {
+        "id": "f646",
+        "t_start": 2878.0,
+        "t_end": 2879.0,
+        "bytes": 20982
+      },
+      {
+        "id": "f647",
+        "t_start": 2879.0,
+        "t_end": 2880.0,
+        "bytes": 22036
+      },
+      {
+        "id": "f648",
+        "t_start": 2880.0,
+        "t_end": 2884.0,
+        "bytes": 18816
+      },
+      {
+        "id": "f649",
+        "t_start": 2884.0,
+        "t_end": 2885.0,
+        "bytes": 20648
+      },
+      {
+        "id": "f650",
+        "t_start": 2885.0,
+        "t_end": 2889.0,
+        "bytes": 19096
+      },
+      {
+        "id": "f651",
+        "t_start": 2889.0,
+        "t_end": 2890.0,
+        "bytes": 21174
+      },
+      {
+        "id": "f652",
+        "t_start": 2890.0,
+        "t_end": 2892.0,
+        "bytes": 18990
+      },
+      {
+        "id": "f653",
+        "t_start": 2892.0,
+        "t_end": 2894.0,
+        "bytes": 21062
+      },
+      {
+        "id": "f654",
+        "t_start": 2894.0,
+        "t_end": 2895.0,
+        "bytes": 21834
+      },
+      {
+        "id": "f655",
+        "t_start": 2895.0,
+        "t_end": 2897.0,
+        "bytes": 18878
+      },
+      {
+        "id": "f656",
+        "t_start": 2897.0,
+        "t_end": 2898.0,
+        "bytes": 14258
+      },
+      {
+        "id": "f657",
+        "t_start": 2898.0,
+        "t_end": 2900.0,
+        "bytes": 14516
+      },
+      {
+        "id": "f658",
+        "t_start": 2900.0,
+        "t_end": 2906.0,
+        "bytes": 14558
+      },
+      {
+        "id": "f659",
+        "t_start": 2906.0,
+        "t_end": 2910.0,
+        "bytes": 16218
+      },
+      {
+        "id": "f660",
+        "t_start": 2910.0,
+        "t_end": 2911.0,
+        "bytes": 17396
+      },
+      {
+        "id": "f661",
+        "t_start": 2911.0,
+        "t_end": 2913.0,
+        "bytes": 17448
+      },
+      {
+        "id": "f662",
+        "t_start": 2913.0,
+        "t_end": 2914.0,
+        "bytes": 17132
+      },
+      {
+        "id": "f663",
+        "t_start": 2914.0,
+        "t_end": 2915.0,
+        "bytes": 17024
+      },
+      {
+        "id": "f664",
+        "t_start": 2915.0,
+        "t_end": 2917.0,
+        "bytes": 12730
+      },
+      {
+        "id": "f665",
+        "t_start": 2917.0,
+        "t_end": 2948.0,
+        "bytes": 12676
+      },
+      {
+        "id": "f666",
+        "t_start": 2948.0,
+        "t_end": 2963.0,
+        "bytes": 19644
+      },
+      {
+        "id": "f667",
+        "t_start": 2963.0,
+        "t_end": 2978.0,
+        "bytes": 19828
+      },
+      {
+        "id": "f668",
+        "t_start": 2978.0,
+        "t_end": 2988.0,
+        "bytes": 19772
+      },
+      {
+        "id": "f669",
+        "t_start": 2988.0,
+        "t_end": 3085.0,
+        "bytes": 19716
+      },
+      {
+        "id": "f670",
+        "t_start": 3085.0,
+        "t_end": 3108.014,
+        "bytes": 12560
+      }
+    ],
+    "all_files_on_disk": [
+      {
+        "path": "frames/f1.webp",
+        "bytes": 18168
+      },
+      {
+        "path": "frames/f10.webp",
+        "bytes": 39664
+      },
+      {
+        "path": "frames/f100.webp",
+        "bytes": 22090
+      },
+      {
+        "path": "frames/f101.webp",
+        "bytes": 22246
+      },
+      {
+        "path": "frames/f102.webp",
+        "bytes": 21736
+      },
+      {
+        "path": "frames/f103.webp",
+        "bytes": 19838
+      },
+      {
+        "path": "frames/f104.webp",
+        "bytes": 19940
+      },
+      {
+        "path": "frames/f105.webp",
+        "bytes": 19792
+      },
+      {
+        "path": "frames/f106.webp",
+        "bytes": 18324
+      },
+      {
+        "path": "frames/f107.webp",
+        "bytes": 17064
+      },
+      {
+        "path": "frames/f108.webp",
+        "bytes": 8834
+      },
+      {
+        "path": "frames/f109.webp",
+        "bytes": 8570
+      },
+      {
+        "path": "frames/f11.webp",
+        "bytes": 39546
+      },
+      {
+        "path": "frames/f110.webp",
+        "bytes": 14624
+      },
+      {
+        "path": "frames/f111.webp",
+        "bytes": 16616
+      },
+      {
+        "path": "frames/f112.webp",
+        "bytes": 18694
+      },
+      {
+        "path": "frames/f113.webp",
+        "bytes": 22766
+      },
+      {
+        "path": "frames/f114.webp",
+        "bytes": 23172
+      },
+      {
+        "path": "frames/f115.webp",
+        "bytes": 15582
+      },
+      {
+        "path": "frames/f116.webp",
+        "bytes": 20082
+      },
+      {
+        "path": "frames/f117.webp",
+        "bytes": 11290
+      },
+      {
+        "path": "frames/f118.webp",
+        "bytes": 17090
+      },
+      {
+        "path": "frames/f119.webp",
+        "bytes": 21354
+      },
+      {
+        "path": "frames/f12.webp",
+        "bytes": 39666
+      },
+      {
+        "path": "frames/f120.webp",
+        "bytes": 23130
+      },
+      {
+        "path": "frames/f121.webp",
+        "bytes": 27772
+      },
+      {
+        "path": "frames/f122.webp",
+        "bytes": 33114
+      },
+      {
+        "path": "frames/f123.webp",
+        "bytes": 20560
+      },
+      {
+        "path": "frames/f124.webp",
+        "bytes": 26770
+      },
+      {
+        "path": "frames/f125.webp",
+        "bytes": 29424
+      },
+      {
+        "path": "frames/f126.webp",
+        "bytes": 28344
+      },
+      {
+        "path": "frames/f127.webp",
+        "bytes": 27638
+      },
+      {
+        "path": "frames/f128.webp",
+        "bytes": 20586
+      },
+      {
+        "path": "frames/f129.webp",
+        "bytes": 32538
+      },
+      {
+        "path": "frames/f13.webp",
+        "bytes": 39888
+      },
+      {
+        "path": "frames/f130.webp",
+        "bytes": 25524
+      },
+      {
+        "path": "frames/f131.webp",
+        "bytes": 29458
+      },
+      {
+        "path": "frames/f132.webp",
+        "bytes": 29090
+      },
+      {
+        "path": "frames/f133.webp",
+        "bytes": 28504
+      },
+      {
+        "path": "frames/f134.webp",
+        "bytes": 32702
+      },
+      {
+        "path": "frames/f135.webp",
+        "bytes": 32458
+      },
+      {
+        "path": "frames/f136.webp",
+        "bytes": 21146
+      },
+      {
+        "path": "frames/f137.webp",
+        "bytes": 15546
+      },
+      {
+        "path": "frames/f138.webp",
+        "bytes": 27834
+      },
+      {
+        "path": "frames/f139.webp",
+        "bytes": 27628
+      },
+      {
+        "path": "frames/f14.webp",
+        "bytes": 39830
+      },
+      {
+        "path": "frames/f140.webp",
+        "bytes": 29124
+      },
+      {
+        "path": "frames/f141.webp",
+        "bytes": 20516
+      },
+      {
+        "path": "frames/f142.webp",
+        "bytes": 27476
+      },
+      {
+        "path": "frames/f143.webp",
+        "bytes": 33226
+      },
+      {
+        "path": "frames/f144.webp",
+        "bytes": 23414
+      },
+      {
+        "path": "frames/f145.webp",
+        "bytes": 28652
+      },
+      {
+        "path": "frames/f146.webp",
+        "bytes": 28170
+      },
+      {
+        "path": "frames/f147.webp",
+        "bytes": 27742
+      },
+      {
+        "path": "frames/f148.webp",
+        "bytes": 23584
+      },
+      {
+        "path": "frames/f149.webp",
+        "bytes": 31616
+      },
+      {
+        "path": "frames/f15.webp",
+        "bytes": 39906
+      },
+      {
+        "path": "frames/f150.webp",
+        "bytes": 25404
+      },
+      {
+        "path": "frames/f151.webp",
+        "bytes": 27196
+      },
+      {
+        "path": "frames/f152.webp",
+        "bytes": 28482
+      },
+      {
+        "path": "frames/f153.webp",
+        "bytes": 28300
+      },
+      {
+        "path": "frames/f154.webp",
+        "bytes": 29978
+      },
+      {
+        "path": "frames/f155.webp",
+        "bytes": 32378
+      },
+      {
+        "path": "frames/f156.webp",
+        "bytes": 23678
+      },
+      {
+        "path": "frames/f157.webp",
+        "bytes": 26786
+      },
+      {
+        "path": "frames/f158.webp",
+        "bytes": 28474
+      },
+      {
+        "path": "frames/f159.webp",
+        "bytes": 26902
+      },
+      {
+        "path": "frames/f16.webp",
+        "bytes": 39686
+      },
+      {
+        "path": "frames/f160.webp",
+        "bytes": 29632
+      },
+      {
+        "path": "frames/f161.webp",
+        "bytes": 29630
+      },
+      {
+        "path": "frames/f162.webp",
+        "bytes": 24540
+      },
+      {
+        "path": "frames/f163.webp",
+        "bytes": 32234
+      },
+      {
+        "path": "frames/f164.webp",
+        "bytes": 23758
+      },
+      {
+        "path": "frames/f165.webp",
+        "bytes": 27842
+      },
+      {
+        "path": "frames/f166.webp",
+        "bytes": 28064
+      },
+      {
+        "path": "frames/f167.webp",
+        "bytes": 26850
+      },
+      {
+        "path": "frames/f168.webp",
+        "bytes": 27562
+      },
+      {
+        "path": "frames/f169.webp",
+        "bytes": 23586
+      },
+      {
+        "path": "frames/f17.webp",
+        "bytes": 50664
+      },
+      {
+        "path": "frames/f170.webp",
+        "bytes": 26120
+      },
+      {
+        "path": "frames/f171.webp",
+        "bytes": 32506
+      },
+      {
+        "path": "frames/f172.webp",
+        "bytes": 24194
+      },
+      {
+        "path": "frames/f173.webp",
+        "bytes": 27156
+      },
+      {
+        "path": "frames/f174.webp",
+        "bytes": 29476
+      },
+      {
+        "path": "frames/f175.webp",
+        "bytes": 27808
+      },
+      {
+        "path": "frames/f176.webp",
+        "bytes": 30084
+      },
+      {
+        "path": "frames/f177.webp",
+        "bytes": 32532
+      },
+      {
+        "path": "frames/f178.webp",
+        "bytes": 21550
+      },
+      {
+        "path": "frames/f179.webp",
+        "bytes": 28378
+      },
+      {
+        "path": "frames/f18.webp",
+        "bytes": 17584
+      },
+      {
+        "path": "frames/f180.webp",
+        "bytes": 28060
+      },
+      {
+        "path": "frames/f181.webp",
+        "bytes": 28808
+      },
+      {
+        "path": "frames/f182.webp",
+        "bytes": 24110
+      },
+      {
+        "path": "frames/f183.webp",
+        "bytes": 28422
+      },
+      {
+        "path": "frames/f184.webp",
+        "bytes": 33458
+      },
+      {
+        "path": "frames/f185.webp",
+        "bytes": 21648
+      },
+      {
+        "path": "frames/f186.webp",
+        "bytes": 27134
+      },
+      {
+        "path": "frames/f187.webp",
+        "bytes": 29564
+      },
+      {
+        "path": "frames/f188.webp",
+        "bytes": 26682
+      },
+      {
+        "path": "frames/f189.webp",
+        "bytes": 26358
+      },
+      {
+        "path": "frames/f19.webp",
+        "bytes": 17060
+      },
+      {
+        "path": "frames/f190.webp",
+        "bytes": 27556
+      },
+      {
+        "path": "frames/f191.webp",
+        "bytes": 27588
+      },
+      {
+        "path": "frames/f192.webp",
+        "bytes": 54428
+      },
+      {
+        "path": "frames/f193.webp",
+        "bytes": 57290
+      },
+      {
+        "path": "frames/f194.webp",
+        "bytes": 57634
+      },
+      {
+        "path": "frames/f195.webp",
+        "bytes": 58456
+      },
+      {
+        "path": "frames/f196.webp",
+        "bytes": 58362
+      },
+      {
+        "path": "frames/f197.webp",
+        "bytes": 53636
+      },
+      {
+        "path": "frames/f198.webp",
+        "bytes": 57984
+      },
+      {
+        "path": "frames/f199.webp",
+        "bytes": 58394
+      },
+      {
+        "path": "frames/f2.webp",
+        "bytes": 33434
+      },
+      {
+        "path": "frames/f20.webp",
+        "bytes": 17312
+      },
+      {
+        "path": "frames/f200.webp",
+        "bytes": 54048
+      },
+      {
+        "path": "frames/f201.webp",
+        "bytes": 56896
+      },
+      {
+        "path": "frames/f202.webp",
+        "bytes": 59206
+      },
+      {
+        "path": "frames/f203.webp",
+        "bytes": 61792
+      },
+      {
+        "path": "frames/f204.webp",
+        "bytes": 60034
+      },
+      {
+        "path": "frames/f205.webp",
+        "bytes": 57272
+      },
+      {
+        "path": "frames/f206.webp",
+        "bytes": 55530
+      },
+      {
+        "path": "frames/f207.webp",
+        "bytes": 56462
+      },
+      {
+        "path": "frames/f208.webp",
+        "bytes": 59768
+      },
+      {
+        "path": "frames/f209.webp",
+        "bytes": 60926
+      },
+      {
+        "path": "frames/f21.webp",
+        "bytes": 17040
+      },
+      {
+        "path": "frames/f210.webp",
+        "bytes": 58680
+      },
+      {
+        "path": "frames/f211.webp",
+        "bytes": 57482
+      },
+      {
+        "path": "frames/f212.webp",
+        "bytes": 54784
+      },
+      {
+        "path": "frames/f213.webp",
+        "bytes": 55750
+      },
+      {
+        "path": "frames/f214.webp",
+        "bytes": 54086
+      },
+      {
+        "path": "frames/f215.webp",
+        "bytes": 54668
+      },
+      {
+        "path": "frames/f216.webp",
+        "bytes": 58866
+      },
+      {
+        "path": "frames/f217.webp",
+        "bytes": 56748
+      },
+      {
+        "path": "frames/f218.webp",
+        "bytes": 57320
+      },
+      {
+        "path": "frames/f219.webp",
+        "bytes": 57210
+      },
+      {
+        "path": "frames/f22.webp",
+        "bytes": 16972
+      },
+      {
+        "path": "frames/f220.webp",
+        "bytes": 57848
+      },
+      {
+        "path": "frames/f221.webp",
+        "bytes": 58604
+      },
+      {
+        "path": "frames/f222.webp",
+        "bytes": 54110
+      },
+      {
+        "path": "frames/f223.webp",
+        "bytes": 57130
+      },
+      {
+        "path": "frames/f224.webp",
+        "bytes": 54058
+      },
+      {
+        "path": "frames/f225.webp",
+        "bytes": 56042
+      },
+      {
+        "path": "frames/f226.webp",
+        "bytes": 58448
+      },
+      {
+        "path": "frames/f227.webp",
+        "bytes": 61992
+      },
+      {
+        "path": "frames/f228.webp",
+        "bytes": 60538
+      },
+      {
+        "path": "frames/f229.webp",
+        "bytes": 56898
+      },
+      {
+        "path": "frames/f23.webp",
+        "bytes": 17264
+      },
+      {
+        "path": "frames/f230.webp",
+        "bytes": 58194
+      },
+      {
+        "path": "frames/f231.webp",
+        "bytes": 55962
+      },
+      {
+        "path": "frames/f232.webp",
+        "bytes": 59906
+      },
+      {
+        "path": "frames/f233.webp",
+        "bytes": 61022
+      },
+      {
+        "path": "frames/f234.webp",
+        "bytes": 58718
+      },
+      {
+        "path": "frames/f235.webp",
+        "bytes": 59950
+      },
+      {
+        "path": "frames/f236.webp",
+        "bytes": 58638
+      },
+      {
+        "path": "frames/f237.webp",
+        "bytes": 59868
+      },
+      {
+        "path": "frames/f238.webp",
+        "bytes": 56270
+      },
+      {
+        "path": "frames/f239.webp",
+        "bytes": 55920
+      },
+      {
+        "path": "frames/f24.webp",
+        "bytes": 17466
+      },
+      {
+        "path": "frames/f240.webp",
+        "bytes": 54312
+      },
+      {
+        "path": "frames/f241.webp",
+        "bytes": 54734
+      },
+      {
+        "path": "frames/f242.webp",
+        "bytes": 58776
+      },
+      {
+        "path": "frames/f243.webp",
+        "bytes": 56670
+      },
+      {
+        "path": "frames/f244.webp",
+        "bytes": 57328
+      },
+      {
+        "path": "frames/f245.webp",
+        "bytes": 58748
+      },
+      {
+        "path": "frames/f246.webp",
+        "bytes": 58824
+      },
+      {
+        "path": "frames/f247.webp",
+        "bytes": 54432
+      },
+      {
+        "path": "frames/f248.webp",
+        "bytes": 58218
+      },
+      {
+        "path": "frames/f249.webp",
+        "bytes": 55452
+      },
+      {
+        "path": "frames/f25.webp",
+        "bytes": 17180
+      },
+      {
+        "path": "frames/f250.webp",
+        "bytes": 58860
+      },
+      {
+        "path": "frames/f251.webp",
+        "bytes": 61828
+      },
+      {
+        "path": "frames/f252.webp",
+        "bytes": 60014
+      },
+      {
+        "path": "frames/f253.webp",
+        "bytes": 56874
+      },
+      {
+        "path": "frames/f254.webp",
+        "bytes": 55820
+      },
+      {
+        "path": "frames/f255.webp",
+        "bytes": 56074
+      },
+      {
+        "path": "frames/f256.webp",
+        "bytes": 59798
+      },
+      {
+        "path": "frames/f257.webp",
+        "bytes": 60832
+      },
+      {
+        "path": "frames/f258.webp",
+        "bytes": 58390
+      },
+      {
+        "path": "frames/f259.webp",
+        "bytes": 60126
+      },
+      {
+        "path": "frames/f26.webp",
+        "bytes": 16910
+      },
+      {
+        "path": "frames/f260.webp",
+        "bytes": 58536
+      },
+      {
+        "path": "frames/f261.webp",
+        "bytes": 55338
+      },
+      {
+        "path": "frames/f262.webp",
+        "bytes": 56232
+      },
+      {
+        "path": "frames/f263.webp",
+        "bytes": 54262
+      },
+      {
+        "path": "frames/f264.webp",
+        "bytes": 71532
+      },
+      {
+        "path": "frames/f265.webp",
+        "bytes": 77838
+      },
+      {
+        "path": "frames/f266.webp",
+        "bytes": 84460
+      },
+      {
+        "path": "frames/f267.webp",
+        "bytes": 80810
+      },
+      {
+        "path": "frames/f268.webp",
+        "bytes": 71036
+      },
+      {
+        "path": "frames/f269.webp",
+        "bytes": 69160
+      },
+      {
+        "path": "frames/f27.webp",
+        "bytes": 27906
+      },
+      {
+        "path": "frames/f270.webp",
+        "bytes": 69786
+      },
+      {
+        "path": "frames/f271.webp",
+        "bytes": 71276
+      },
+      {
+        "path": "frames/f272.webp",
+        "bytes": 81430
+      },
+      {
+        "path": "frames/f273.webp",
+        "bytes": 82798
+      },
+      {
+        "path": "frames/f274.webp",
+        "bytes": 89040
+      },
+      {
+        "path": "frames/f275.webp",
+        "bytes": 91120
+      },
+      {
+        "path": "frames/f276.webp",
+        "bytes": 88596
+      },
+      {
+        "path": "frames/f277.webp",
+        "bytes": 90686
+      },
+      {
+        "path": "frames/f278.webp",
+        "bytes": 83166
+      },
+      {
+        "path": "frames/f279.webp",
+        "bytes": 84194
+      },
+      {
+        "path": "frames/f28.webp",
+        "bytes": 28188
+      },
+      {
+        "path": "frames/f280.webp",
+        "bytes": 83294
+      },
+      {
+        "path": "frames/f281.webp",
+        "bytes": 82282
+      },
+      {
+        "path": "frames/f282.webp",
+        "bytes": 81106
+      },
+      {
+        "path": "frames/f283.webp",
+        "bytes": 85146
+      },
+      {
+        "path": "frames/f284.webp",
+        "bytes": 81050
+      },
+      {
+        "path": "frames/f285.webp",
+        "bytes": 82758
+      },
+      {
+        "path": "frames/f286.webp",
+        "bytes": 82182
+      },
+      {
+        "path": "frames/f287.webp",
+        "bytes": 79078
+      },
+      {
+        "path": "frames/f288.webp",
+        "bytes": 78812
+      },
+      {
+        "path": "frames/f289.webp",
+        "bytes": 74974
+      },
+      {
+        "path": "frames/f29.webp",
+        "bytes": 25472
+      },
+      {
+        "path": "frames/f290.webp",
+        "bytes": 77770
+      },
+      {
+        "path": "frames/f291.webp",
+        "bytes": 92500
+      },
+      {
+        "path": "frames/f292.webp",
+        "bytes": 88336
+      },
+      {
+        "path": "frames/f293.webp",
+        "bytes": 79746
+      },
+      {
+        "path": "frames/f294.webp",
+        "bytes": 78254
+      },
+      {
+        "path": "frames/f295.webp",
+        "bytes": 78238
+      },
+      {
+        "path": "frames/f296.webp",
+        "bytes": 77148
+      },
+      {
+        "path": "frames/f297.webp",
+        "bytes": 78578
+      },
+      {
+        "path": "frames/f298.webp",
+        "bytes": 78474
+      },
+      {
+        "path": "frames/f299.webp",
+        "bytes": 77740
+      },
+      {
+        "path": "frames/f3.webp",
+        "bytes": 32200
+      },
+      {
+        "path": "frames/f30.webp",
+        "bytes": 28170
+      },
+      {
+        "path": "frames/f300.webp",
+        "bytes": 79784
+      },
+      {
+        "path": "frames/f301.webp",
+        "bytes": 80272
+      },
+      {
+        "path": "frames/f302.webp",
+        "bytes": 79050
+      },
+      {
+        "path": "frames/f303.webp",
+        "bytes": 86214
+      },
+      {
+        "path": "frames/f304.webp",
+        "bytes": 14694
+      },
+      {
+        "path": "frames/f305.webp",
+        "bytes": 16036
+      },
+      {
+        "path": "frames/f306.webp",
+        "bytes": 16494
+      },
+      {
+        "path": "frames/f307.webp",
+        "bytes": 16418
+      },
+      {
+        "path": "frames/f308.webp",
+        "bytes": 16216
+      },
+      {
+        "path": "frames/f309.webp",
+        "bytes": 16472
+      },
+      {
+        "path": "frames/f31.webp",
+        "bytes": 33012
+      },
+      {
+        "path": "frames/f310.webp",
+        "bytes": 12406
+      },
+      {
+        "path": "frames/f311.webp",
+        "bytes": 16040
+      },
+      {
+        "path": "frames/f312.webp",
+        "bytes": 14840
+      },
+      {
+        "path": "frames/f313.webp",
+        "bytes": 15998
+      },
+      {
+        "path": "frames/f314.webp",
+        "bytes": 13664
+      },
+      {
+        "path": "frames/f315.webp",
+        "bytes": 20612
+      },
+      {
+        "path": "frames/f316.webp",
+        "bytes": 23746
+      },
+      {
+        "path": "frames/f317.webp",
+        "bytes": 23908
+      },
+      {
+        "path": "frames/f318.webp",
+        "bytes": 15636
+      },
+      {
+        "path": "frames/f319.webp",
+        "bytes": 12706
+      },
+      {
+        "path": "frames/f32.webp",
+        "bytes": 34920
+      },
+      {
+        "path": "frames/f320.webp",
+        "bytes": 36294
+      },
+      {
+        "path": "frames/f321.webp",
+        "bytes": 18414
+      },
+      {
+        "path": "frames/f322.webp",
+        "bytes": 21072
+      },
+      {
+        "path": "frames/f323.webp",
+        "bytes": 17094
+      },
+      {
+        "path": "frames/f324.webp",
+        "bytes": 36262
+      },
+      {
+        "path": "frames/f325.webp",
+        "bytes": 36964
+      },
+      {
+        "path": "frames/f326.webp",
+        "bytes": 36810
+      },
+      {
+        "path": "frames/f327.webp",
+        "bytes": 36488
+      },
+      {
+        "path": "frames/f328.webp",
+        "bytes": 36592
+      },
+      {
+        "path": "frames/f329.webp",
+        "bytes": 41494
+      },
+      {
+        "path": "frames/f33.webp",
+        "bytes": 34738
+      },
+      {
+        "path": "frames/f330.webp",
+        "bytes": 47018
+      },
+      {
+        "path": "frames/f331.webp",
+        "bytes": 50392
+      },
+      {
+        "path": "frames/f332.webp",
+        "bytes": 30970
+      },
+      {
+        "path": "frames/f333.webp",
+        "bytes": 20904
+      },
+      {
+        "path": "frames/f334.webp",
+        "bytes": 32832
+      },
+      {
+        "path": "frames/f335.webp",
+        "bytes": 52894
+      },
+      {
+        "path": "frames/f336.webp",
+        "bytes": 48834
+      },
+      {
+        "path": "frames/f337.webp",
+        "bytes": 20078
+      },
+      {
+        "path": "frames/f338.webp",
+        "bytes": 30024
+      },
+      {
+        "path": "frames/f339.webp",
+        "bytes": 49338
+      },
+      {
+        "path": "frames/f34.webp",
+        "bytes": 35898
+      },
+      {
+        "path": "frames/f340.webp",
+        "bytes": 26284
+      },
+      {
+        "path": "frames/f341.webp",
+        "bytes": 21254
+      },
+      {
+        "path": "frames/f342.webp",
+        "bytes": 19382
+      },
+      {
+        "path": "frames/f343.webp",
+        "bytes": 49894
+      },
+      {
+        "path": "frames/f344.webp",
+        "bytes": 18682
+      },
+      {
+        "path": "frames/f345.webp",
+        "bytes": 17082
+      },
+      {
+        "path": "frames/f346.webp",
+        "bytes": 17636
+      },
+      {
+        "path": "frames/f347.webp",
+        "bytes": 17286
+      },
+      {
+        "path": "frames/f348.webp",
+        "bytes": 49858
+      },
+      {
+        "path": "frames/f349.webp",
+        "bytes": 48404
+      },
+      {
+        "path": "frames/f35.webp",
+        "bytes": 28038
+      },
+      {
+        "path": "frames/f350.webp",
+        "bytes": 52286
+      },
+      {
+        "path": "frames/f351.webp",
+        "bytes": 54540
+      },
+      {
+        "path": "frames/f352.webp",
+        "bytes": 47448
+      },
+      {
+        "path": "frames/f353.webp",
+        "bytes": 36270
+      },
+      {
+        "path": "frames/f354.webp",
+        "bytes": 49750
+      },
+      {
+        "path": "frames/f355.webp",
+        "bytes": 54426
+      },
+      {
+        "path": "frames/f356.webp",
+        "bytes": 48092
+      },
+      {
+        "path": "frames/f357.webp",
+        "bytes": 24418
+      },
+      {
+        "path": "frames/f358.webp",
+        "bytes": 50338
+      },
+      {
+        "path": "frames/f359.webp",
+        "bytes": 17314
+      },
+      {
+        "path": "frames/f36.webp",
+        "bytes": 27618
+      },
+      {
+        "path": "frames/f360.webp",
+        "bytes": 47316
+      },
+      {
+        "path": "frames/f361.webp",
+        "bytes": 46912
+      },
+      {
+        "path": "frames/f362.webp",
+        "bytes": 46930
+      },
+      {
+        "path": "frames/f363.webp",
+        "bytes": 41822
+      },
+      {
+        "path": "frames/f364.webp",
+        "bytes": 49048
+      },
+      {
+        "path": "frames/f365.webp",
+        "bytes": 47126
+      },
+      {
+        "path": "frames/f366.webp",
+        "bytes": 14958
+      },
+      {
+        "path": "frames/f367.webp",
+        "bytes": 20100
+      },
+      {
+        "path": "frames/f368.webp",
+        "bytes": 19518
+      },
+      {
+        "path": "frames/f369.webp",
+        "bytes": 48250
+      },
+      {
+        "path": "frames/f37.webp",
+        "bytes": 27848
+      },
+      {
+        "path": "frames/f370.webp",
+        "bytes": 53984
+      },
+      {
+        "path": "frames/f371.webp",
+        "bytes": 48014
+      },
+      {
+        "path": "frames/f372.webp",
+        "bytes": 50054
+      },
+      {
+        "path": "frames/f373.webp",
+        "bytes": 14786
+      },
+      {
+        "path": "frames/f374.webp",
+        "bytes": 14720
+      },
+      {
+        "path": "frames/f375.webp",
+        "bytes": 14890
+      },
+      {
+        "path": "frames/f376.webp",
+        "bytes": 18746
+      },
+      {
+        "path": "frames/f377.webp",
+        "bytes": 21064
+      },
+      {
+        "path": "frames/f378.webp",
+        "bytes": 24756
+      },
+      {
+        "path": "frames/f379.webp",
+        "bytes": 26146
+      },
+      {
+        "path": "frames/f38.webp",
+        "bytes": 28954
+      },
+      {
+        "path": "frames/f380.webp",
+        "bytes": 25798
+      },
+      {
+        "path": "frames/f381.webp",
+        "bytes": 26224
+      },
+      {
+        "path": "frames/f382.webp",
+        "bytes": 27590
+      },
+      {
+        "path": "frames/f383.webp",
+        "bytes": 29118
+      },
+      {
+        "path": "frames/f384.webp",
+        "bytes": 19368
+      },
+      {
+        "path": "frames/f385.webp",
+        "bytes": 21596
+      },
+      {
+        "path": "frames/f386.webp",
+        "bytes": 23718
+      },
+      {
+        "path": "frames/f387.webp",
+        "bytes": 25300
+      },
+      {
+        "path": "frames/f388.webp",
+        "bytes": 26480
+      },
+      {
+        "path": "frames/f389.webp",
+        "bytes": 26186
+      },
+      {
+        "path": "frames/f39.webp",
+        "bytes": 23714
+      },
+      {
+        "path": "frames/f390.webp",
+        "bytes": 26792
+      },
+      {
+        "path": "frames/f391.webp",
+        "bytes": 28718
+      },
+      {
+        "path": "frames/f392.webp",
+        "bytes": 29236
+      },
+      {
+        "path": "frames/f393.webp",
+        "bytes": 28962
+      },
+      {
+        "path": "frames/f394.webp",
+        "bytes": 20722
+      },
+      {
+        "path": "frames/f395.webp",
+        "bytes": 22642
+      },
+      {
+        "path": "frames/f396.webp",
+        "bytes": 25018
+      },
+      {
+        "path": "frames/f397.webp",
+        "bytes": 26176
+      },
+      {
+        "path": "frames/f398.webp",
+        "bytes": 25784
+      },
+      {
+        "path": "frames/f399.webp",
+        "bytes": 28832
+      },
+      {
+        "path": "frames/f4.webp",
+        "bytes": 32242
+      },
+      {
+        "path": "frames/f40.webp",
+        "bytes": 28468
+      },
+      {
+        "path": "frames/f400.webp",
+        "bytes": 29540
+      },
+      {
+        "path": "frames/f401.webp",
+        "bytes": 28990
+      },
+      {
+        "path": "frames/f402.webp",
+        "bytes": 19312
+      },
+      {
+        "path": "frames/f403.webp",
+        "bytes": 21636
+      },
+      {
+        "path": "frames/f404.webp",
+        "bytes": 23392
+      },
+      {
+        "path": "frames/f405.webp",
+        "bytes": 25144
+      },
+      {
+        "path": "frames/f406.webp",
+        "bytes": 26430
+      },
+      {
+        "path": "frames/f407.webp",
+        "bytes": 26368
+      },
+      {
+        "path": "frames/f408.webp",
+        "bytes": 26236
+      },
+      {
+        "path": "frames/f409.webp",
+        "bytes": 28220
+      },
+      {
+        "path": "frames/f41.webp",
+        "bytes": 32534
+      },
+      {
+        "path": "frames/f410.webp",
+        "bytes": 28750
+      },
+      {
+        "path": "frames/f411.webp",
+        "bytes": 29122
+      },
+      {
+        "path": "frames/f412.webp",
+        "bytes": 20742
+      },
+      {
+        "path": "frames/f413.webp",
+        "bytes": 22040
+      },
+      {
+        "path": "frames/f414.webp",
+        "bytes": 25096
+      },
+      {
+        "path": "frames/f415.webp",
+        "bytes": 26050
+      },
+      {
+        "path": "frames/f416.webp",
+        "bytes": 26122
+      },
+      {
+        "path": "frames/f417.webp",
+        "bytes": 26140
+      },
+      {
+        "path": "frames/f418.webp",
+        "bytes": 26882
+      },
+      {
+        "path": "frames/f419.webp",
+        "bytes": 28752
+      },
+      {
+        "path": "frames/f42.webp",
+        "bytes": 30446
+      },
+      {
+        "path": "frames/f420.webp",
+        "bytes": 29270
+      },
+      {
+        "path": "frames/f421.webp",
+        "bytes": 18900
+      },
+      {
+        "path": "frames/f422.webp",
+        "bytes": 21322
+      },
+      {
+        "path": "frames/f423.webp",
+        "bytes": 22742
+      },
+      {
+        "path": "frames/f424.webp",
+        "bytes": 25256
+      },
+      {
+        "path": "frames/f425.webp",
+        "bytes": 26424
+      },
+      {
+        "path": "frames/f426.webp",
+        "bytes": 26368
+      },
+      {
+        "path": "frames/f427.webp",
+        "bytes": 26956
+      },
+      {
+        "path": "frames/f428.webp",
+        "bytes": 27898
+      },
+      {
+        "path": "frames/f429.webp",
+        "bytes": 28956
+      },
+      {
+        "path": "frames/f43.webp",
+        "bytes": 32082
+      },
+      {
+        "path": "frames/f430.webp",
+        "bytes": 29012
+      },
+      {
+        "path": "frames/f431.webp",
+        "bytes": 28922
+      },
+      {
+        "path": "frames/f432.webp",
+        "bytes": 19500
+      },
+      {
+        "path": "frames/f433.webp",
+        "bytes": 21478
+      },
+      {
+        "path": "frames/f434.webp",
+        "bytes": 23702
+      },
+      {
+        "path": "frames/f435.webp",
+        "bytes": 25256
+      },
+      {
+        "path": "frames/f436.webp",
+        "bytes": 26262
+      },
+      {
+        "path": "frames/f437.webp",
+        "bytes": 26542
+      },
+      {
+        "path": "frames/f438.webp",
+        "bytes": 26606
+      },
+      {
+        "path": "frames/f439.webp",
+        "bytes": 28540
+      },
+      {
+        "path": "frames/f44.webp",
+        "bytes": 26186
+      },
+      {
+        "path": "frames/f440.webp",
+        "bytes": 29414
+      },
+      {
+        "path": "frames/f441.webp",
+        "bytes": 28836
+      },
+      {
+        "path": "frames/f442.webp",
+        "bytes": 20810
+      },
+      {
+        "path": "frames/f443.webp",
+        "bytes": 25032
+      },
+      {
+        "path": "frames/f444.webp",
+        "bytes": 11678
+      },
+      {
+        "path": "frames/f445.webp",
+        "bytes": 10298
+      },
+      {
+        "path": "frames/f446.webp",
+        "bytes": 10450
+      },
+      {
+        "path": "frames/f447.webp",
+        "bytes": 10298
+      },
+      {
+        "path": "frames/f448.webp",
+        "bytes": 8814
+      },
+      {
+        "path": "frames/f449.webp",
+        "bytes": 10216
+      },
+      {
+        "path": "frames/f45.webp",
+        "bytes": 28412
+      },
+      {
+        "path": "frames/f450.webp",
+        "bytes": 8784
+      },
+      {
+        "path": "frames/f451.webp",
+        "bytes": 10186
+      },
+      {
+        "path": "frames/f452.webp",
+        "bytes": 9324
+      },
+      {
+        "path": "frames/f453.webp",
+        "bytes": 10552
+      },
+      {
+        "path": "frames/f454.webp",
+        "bytes": 9122
+      },
+      {
+        "path": "frames/f455.webp",
+        "bytes": 9240
+      },
+      {
+        "path": "frames/f456.webp",
+        "bytes": 10384
+      },
+      {
+        "path": "frames/f457.webp",
+        "bytes": 9110
+      },
+      {
+        "path": "frames/f458.webp",
+        "bytes": 10068
+      },
+      {
+        "path": "frames/f459.webp",
+        "bytes": 10372
+      },
+      {
+        "path": "frames/f46.webp",
+        "bytes": 28560
+      },
+      {
+        "path": "frames/f460.webp",
+        "bytes": 9046
+      },
+      {
+        "path": "frames/f461.webp",
+        "bytes": 9002
+      },
+      {
+        "path": "frames/f462.webp",
+        "bytes": 10466
+      },
+      {
+        "path": "frames/f463.webp",
+        "bytes": 9010
+      },
+      {
+        "path": "frames/f464.webp",
+        "bytes": 10370
+      },
+      {
+        "path": "frames/f465.webp",
+        "bytes": 49522
+      },
+      {
+        "path": "frames/f466.webp",
+        "bytes": 49406
+      },
+      {
+        "path": "frames/f467.webp",
+        "bytes": 50082
+      },
+      {
+        "path": "frames/f468.webp",
+        "bytes": 49252
+      },
+      {
+        "path": "frames/f469.webp",
+        "bytes": 49532
+      },
+      {
+        "path": "frames/f47.webp",
+        "bytes": 25724
+      },
+      {
+        "path": "frames/f470.webp",
+        "bytes": 49234
+      },
+      {
+        "path": "frames/f471.webp",
+        "bytes": 49032
+      },
+      {
+        "path": "frames/f472.webp",
+        "bytes": 49326
+      },
+      {
+        "path": "frames/f473.webp",
+        "bytes": 49386
+      },
+      {
+        "path": "frames/f474.webp",
+        "bytes": 49172
+      },
+      {
+        "path": "frames/f475.webp",
+        "bytes": 49264
+      },
+      {
+        "path": "frames/f476.webp",
+        "bytes": 13490
+      },
+      {
+        "path": "frames/f477.webp",
+        "bytes": 13438
+      },
+      {
+        "path": "frames/f478.webp",
+        "bytes": 13396
+      },
+      {
+        "path": "frames/f479.webp",
+        "bytes": 13478
+      },
+      {
+        "path": "frames/f48.webp",
+        "bytes": 27296
+      },
+      {
+        "path": "frames/f480.webp",
+        "bytes": 13798
+      },
+      {
+        "path": "frames/f481.webp",
+        "bytes": 13548
+      },
+      {
+        "path": "frames/f482.webp",
+        "bytes": 13414
+      },
+      {
+        "path": "frames/f483.webp",
+        "bytes": 13576
+      },
+      {
+        "path": "frames/f484.webp",
+        "bytes": 32614
+      },
+      {
+        "path": "frames/f485.webp",
+        "bytes": 33332
+      },
+      {
+        "path": "frames/f486.webp",
+        "bytes": 32552
+      },
+      {
+        "path": "frames/f487.webp",
+        "bytes": 32276
+      },
+      {
+        "path": "frames/f488.webp",
+        "bytes": 31792
+      },
+      {
+        "path": "frames/f489.webp",
+        "bytes": 32378
+      },
+      {
+        "path": "frames/f49.webp",
+        "bytes": 22278
+      },
+      {
+        "path": "frames/f490.webp",
+        "bytes": 32468
+      },
+      {
+        "path": "frames/f491.webp",
+        "bytes": 32584
+      },
+      {
+        "path": "frames/f492.webp",
+        "bytes": 32046
+      },
+      {
+        "path": "frames/f493.webp",
+        "bytes": 30906
+      },
+      {
+        "path": "frames/f494.webp",
+        "bytes": 31922
+      },
+      {
+        "path": "frames/f495.webp",
+        "bytes": 32178
+      },
+      {
+        "path": "frames/f496.webp",
+        "bytes": 31010
+      },
+      {
+        "path": "frames/f497.webp",
+        "bytes": 30916
+      },
+      {
+        "path": "frames/f498.webp",
+        "bytes": 31744
+      },
+      {
+        "path": "frames/f499.webp",
+        "bytes": 32146
+      },
+      {
+        "path": "frames/f5.webp",
+        "bytes": 32224
+      },
+      {
+        "path": "frames/f50.webp",
+        "bytes": 30566
+      },
+      {
+        "path": "frames/f500.webp",
+        "bytes": 32376
+      },
+      {
+        "path": "frames/f501.webp",
+        "bytes": 31136
+      },
+      {
+        "path": "frames/f502.webp",
+        "bytes": 32048
+      },
+      {
+        "path": "frames/f503.webp",
+        "bytes": 30936
+      },
+      {
+        "path": "frames/f504.webp",
+        "bytes": 31664
+      },
+      {
+        "path": "frames/f505.webp",
+        "bytes": 32282
+      },
+      {
+        "path": "frames/f506.webp",
+        "bytes": 33434
+      },
+      {
+        "path": "frames/f507.webp",
+        "bytes": 32340
+      },
+      {
+        "path": "frames/f508.webp",
+        "bytes": 32868
+      },
+      {
+        "path": "frames/f509.webp",
+        "bytes": 31832
+      },
+      {
+        "path": "frames/f51.webp",
+        "bytes": 30260
+      },
+      {
+        "path": "frames/f510.webp",
+        "bytes": 28414
+      },
+      {
+        "path": "frames/f511.webp",
+        "bytes": 28702
+      },
+      {
+        "path": "frames/f512.webp",
+        "bytes": 31060
+      },
+      {
+        "path": "frames/f513.webp",
+        "bytes": 31064
+      },
+      {
+        "path": "frames/f514.webp",
+        "bytes": 31142
+      },
+      {
+        "path": "frames/f515.webp",
+        "bytes": 31400
+      },
+      {
+        "path": "frames/f516.webp",
+        "bytes": 31768
+      },
+      {
+        "path": "frames/f517.webp",
+        "bytes": 31450
+      },
+      {
+        "path": "frames/f518.webp",
+        "bytes": 30930
+      },
+      {
+        "path": "frames/f519.webp",
+        "bytes": 31252
+      },
+      {
+        "path": "frames/f52.webp",
+        "bytes": 28454
+      },
+      {
+        "path": "frames/f520.webp",
+        "bytes": 32192
+      },
+      {
+        "path": "frames/f521.webp",
+        "bytes": 30232
+      },
+      {
+        "path": "frames/f522.webp",
+        "bytes": 30272
+      },
+      {
+        "path": "frames/f523.webp",
+        "bytes": 31088
+      },
+      {
+        "path": "frames/f524.webp",
+        "bytes": 30814
+      },
+      {
+        "path": "frames/f525.webp",
+        "bytes": 32240
+      },
+      {
+        "path": "frames/f526.webp",
+        "bytes": 32204
+      },
+      {
+        "path": "frames/f527.webp",
+        "bytes": 31098
+      },
+      {
+        "path": "frames/f528.webp",
+        "bytes": 30210
+      },
+      {
+        "path": "frames/f529.webp",
+        "bytes": 30130
+      },
+      {
+        "path": "frames/f53.webp",
+        "bytes": 30584
+      },
+      {
+        "path": "frames/f530.webp",
+        "bytes": 31746
+      },
+      {
+        "path": "frames/f531.webp",
+        "bytes": 31248
+      },
+      {
+        "path": "frames/f532.webp",
+        "bytes": 31692
+      },
+      {
+        "path": "frames/f533.webp",
+        "bytes": 31010
+      },
+      {
+        "path": "frames/f534.webp",
+        "bytes": 30716
+      },
+      {
+        "path": "frames/f535.webp",
+        "bytes": 31214
+      },
+      {
+        "path": "frames/f536.webp",
+        "bytes": 31090
+      },
+      {
+        "path": "frames/f537.webp",
+        "bytes": 30932
+      },
+      {
+        "path": "frames/f538.webp",
+        "bytes": 30920
+      },
+      {
+        "path": "frames/f539.webp",
+        "bytes": 30930
+      },
+      {
+        "path": "frames/f54.webp",
+        "bytes": 31438
+      },
+      {
+        "path": "frames/f540.webp",
+        "bytes": 39674
+      },
+      {
+        "path": "frames/f541.webp",
+        "bytes": 39086
+      },
+      {
+        "path": "frames/f542.webp",
+        "bytes": 39012
+      },
+      {
+        "path": "frames/f543.webp",
+        "bytes": 39534
+      },
+      {
+        "path": "frames/f544.webp",
+        "bytes": 39560
+      },
+      {
+        "path": "frames/f545.webp",
+        "bytes": 39600
+      },
+      {
+        "path": "frames/f546.webp",
+        "bytes": 39314
+      },
+      {
+        "path": "frames/f547.webp",
+        "bytes": 39732
+      },
+      {
+        "path": "frames/f548.webp",
+        "bytes": 39558
+      },
+      {
+        "path": "frames/f549.webp",
+        "bytes": 39548
+      },
+      {
+        "path": "frames/f55.webp",
+        "bytes": 30800
+      },
+      {
+        "path": "frames/f550.webp",
+        "bytes": 39894
+      },
+      {
+        "path": "frames/f551.webp",
+        "bytes": 39182
+      },
+      {
+        "path": "frames/f552.webp",
+        "bytes": 39184
+      },
+      {
+        "path": "frames/f553.webp",
+        "bytes": 27138
+      },
+      {
+        "path": "frames/f554.webp",
+        "bytes": 17360
+      },
+      {
+        "path": "frames/f555.webp",
+        "bytes": 26342
+      },
+      {
+        "path": "frames/f556.webp",
+        "bytes": 19354
+      },
+      {
+        "path": "frames/f557.webp",
+        "bytes": 28268
+      },
+      {
+        "path": "frames/f558.webp",
+        "bytes": 35568
+      },
+      {
+        "path": "frames/f559.webp",
+        "bytes": 21530
+      },
+      {
+        "path": "frames/f56.webp",
+        "bytes": 31332
+      },
+      {
+        "path": "frames/f560.webp",
+        "bytes": 19224
+      },
+      {
+        "path": "frames/f561.webp",
+        "bytes": 34942
+      },
+      {
+        "path": "frames/f562.webp",
+        "bytes": 30018
+      },
+      {
+        "path": "frames/f563.webp",
+        "bytes": 37882
+      },
+      {
+        "path": "frames/f564.webp",
+        "bytes": 21490
+      },
+      {
+        "path": "frames/f565.webp",
+        "bytes": 31322
+      },
+      {
+        "path": "frames/f566.webp",
+        "bytes": 27640
+      },
+      {
+        "path": "frames/f567.webp",
+        "bytes": 35524
+      },
+      {
+        "path": "frames/f568.webp",
+        "bytes": 26744
+      },
+      {
+        "path": "frames/f569.webp",
+        "bytes": 28684
+      },
+      {
+        "path": "frames/f57.webp",
+        "bytes": 23462
+      },
+      {
+        "path": "frames/f570.webp",
+        "bytes": 26896
+      },
+      {
+        "path": "frames/f571.webp",
+        "bytes": 24710
+      },
+      {
+        "path": "frames/f572.webp",
+        "bytes": 38716
+      },
+      {
+        "path": "frames/f573.webp",
+        "bytes": 27422
+      },
+      {
+        "path": "frames/f574.webp",
+        "bytes": 38136
+      },
+      {
+        "path": "frames/f575.webp",
+        "bytes": 27314
+      },
+      {
+        "path": "frames/f576.webp",
+        "bytes": 26470
+      },
+      {
+        "path": "frames/f577.webp",
+        "bytes": 20242
+      },
+      {
+        "path": "frames/f578.webp",
+        "bytes": 24726
+      },
+      {
+        "path": "frames/f579.webp",
+        "bytes": 26194
+      },
+      {
+        "path": "frames/f58.webp",
+        "bytes": 15758
+      },
+      {
+        "path": "frames/f580.webp",
+        "bytes": 19258
+      },
+      {
+        "path": "frames/f581.webp",
+        "bytes": 38190
+      },
+      {
+        "path": "frames/f582.webp",
+        "bytes": 27078
+      },
+      {
+        "path": "frames/f583.webp",
+        "bytes": 37822
+      },
+      {
+        "path": "frames/f584.webp",
+        "bytes": 26942
+      },
+      {
+        "path": "frames/f585.webp",
+        "bytes": 29188
+      },
+      {
+        "path": "frames/f586.webp",
+        "bytes": 20212
+      },
+      {
+        "path": "frames/f587.webp",
+        "bytes": 26644
+      },
+      {
+        "path": "frames/f588.webp",
+        "bytes": 26262
+      },
+      {
+        "path": "frames/f589.webp",
+        "bytes": 31532
+      },
+      {
+        "path": "frames/f59.webp",
+        "bytes": 22648
+      },
+      {
+        "path": "frames/f590.webp",
+        "bytes": 19446
+      },
+      {
+        "path": "frames/f591.webp",
+        "bytes": 38364
+      },
+      {
+        "path": "frames/f592.webp",
+        "bytes": 27336
+      },
+      {
+        "path": "frames/f593.webp",
+        "bytes": 38020
+      },
+      {
+        "path": "frames/f594.webp",
+        "bytes": 26920
+      },
+      {
+        "path": "frames/f595.webp",
+        "bytes": 29676
+      },
+      {
+        "path": "frames/f596.webp",
+        "bytes": 20086
+      },
+      {
+        "path": "frames/f597.webp",
+        "bytes": 30470
+      },
+      {
+        "path": "frames/f598.webp",
+        "bytes": 26474
+      },
+      {
+        "path": "frames/f599.webp",
+        "bytes": 19290
+      },
+      {
+        "path": "frames/f6.webp",
+        "bytes": 29988
+      },
+      {
+        "path": "frames/f60.webp",
+        "bytes": 15052
+      },
+      {
+        "path": "frames/f600.webp",
+        "bytes": 19164
+      },
+      {
+        "path": "frames/f601.webp",
+        "bytes": 38096
+      },
+      {
+        "path": "frames/f602.webp",
+        "bytes": 27250
+      },
+      {
+        "path": "frames/f603.webp",
+        "bytes": 37652
+      },
+      {
+        "path": "frames/f604.webp",
+        "bytes": 27392
+      },
+      {
+        "path": "frames/f605.webp",
+        "bytes": 30366
+      },
+      {
+        "path": "frames/f606.webp",
+        "bytes": 20396
+      },
+      {
+        "path": "frames/f607.webp",
+        "bytes": 31134
+      },
+      {
+        "path": "frames/f608.webp",
+        "bytes": 26386
+      },
+      {
+        "path": "frames/f609.webp",
+        "bytes": 19400
+      },
+      {
+        "path": "frames/f61.webp",
+        "bytes": 25232
+      },
+      {
+        "path": "frames/f610.webp",
+        "bytes": 19238
+      },
+      {
+        "path": "frames/f611.webp",
+        "bytes": 38504
+      },
+      {
+        "path": "frames/f612.webp",
+        "bytes": 27216
+      },
+      {
+        "path": "frames/f613.webp",
+        "bytes": 37686
+      },
+      {
+        "path": "frames/f614.webp",
+        "bytes": 26318
+      },
+      {
+        "path": "frames/f615.webp",
+        "bytes": 30412
+      },
+      {
+        "path": "frames/f616.webp",
+        "bytes": 20284
+      },
+      {
+        "path": "frames/f617.webp",
+        "bytes": 27426
+      },
+      {
+        "path": "frames/f618.webp",
+        "bytes": 26580
+      },
+      {
+        "path": "frames/f619.webp",
+        "bytes": 19536
+      },
+      {
+        "path": "frames/f62.webp",
+        "bytes": 20814
+      },
+      {
+        "path": "frames/f620.webp",
+        "bytes": 19282
+      },
+      {
+        "path": "frames/f621.webp",
+        "bytes": 38352
+      },
+      {
+        "path": "frames/f622.webp",
+        "bytes": 20278
+      },
+      {
+        "path": "frames/f623.webp",
+        "bytes": 37858
+      },
+      {
+        "path": "frames/f624.webp",
+        "bytes": 27072
+      },
+      {
+        "path": "frames/f625.webp",
+        "bytes": 29248
+      },
+      {
+        "path": "frames/f626.webp",
+        "bytes": 20202
+      },
+      {
+        "path": "frames/f627.webp",
+        "bytes": 24900
+      },
+      {
+        "path": "frames/f628.webp",
+        "bytes": 26352
+      },
+      {
+        "path": "frames/f629.webp",
+        "bytes": 19626
+      },
+      {
+        "path": "frames/f63.webp",
+        "bytes": 24268
+      },
+      {
+        "path": "frames/f630.webp",
+        "bytes": 43528
+      },
+      {
+        "path": "frames/f631.webp",
+        "bytes": 42122
+      },
+      {
+        "path": "frames/f632.webp",
+        "bytes": 16940
+      },
+      {
+        "path": "frames/f633.webp",
+        "bytes": 18502
+      },
+      {
+        "path": "frames/f634.webp",
+        "bytes": 18018
+      },
+      {
+        "path": "frames/f635.webp",
+        "bytes": 18032
+      },
+      {
+        "path": "frames/f636.webp",
+        "bytes": 18228
+      },
+      {
+        "path": "frames/f637.webp",
+        "bytes": 20068
+      },
+      {
+        "path": "frames/f638.webp",
+        "bytes": 20038
+      },
+      {
+        "path": "frames/f639.webp",
+        "bytes": 21280
+      },
+      {
+        "path": "frames/f64.webp",
+        "bytes": 26184
+      },
+      {
+        "path": "frames/f640.webp",
+        "bytes": 19094
+      },
+      {
+        "path": "frames/f641.webp",
+        "bytes": 22026
+      },
+      {
+        "path": "frames/f642.webp",
+        "bytes": 18996
+      },
+      {
+        "path": "frames/f643.webp",
+        "bytes": 20598
+      },
+      {
+        "path": "frames/f644.webp",
+        "bytes": 21194
+      },
+      {
+        "path": "frames/f645.webp",
+        "bytes": 19660
+      },
+      {
+        "path": "frames/f646.webp",
+        "bytes": 20982
+      },
+      {
+        "path": "frames/f647.webp",
+        "bytes": 22036
+      },
+      {
+        "path": "frames/f648.webp",
+        "bytes": 18816
+      },
+      {
+        "path": "frames/f649.webp",
+        "bytes": 20648
+      },
+      {
+        "path": "frames/f65.webp",
+        "bytes": 28228
+      },
+      {
+        "path": "frames/f650.webp",
+        "bytes": 19096
+      },
+      {
+        "path": "frames/f651.webp",
+        "bytes": 21174
+      },
+      {
+        "path": "frames/f652.webp",
+        "bytes": 18990
+      },
+      {
+        "path": "frames/f653.webp",
+        "bytes": 21062
+      },
+      {
+        "path": "frames/f654.webp",
+        "bytes": 21834
+      },
+      {
+        "path": "frames/f655.webp",
+        "bytes": 18878
+      },
+      {
+        "path": "frames/f656.webp",
+        "bytes": 14258
+      },
+      {
+        "path": "frames/f657.webp",
+        "bytes": 14516
+      },
+      {
+        "path": "frames/f658.webp",
+        "bytes": 14558
+      },
+      {
+        "path": "frames/f659.webp",
+        "bytes": 16218
+      },
+      {
+        "path": "frames/f66.webp",
+        "bytes": 24452
+      },
+      {
+        "path": "frames/f660.webp",
+        "bytes": 17396
+      },
+      {
+        "path": "frames/f661.webp",
+        "bytes": 17448
+      },
+      {
+        "path": "frames/f662.webp",
+        "bytes": 17132
+      },
+      {
+        "path": "frames/f663.webp",
+        "bytes": 17024
+      },
+      {
+        "path": "frames/f664.webp",
+        "bytes": 12730
+      },
+      {
+        "path": "frames/f665.webp",
+        "bytes": 12676
+      },
+      {
+        "path": "frames/f666.webp",
+        "bytes": 19644
+      },
+      {
+        "path": "frames/f667.webp",
+        "bytes": 19828
+      },
+      {
+        "path": "frames/f668.webp",
+        "bytes": 19772
+      },
+      {
+        "path": "frames/f669.webp",
+        "bytes": 19716
+      },
+      {
+        "path": "frames/f67.webp",
+        "bytes": 24908
+      },
+      {
+        "path": "frames/f670.webp",
+        "bytes": 12560
+      },
+      {
+        "path": "frames/f68.webp",
+        "bytes": 19916
+      },
+      {
+        "path": "frames/f69.webp",
+        "bytes": 25950
+      },
+      {
+        "path": "frames/f7.webp",
+        "bytes": 14726
+      },
+      {
+        "path": "frames/f70.webp",
+        "bytes": 24356
+      },
+      {
+        "path": "frames/f71.webp",
+        "bytes": 14818
+      },
+      {
+        "path": "frames/f72.webp",
+        "bytes": 12004
+      },
+      {
+        "path": "frames/f73.webp",
+        "bytes": 12044
+      },
+      {
+        "path": "frames/f74.webp",
+        "bytes": 12068
+      },
+      {
+        "path": "frames/f75.webp",
+        "bytes": 12002
+      },
+      {
+        "path": "frames/f76.webp",
+        "bytes": 11988
+      },
+      {
+        "path": "frames/f77.webp",
+        "bytes": 18734
+      },
+      {
+        "path": "frames/f78.webp",
+        "bytes": 18790
+      },
+      {
+        "path": "frames/f79.webp",
+        "bytes": 18830
+      },
+      {
+        "path": "frames/f8.webp",
+        "bytes": 14682
+      },
+      {
+        "path": "frames/f80.webp",
+        "bytes": 18934
+      },
+      {
+        "path": "frames/f81.webp",
+        "bytes": 19140
+      },
+      {
+        "path": "frames/f82.webp",
+        "bytes": 9824
+      },
+      {
+        "path": "frames/f83.webp",
+        "bytes": 9790
+      },
+      {
+        "path": "frames/f84.webp",
+        "bytes": 10004
+      },
+      {
+        "path": "frames/f85.webp",
+        "bytes": 15770
+      },
+      {
+        "path": "frames/f86.webp",
+        "bytes": 17276
+      },
+      {
+        "path": "frames/f87.webp",
+        "bytes": 12420
+      },
+      {
+        "path": "frames/f88.webp",
+        "bytes": 15848
+      },
+      {
+        "path": "frames/f89.webp",
+        "bytes": 17780
+      },
+      {
+        "path": "frames/f9.webp",
+        "bytes": 14754
+      },
+      {
+        "path": "frames/f90.webp",
+        "bytes": 16912
+      },
+      {
+        "path": "frames/f91.webp",
+        "bytes": 21880
+      },
+      {
+        "path": "frames/f92.webp",
+        "bytes": 22298
+      },
+      {
+        "path": "frames/f93.webp",
+        "bytes": 22504
+      },
+      {
+        "path": "frames/f94.webp",
+        "bytes": 21686
+      },
+      {
+        "path": "frames/f95.webp",
+        "bytes": 19950
+      },
+      {
+        "path": "frames/f96.webp",
+        "bytes": 10240
+      },
+      {
+        "path": "frames/f97.webp",
+        "bytes": 9564
+      },
+      {
+        "path": "frames/f98.webp",
+        "bytes": 16278
+      },
+      {
+        "path": "frames/f99.webp",
+        "bytes": 16562
+      },
+      {
+        "path": "manifest.json",
+        "bytes": 350520
+      },
+      {
+        "path": "progress.json",
+        "bytes": 45
+      },
+      {
+        "path": "transcript.json",
+        "bytes": 145930
+      }
+    ],
+    "status_files_excluded": [
+      {
+        "path": "progress.json",
+        "bytes": 45
+      }
+    ],
+    "derived_total_bytes_on_disk": 22630654,
+    "manifest_listed_derived_bytes": 22280134
+  },
+  "transcript": {
+    "language": "en",
+    "model": "faster-whisper small int8",
+    "segment_count": 701,
+    "speech_seconds": 3023.3,
+    "text_chars": 39522,
+    "words": 7370,
+    "segments_with_frame_id": 701,
+    "quality_notes": [
+      "Language auto-detected en; 701 segments, 7370 words, all segments linked to a frame_id.",
+      "Opening line names the speaker and talk topic (recursive decision models); ending mentions OSO at oso.computer. Topics (System 1/2, Danny Kahneman, Recursive Language Models/RLM, Doom demo, latency in milliseconds) are present and coherent.",
+      "ASR errors: speaker name heard as 'Raymond Whitecamp' (Weitekamp); the product name is transcribed inconsistently as 'Jeff' and 'Jev'; 'OpenProse' never appears in the transcript (0 matches for 'prose'), so a search for OpenProse/Weitekamp will not hit spoken text. Filler words (um, uh) kept. No garbage/hallucination loops observed in the reviewed text."
+    ]
+  },
+  "frames_quality": {
+    "count": 670,
+    "duration_seconds": 3108.01415,
+    "frames_per_minute": 12.934,
+    "median_hold_s": 1.0,
+    "min_hold_s": 1.0,
+    "frames_held_le_1s": 415,
+    "frames_held_le_2s": 503,
+    "frames_held_ge_10s": 69,
+    "frames_per_10min_bucket": {
+      "0": 46,
+      "1": 165,
+      "2": 134,
+      "3": 139,
+      "4": 185,
+      "5": 1
+    },
+    "frame_size": "1280x720 WebP q75 (scaled from 2560x1440; frame_max_width_px=1280)",
+    "observation": "Visually checked f300/f301: the talk embeds screen-recorded game demos (Factorio/Doom-style clips) plus a live webcam overlay. Those regions change every 1 s sample, so the pHash/pixel-change rule keeps nearly every sampled second during demos. 415 of 670 frames are on screen for only 1 s.",
+    "what_if_not_measured_pipeline_output": {
+      "note": "Offline what-if on the measured frame list: keep only frames that stay on screen >= N s. NOT what the pipeline produced; shows how sensitive savings are to frame selection.",
+      "rows": [
+        {
+          "keep_frames_held_at_least_s": 5,
+          "frames": 99,
+          "frame_bytes": 3115076,
+          "A": 4062086,
+          "savings_pct": 98.8325
+        },
+        {
+          "keep_frames_held_at_least_s": 10,
+          "frames": 69,
+          "frame_bytes": 2044450,
+          "A": 2991460,
+          "savings_pct": 99.1402
+        },
+        {
+          "keep_frames_held_at_least_s": 30,
+          "frames": 25,
+          "frame_bytes": 709322,
+          "A": 1656332,
+          "savings_pct": 99.5239
+        }
+      ]
+    }
+  },
+  "storage_per_video": {
+    "formula": "Savings % = (O - A) / O x 100",
+    "O": 347928702,
+    "D_derived": 22630654,
+    "I_index_whole_db_bytes": 450560,
+    "I_note": "whole dso.sqlite counted (shared with 6 earlier small assets) -> conservative",
+    "scenario0": {
+      "A": 371009916,
+      "savings_pct": -6.6339
+    },
+    "scenario1": {
+      "A": 23081214,
+      "savings_pct": 93.3661,
+      "A_without_index": 22630654,
+      "savings_pct_without_index": 93.4956
+    }
+  },
+  "storage_report_corpus": {
+    "generated_at": "2026-11-12T23:27:45.916000Z",
+    "formula": "Savings % = (O − A) / O × 100",
+    "totals": {
+      "asset_count": 7,
+      "original_bytes": 348108325,
+      "video_original_bytes": 348093825,
+      "document_original_bytes": 14500,
+      "derived_bytes": 22894095,
+      "index_bytes": 450560,
+      "extra_exact_copy_bytes": 3020
+    },
+    "scenarios": [
+      {
+        "id": 0,
+        "key": "today",
+        "label": "Scenario 0: today, real",
+        "description": "Nothing deleted. Derived data and the index are added on top of the originals, so the saving is negative.",
+        "hypothetical": false,
+        "formula": "A = O + D + I",
+        "before_bytes": 348108325,
+        "after_bytes": 371452980,
+        "saved_bytes": -23344655,
+        "savings_pct": -6.7061,
+        "kept_original_bytes": 348108325,
+        "derived_bytes": 22894095,
+        "index_bytes": 450560,
+        "removed": []
+      },
+      {
+        "id": 1,
+        "key": "replace_videos",
+        "label": "Scenario 1: replace videos",
+        "description": "If an approved process replaced each processed recording by its derived data.",
+        "hypothetical": true,
+        "formula": "A = (O − processed video originals) + D + I",
+        "before_bytes": 348108325,
+        "after_bytes": 23359155,
+        "saved_bytes": 324749170,
+        "savings_pct": 93.2897,
+        "kept_original_bytes": 14500,
+        "derived_bytes": 22894095,
+        "index_bytes": 450560,
+        "removed": [
+          {
+            "asset_id": "a_e34668e5",
+            "filename": "lab-briefing.mp4",
+            "bytes": 165123,
+            "reason": "replaced_by_derived",
+            "kept_copy_asset_id": null
+          },
+          {
+            "asset_id": "a_0ac641df",
+            "filename": "Your Agent Doesnt Need an LLM for Every Decision - Raymond Weitekamp OpenProse.mp4",
+            "bytes": 347928702,
+            "reason": "replaced_by_derived",
+            "kept_copy_asset_id": null
+          }
+        ]
+      },
+      {
+        "id": 2,
+        "key": "remove_exact_duplicates",
+        "label": "Scenario 2: remove exact duplicates",
+        "description": "Keep one copy per SHA-256 group (the earliest upload). Shared or similar slides free nothing, because the files differ.",
+        "hypothetical": true,
+        "formula": "A = (O − extra exact copies) + D + I",
+        "before_bytes": 348108325,
+        "after_bytes": 371449960,
+        "saved_bytes": -23341635,
+        "savings_pct": -6.7053,
+        "kept_original_bytes": 348105305,
+        "derived_bytes": 22894095,
+        "index_bytes": 450560,
+        "removed": [
+          {
+            "asset_id": "a_8965ed88",
+            "filename": "wifi-campus-plan (1).pdf",
+            "bytes": 3020,
+            "reason": "exact_duplicate",
+            "kept_copy_asset_id": "a_075cfc51"
+          }
+        ]
+      },
+      {
+        "id": 3,
+        "key": "both",
+        "label": "Scenario 3: both",
+        "description": "Scenarios 1 and 2 together, each file counted once.",
+        "hypothetical": true,
+        "formula": "A = (O − processed video originals − extra exact copies, no double counting) + D + I",
+        "before_bytes": 348108325,
+        "after_bytes": 23356135,
+        "saved_bytes": 324752190,
+        "savings_pct": 93.2906,
+        "kept_original_bytes": 11480,
+        "derived_bytes": 22894095,
+        "index_bytes": 450560,
+        "removed": [
+          {
+            "asset_id": "a_8965ed88",
+            "filename": "wifi-campus-plan (1).pdf",
+            "bytes": 3020,
+            "reason": "exact_duplicate",
+            "kept_copy_asset_id": "a_075cfc51"
+          },
+          {
+            "asset_id": "a_e34668e5",
+            "filename": "lab-briefing.mp4",
+            "bytes": 165123,
+            "reason": "replaced_by_derived",
+            "kept_copy_asset_id": null
+          },
+          {
+            "asset_id": "a_0ac641df",
+            "filename": "Your Agent Doesnt Need an LLM for Every Decision - Raymond Weitekamp OpenProse.mp4",
+            "bytes": 347928702,
+            "reason": "replaced_by_derived",
+            "kept_copy_asset_id": null
+          }
+        ]
+      }
+    ],
+    "not_counted": [
+      "Backups",
+      "Platform replication",
+      "Archive tiers",
+      "Compute cost",
+      "Model weights",
+      "Money"
+    ],
+    "information_lost": [
+      "Motion and live demos in video",
+      "Gestures and body language",
+      "Tone of voice (unless the optional audio track is kept)",
+      "Speaker identity (not in MVP)"
+    ],
+    "notes": [
+      "O = all original bytes in scope, every copy on every simulated system. D = all derived files + manifests. I = measured SQLite/FTS index size.",
+      "D and I are counted in every scenario (conservative).",
+      "Scenarios 1-3 are hypothetical and require human approval. The tool never deletes anything.",
+      "Ericsson's own example (PDF p.2: ~1 GB → ~50 KB text + ~2 MB frames, 'roughly 99%') is their illustration, not our measurement."
+    ]
+  },
+  "projection_2h_1GB": {
+    "assumptions": [
+      "Projection, not a measurement. 2-hour recording of ~1 GB (10^9 bytes) with the same speech density as this talk.",
+      "transcript.json bytes scale linearly with duration (k = 7200 / measured duration).",
+      "Frames: lower bound = same distinct slides as this talk (frame bytes unchanged); upper bound = frame count/bytes scale linearly with duration.",
+      "manifest.json scales linearly (upper bound); index bytes = current measured dso.sqlite size scaled by k for this asset's share is not modelled; we add the current whole DB size + transcript-sized FTS growth (approx 2x transcript text) as a conservative add-on."
+    ],
+    "k": 2.3166,
+    "transcript_bytes": 338060,
+    "manifest_bytes": 812012,
+    "frame_bytes_low": 22134204,
+    "frame_bytes_high": 51275915,
+    "A_low": 23917949,
+    "A_high": 53059660,
+    "savings_pct_low_A": 97.6082,
+    "savings_pct_high_A": 94.694
+  },
+  "search": [
+    {
+      "q": "Danny Kahneman",
+      "expected_segment": "s6",
+      "negative": false,
+      "ms": 5.2,
+      "total": 2,
+      "hits_this_asset": 2,
+      "top_is_this_asset": true,
+      "expected_segment_hit": true,
+      "top_hit": {
+        "asset_id": "a_0ac641df",
+        "item_id": "s6",
+        "frame_id": "f3",
+        "start": 35.24,
+        "end": 44.92,
+        "snippet": "Jeff, not even two months ago now, I think, came from this concept that <mark>Danny</mark> <mark>Kahneman</mark>"
+      }
+    },
+    {
+      "q": "recursivecodingagents",
+      "expected_segment": "s75",
+      "negative": false,
+      "ms": 5.2,
+      "total": 1,
+      "hits_this_asset": 1,
+      "top_is_this_asset": true,
+      "expected_segment_hit": true,
+      "top_hit": {
+        "asset_id": "a_0ac641df",
+        "item_id": "s75",
+        "frame_id": "f17",
+        "start": 401.56,
+        "end": 404.28,
+        "snippet": "It's also at <mark>recursivecodingagents</mark>.com."
+      }
+    },
+    {
+      "q": "Jeff plays doom",
+      "expected_segment": "s114",
+      "negative": false,
+      "ms": 4.3,
+      "total": 1,
+      "hits_this_asset": 1,
+      "top_is_this_asset": true,
+      "expected_segment_hit": true,
+      "top_hit": {
+        "asset_id": "a_0ac641df",
+        "item_id": "s114",
+        "frame_id": "f46",
+        "start": 595.2,
+        "end": 596.92,
+        "snippet": "This is the <mark>Jeff</mark> <mark>plays</mark> <mark>doom</mark>."
+      }
+    },
+    {
+      "q": "zero shot",
+      "expected_segment": "s26",
+      "negative": false,
+      "ms": 4.0,
+      "total": 1,
+      "hits_this_asset": 1,
+      "top_is_this_asset": true,
+      "expected_segment_hit": true,
+      "top_hit": {
+        "asset_id": "a_0ac641df",
+        "item_id": "s26",
+        "frame_id": "f5",
+        "start": 150.74,
+        "end": 154.86,
+        "snippet": "holdout camp of, um, refusing to call them anything other than <mark>zero</mark> <mark>shot</mark>"
+      }
+    },
+    {
+      "q": "compaction",
+      "expected_segment": "s100",
+      "negative": false,
+      "ms": 4.3,
+      "total": 1,
+      "hits_this_asset": 1,
+      "top_is_this_asset": true,
+      "expected_segment_hit": true,
+      "top_hit": {
+        "asset_id": "a_0ac641df",
+        "item_id": "s100",
+        "frame_id": "f35",
+        "start": 528.28,
+        "end": 533.36,
+        "snippet": "Jev for <mark>compaction</mark> people using Jev as the thing that decides whether a tool call can"
+      }
+    },
+    {
+      "q": "Recursive Language Models",
+      "expected_segment": "s41",
+      "negative": false,
+      "ms": 4.6,
+      "total": 3,
+      "hits_this_asset": 3,
+      "top_is_this_asset": true,
+      "expected_segment_hit": true,
+      "top_hit": {
+        "asset_id": "a_0ac641df",
+        "item_id": "s70",
+        "frame_id": "f17",
+        "start": 386.96,
+        "end": 389.84,
+        "snippet": "into <mark>recursive</mark> <mark>language</mark> <mark>models</mark>."
+      }
+    },
+    {
+      "q": "oso computer",
+      "expected_segment": "s700",
+      "negative": false,
+      "ms": 4.5,
+      "total": 3,
+      "hits_this_asset": 3,
+      "top_is_this_asset": true,
+      "expected_segment_hit": true,
+      "top_hit": {
+        "asset_id": "a_0ac641df",
+        "item_id": "s700",
+        "frame_id": "f670",
+        "start": 3104.11,
+        "end": 3106.83,
+        "snippet": "when <mark>OSO</mark> is ready at <mark>oso</mark>.<mark>computer</mark>."
+      }
+    },
+    {
+      "q": "45 milliseconds",
+      "expected_segment": "s605",
+      "negative": false,
+      "ms": 3.8,
+      "total": 1,
+      "hits_this_asset": 1,
+      "top_is_this_asset": true,
+      "expected_segment_hit": true,
+      "top_hit": {
+        "asset_id": "a_0ac641df",
+        "item_id": "s605",
+        "frame_id": "f585",
+        "start": 2780.05,
+        "end": 2786.01,
+        "snippet": "<mark>45</mark> <mark>milliseconds</mark> time."
+      }
+    },
+    {
+      "q": "kubernetes",
+      "expected_segment": null,
+      "negative": true,
+      "ms": 3.8,
+      "total": 0,
+      "hits_this_asset": 0,
+      "top_is_this_asset": false,
+      "expected_segment_hit": null,
+      "top_hit": null
+    }
+  ],
+  "offboarding": {
+    "raw": {
+      "owner": "erik",
+      "generated_at": "2026-11-12T23:27:45.961000Z",
+      "deletes_performed": false,
+      "rows": [
+        {
+          "asset_id": "a_0ac641df",
+          "filename": "Your Agent Doesnt Need an LLM for Every Decision - Raymond Weitekamp OpenProse.mp4",
+          "kind": "video",
+          "bytes": 347928702,
+          "source_system": "ericsson_play",
+          "recommendation": "keep",
+          "reason": "No exact copy owned by someone else. Shared or similar slides do not count.",
+          "duplicates_elsewhere": []
+        }
+      ],
+      "summary": {
+        "total": 1,
+        "eligible": 0,
+        "keep": 1,
+        "eligible_bytes": 0
+      }
+    },
+    "deletes_performed_false_present": true
+  },
+  "duplicates_mentions_this_asset": false,
+  "first_attempt": {
+    "job_id": "j_8d1ca20007",
+    "status": "failed",
+    "stage": "extracting key frames",
+    "error": "WinError 5 PermissionError on os.replace(progress.json.tmp -> progress.json)",
+    "fix": "Parent agent patched pipeline/dso_pipeline/common.py write_json_atomic (retries + in-place fallback, throttled progress writes) and restarted processing on the same asset as job j_9341b715e1."
+  },
+  "search_extra": {
+    "OpenProse": 0,
+    "Weitekamp": 0,
+    "note": "Title tag contains 'Raymond Weitekamp, OpenProse' (stored in asset metadata) but search returns 0 hits: metadata title is not indexed, and ASR misspelled the name."
+  }
+}
