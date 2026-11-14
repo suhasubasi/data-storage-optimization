@@ -1,0 +1,42 @@
+services:
+  backend:
+    build:
+      context: .
+      dockerfile: backend/Dockerfile
+    ports:
+      - "8000:8000"
+    volumes:
+      - ./data:/app/data
+      - dso_hf_cache:/root/.cache/huggingface
+    environment:
+      DSO_DATA_DIR: /app/data
+      DSO_DB_PATH: /app/data/dso.sqlite
+      DSO_CORS_ORIGINS: http://localhost:5173,http://127.0.0.1:5173,http://localhost:8000,http://127.0.0.1:8000
+      HF_HOME: /root/.cache/huggingface
+    healthcheck:
+      test:
+        [
+          "CMD",
+          "/opt/venv-backend/bin/python",
+          "-c",
+          "import urllib.request; urllib.request.urlopen('http://127.0.0.1:8000/health', timeout=3)",
+        ]
+      interval: 10s
+      timeout: 5s
+      start_period: 15s
+      retries: 6
+    restart: unless-stopped
+
+  frontend:
+    build:
+      context: .
+      dockerfile: frontend/Dockerfile
+    ports:
+      - "5173:80"
+    depends_on:
+      backend:
+        condition: service_healthy
+    restart: unless-stopped
+
+volumes:
+  dso_hf_cache:

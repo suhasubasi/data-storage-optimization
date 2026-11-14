@@ -1,0 +1,16 @@
+# Optional NVIDIA GPU override (requires NVIDIA Container Toolkit):
+#   docker compose -f compose.yaml -f compose.gpu.yaml up --build
+services:
+  backend:
+    build:
+      args:
+        TORCH_INDEX_URL: https://download.pytorch.org/whl/cu128
+    environment:
+      DSO_WHISPER_DEVICE: auto
+    deploy:
+      resources:
+        reservations:
+          devices:
+            - driver: nvidia
+              count: 1
+              capabilities: [gpu]

@@ -4,7 +4,8 @@
 
 **Turn multi-hour recordings and sprawling slide decks into compact, searchable, AI-ready knowledge across simulated SharePoint, OneDrive, and Ericsson Play — without ever deleting an original file.**
 
-> **Quick start:** Step-by-step Windows setup in [`START-HERE.md`](START-HERE.md) · Data contracts & formulas in [`contracts/CONTRACTS.md`](contracts/CONTRACTS.md)
+> **One-command Docker start:** `docker compose up --build` → open `http://localhost:5173` *(bundles `ffmpeg`, LibreOffice Impress for `.pptx` slides, isolated backend + ML pipeline venvs, and persistent `./data` + model cache volumes; NVIDIA GPU: `docker compose -f compose.yaml -f compose.gpu.yaml up --build`)*  
+> **Manual Windows setup:** [`START-HERE.md`](START-HERE.md) · Data contracts & formulas: [`contracts/CONTRACTS.md`](contracts/CONTRACTS.md)
 
 ---
 

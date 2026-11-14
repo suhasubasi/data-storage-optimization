@@ -3,7 +3,32 @@
 This is a hackathon prototype, not an official Ericsson product.
 Nothing is deleted: originals stay on disk, and offboarding only recommends.
 
-## What you need
+## Fastest way: Docker (recommended, zero manual setup)
+
+If you have Docker Desktop (or Docker Engine + Compose), you do **not** need to install Python, Node.js, ffmpeg, or LibreOffice manually:
+
+```bash
+docker compose up --build
+```
+
+Then open **http://localhost:5173**.
+- Includes `ffmpeg` + LibreOffice Impress (`.pptx` rendering works out of the box), the FastAPI backend + isolated ML pipeline venvs, and Nginx serving the built UI.
+- Persists your database & files in `./data` and cached Whisper/diarization models in the `dso_hf_cache` Docker volume.
+- **Optional NVIDIA GPU** (requires NVIDIA Container Toolkit):
+  ```bash
+  docker compose -f compose.yaml -f compose.gpu.yaml up --build
+  ```
+- **Run backend/pipeline tests inside the container:**
+  ```bash
+  docker compose exec backend /opt/venv-backend/bin/pytest -ra
+  docker compose exec -w /app/pipeline backend /opt/venv-pipeline/bin/pytest -ra
+  ```
+
+---
+
+## Manual setup on Windows
+
+### What you need
 
 - Node.js 20 or newer
 - Python 3.11 or 3.12 (not 3.13+)

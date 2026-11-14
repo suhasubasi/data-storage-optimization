@@ -1,0 +1,34 @@
+# Exclude local environments, secrets, large sample media, and build caches from Docker context
+.git/
+.github/
+.pytest_cache/
+**/__pycache__/
+**/*.py[cod]
+**/.venv/
+.venv*/
+**/node_modules/
+frontend/dist/
+frontend/*.tsbuildinfo
+contracts/build/
+
+# Mounted dynamically at runtime (./data:/app/data) — never baked into image
+data/
+
+# Ericsson private sample files and visual assets — never baked into image
+Brief/
+**/Brief/
+brief-files/
+brief-test/
+docs/
+*.docx
+*.msg
+*.mp4
+*.mov
+*.mkv
+*.wav
+*.opus
+*.mp3
+*.sqlite*
+*.env
+.env.*
+!.env.example

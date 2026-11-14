@@ -29,10 +29,11 @@ def samples(tmp_path_factory):
 
 
 @pytest.fixture
-def data_dir(tmp_path):
+def data_dir(tmp_path, monkeypatch):
     d = tmp_path / "data"
     (d / "originals").mkdir(parents=True)
     (d / "derived").mkdir()
+    monkeypatch.setenv("DSO_DATA_DIR", str(d))
     return d
 
 
